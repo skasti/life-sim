@@ -54,8 +54,8 @@ When submitting PRs:
 -   Write clear descriptions\
 -   Include rationale when changing core behavior\
 -   Add tests when adding logic to the genome engine\
--   Follow Kotlin idioms and keep `genome-core` free of
-    simulator-specific dependencies
+-   Follow Kotlin idioms and keep `genome` free of simulator-specific
+    dependencies
 
 PRs may be revised for consistency with the project's long-term
 direction.
@@ -64,7 +64,7 @@ direction.
 
 ## 🧬 Code Style and Structure
 
-### Genome Core (`genome-core`)
+### Genome (`genome`)
 
 -   **Pure logic only**: No references to rendering, physics, or
     simulation types\
