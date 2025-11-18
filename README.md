@@ -58,15 +58,16 @@ question:
 
 ------------------------------------------------------------------------
 
-## 🧬 Project Structure (planned)
+## 🧬 Project Structure
 
     life-sim/
-    ├─ genome-core/      # Genome representation, parsing, gene interfaces, mutations
+    ├─ genome/           # Genome representation, parsing, gene interfaces, mutations
     ├─ simulator/        # World model, physics, rendering, organism lifecycle
     └─ docs/             # Architecture notes, gene specs, dev logs (optional)
 
-Keeping these separate makes it possible to reuse `genome-core` for
-future experiments.
+Keeping these separate makes it possible to reuse `genome` for
+future experiments. Each directory includes a short README with planned
+components to guide initial contributions.
 
 ------------------------------------------------------------------------
 
