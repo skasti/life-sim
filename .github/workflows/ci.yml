@@ -12,6 +12,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         java: [17,21]
+      max-parallel: 1
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
