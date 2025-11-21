@@ -31,7 +31,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Gradle Build & Test
-        run: ./gradlew --no-daemon clean build
+        run: ./gradlew --no-daemon clean build --stacktrace --info
         shell: bash
 
       - name: Publish Test Reports (all modules)
