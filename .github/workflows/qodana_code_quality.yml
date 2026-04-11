@@ -1,39 +1,28 @@
-#-------------------------------------------------------------------------------#
-#            Discover all capabilities of Qodana in our documentation           #
-#             https://www.jetbrains.com/help/qodana/about-qodana.html           #
-#-------------------------------------------------------------------------------#
-
 name: Qodana
 on:
   workflow_dispatch:
   pull_request:
-    types: [opened, synchronize, reopened]
   push:
-    branches: [main]
-
-concurrency:
-  group: qodana-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    branches: # Specify your branches here
+      - main # The 'main' branch
+      - 'releases/*' # The release branches
 
 jobs:
   qodana:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
       checks: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
+          fetch-depth: 0  # a full history is required for pull request analysis
       - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@v2025.2
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+        uses: JetBrains/qodana-action@v2025.3
         with:
-          pr-mode: true
-          use-caches: true
-          post-pr-comment: true
-          use-annotations: true
-          upload-result: false
-          push-fixes: 'none'
+          pr-mode: false
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_2020248374 }}
+          QODANA_ENDPOINT: 'https://qodana.cloud'
