@@ -17,21 +17,21 @@ value class TRna private constructor(
 
     fun isEmpty(): Boolean = sequence.isEmpty()
 
-    fun scan(sequence: NucleotideSequence): Int {
+    fun scan(target: NucleotideSequence): Int {
         if (isEmpty()) {
             return 0
         }
 
-        if (size > sequence.size) {
+        if (size > target.size) {
             return -1
         }
 
-        val lastStartIndex = sequence.size - size
+        val lastStartIndex = target.size - size
         for (startIndex in 0..lastStartIndex) {
             var matches = true
 
             for (offset in 0 until size) {
-                if (this.sequence[offset] != sequence[startIndex + offset].complement()) {
+                if (this.sequence[offset] != target[startIndex + offset].complement()) {
                     matches = false
                     break
                 }
