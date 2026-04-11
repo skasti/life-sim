@@ -23,6 +23,9 @@ value class NucleotideSequence private constructor(
     fun complement(): NucleotideSequence =
         NucleotideSequence(nucleotides.map(Nucleotide::complement))
 
+    fun reversed(): NucleotideSequence =
+        NucleotideSequence(nucleotides.reversed())
+
     override fun toString(): String = nucleotides.joinToString(separator = "") { it.symbol.toString() }
 
     fun toList(): List<Nucleotide> = nucleotides.toList()
