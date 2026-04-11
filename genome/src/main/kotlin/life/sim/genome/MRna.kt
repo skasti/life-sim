@@ -18,6 +18,7 @@ value class MRna private constructor(
     fun toNucleotideSequence(): NucleotideSequence = sequence
 
     override fun toString(): String = sequence.toString()
+    fun complement(): MRna = MRna(sequence.complement())
 
     companion object {
         fun empty(): MRna = MRna(NucleotideSequence.empty())
