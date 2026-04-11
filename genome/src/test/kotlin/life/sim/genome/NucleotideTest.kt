@@ -14,6 +14,22 @@ class NucleotideTest {
     }
 
     @Test
+    fun `nucleotides expose the expected symbols`() {
+        assertEquals('A', Nucleotide.A.symbol)
+        assertEquals('C', Nucleotide.C.symbol)
+        assertEquals('G', Nucleotide.G.symbol)
+        assertEquals('U', Nucleotide.U.symbol)
+    }
+
+    @Test
+    fun `from char resolves each nucleotide`() {
+        assertEquals(Nucleotide.A, Nucleotide.fromChar('A'))
+        assertEquals(Nucleotide.C, Nucleotide.fromChar('c'))
+        assertEquals(Nucleotide.G, Nucleotide.fromChar('G'))
+        assertEquals(Nucleotide.U, Nucleotide.fromChar('u'))
+    }
+
+    @Test
     fun `from byte bits resolves each nucleotide`() {
         Nucleotide.entries.forEach { nucleotide ->
             assertEquals(nucleotide, Nucleotide.fromBits(nucleotide.bits))
@@ -59,6 +75,15 @@ class NucleotideTest {
         assertFailsWith<IllegalArgumentException> {
             Nucleotide.fromBits(4)
         }
+    }
+
+    @Test
+    fun `from char rejects invalid symbols`() {
+        val exception = assertFailsWith<IllegalArgumentException> {
+            Nucleotide.fromChar('T')
+        }
+
+        assertEquals("Invalid nucleotide 'T'. Expected one of A, C, G, or U.", exception.message)
     }
 }
 

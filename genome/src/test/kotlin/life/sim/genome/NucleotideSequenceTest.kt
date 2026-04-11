@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class NucleotideSequenceTest {
@@ -14,6 +15,7 @@ class NucleotideSequenceTest {
         assertTrue(sequence.isEmpty())
         assertEquals(0, sequence.size)
         assertContentEquals(emptyList(), sequence.toList())
+        assertEquals("", sequence.toString())
     }
 
     @Test
@@ -37,6 +39,34 @@ class NucleotideSequenceTest {
             listOf(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U),
             sequence.toList(),
         )
+        assertEquals("ACGU", sequence.toString())
+    }
+
+    @Test
+    fun `parse creates a sequence from nucleotide text`() {
+        val sequence = NucleotideSequence.parse("ACGU")
+
+        assertEquals(NucleotideSequence.of(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U), sequence)
+    }
+
+    @Test
+    fun `parse accepts lowercase nucleotide text`() {
+        val sequence = NucleotideSequence.parse("acgu")
+
+        assertEquals(NucleotideSequence.of(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U), sequence)
+        assertEquals("ACGU", sequence.toString())
+    }
+
+    @Test
+    fun `parse returns an empty sequence for empty text`() {
+        assertEquals(NucleotideSequence.empty(), NucleotideSequence.parse(""))
+    }
+
+    @Test
+    fun `sequence parse and to string round trip`() {
+        val text = "AUGCUGAA"
+
+        assertEquals(text, NucleotideSequence.parse(text).toString())
     }
 
     @Test
@@ -110,6 +140,18 @@ class NucleotideSequenceTest {
         source.add(Nucleotide.U)
 
         assertContentEquals(listOf(Nucleotide.A, Nucleotide.C), sequence.toList())
+    }
+
+    @Test
+    fun `parse rejects invalid symbols with index information`() {
+        val exception = assertFailsWith<IllegalArgumentException> {
+            NucleotideSequence.parse("ACXT")
+        }
+
+        assertEquals(
+            "Invalid nucleotide 'X' at index 2. Expected one of A, C, G, or U.",
+            exception.message,
+        )
     }
 }
 

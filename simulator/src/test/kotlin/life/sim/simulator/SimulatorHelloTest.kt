@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class SimulatorHelloTest {
     @Test
-    fun `simulator greeting references genome`() {
-        assertEquals("Simulator ready: Hello from the genome module!", simulatorGreeting())
+    fun `simulator greeting renders a nucleotide sequence`() {
+        assertEquals("Simulator ready: ACGU", simulatorGreeting())
     }
 }

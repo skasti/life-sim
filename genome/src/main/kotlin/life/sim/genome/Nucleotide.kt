@@ -13,11 +13,11 @@ package life.sim.genome
  * - `A` complements `U`
  * - `C` complements `G`
  */
-enum class Nucleotide(val bits: Byte) {
-    A(0b00),
-    C(0b01),
-    G(0b10),
-    U(0b11);
+enum class Nucleotide(val bits: Byte, val symbol: Char) {
+    A(0b00, 'A'),
+    C(0b01, 'C'),
+    G(0b10, 'G'),
+    U(0b11, 'U');
 
     fun complement(): Nucleotide = when (this) {
         A -> U
@@ -27,6 +27,14 @@ enum class Nucleotide(val bits: Byte) {
     }
 
     companion object {
+        fun fromChar(symbol: Char): Nucleotide = when (symbol.uppercaseChar()) {
+            A.symbol -> A
+            C.symbol -> C
+            G.symbol -> G
+            U.symbol -> U
+            else -> throw IllegalArgumentException("Invalid nucleotide '$symbol'. Expected one of A, C, G, or U.")
+        }
+
         fun fromBits(bits: Byte): Nucleotide = when (bits) {
             A.bits -> A
             C.bits -> C

@@ -23,6 +23,8 @@ value class NucleotideSequence private constructor(
     fun complement(): NucleotideSequence =
         NucleotideSequence(nucleotides.map(Nucleotide::complement))
 
+    override fun toString(): String = nucleotides.joinToString(separator = "") { it.symbol.toString() }
+
     fun toList(): List<Nucleotide> = nucleotides.toList()
 
     companion object {
@@ -31,8 +33,23 @@ value class NucleotideSequence private constructor(
         fun of(vararg nucleotides: Nucleotide): NucleotideSequence =
             NucleotideSequence(nucleotides.toList())
 
+        fun of(text: String): NucleotideSequence = parse(text)
+
         fun from(nucleotides: List<Nucleotide>): NucleotideSequence =
             NucleotideSequence(nucleotides.toList())
+
+        fun parse(text: String): NucleotideSequence =
+            NucleotideSequence(
+                text.mapIndexed { index, symbol ->
+                    try {
+                        Nucleotide.fromChar(symbol)
+                    } catch (_: IllegalArgumentException) {
+                        throw IllegalArgumentException(
+                            "Invalid nucleotide '$symbol' at index $index. Expected one of A, C, G, or U.",
+                        )
+                    }
+                },
+            )
     }
 }
 
