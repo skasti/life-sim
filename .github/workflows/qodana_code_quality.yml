@@ -27,13 +27,14 @@ jobs:
         with:
           fetch-depth: 0
       - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@v2025.2
+        uses: JetBrains/qodana-action@v2025.3
         env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_2020248374 }}
+          QODANA_ENDPOINT: 'https://qodana.cloud'
         with:
           pr-mode: true
           use-caches: true
           post-pr-comment: true
           use-annotations: true
-          upload-result: false
+          upload-result: true
           push-fixes: 'none'

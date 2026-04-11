@@ -1,119 +1,191 @@
 # Life-Sim
 
 **Life-Sim** is an experimental artificial-life simulation where
-organisms evolve from compact, byte-encoded genomes.\
-The goal is to explore how complex behaviors, body structures, and
-neural dynamics can emerge from simple genetic rules.
+organisms evolve from compact, byte-encoded genomes.
 
-This project is a hobby research environment---part evolution sandbox,
-part biology-inspired programming language---built to answer a simple
-question:
+The project explores how complex behaviors, structures, and learning
+can emerge when *everything*—from chemistry to cognition—is built from
+simple, composable units.
 
-> *How far can evolution go when everything about an organism---its
-> shape, behavior, and even its learning ability---is encoded in raw
-> bytes?*
+> *How far can evolution go when both the code **and the machinery that executes it** are encoded in raw bytes?*
 
-------------------------------------------------------------------------
+---
 
 ## ✨ Core Ideas
 
--   **Byte-encoded genomes**\
-    Organisms store their entire genetic information as a sequence of
-    bytes. Gene boundaries, expression, and mutations all operate
-    directly on this low-level representation.
+* **Byte-encoded genomes**
+  Organisms store their genetic information as raw bytes. Mutation,
+  inheritance, and expression all operate directly on this compact
+  representation.
 
--   **Interpreted "genes"**\
-    Each gene is a functional unit defined by a byte signature and an
-    `update()` method. Genes can:
+* **Genes as patterns, not instructions**
+  Genes are not necessarily executed directly. Instead, they define
+  patterns that can be interpreted, copied, or assembled by internal
+  biological machinery.
 
-    -   Sense the environment
-    -   Modify organism memory
-    -   Interact with child cells
-    -   Emit signals to neuron genes
-    -   Control channels, pumps, and membrane properties
+* **Biology-inspired execution layer**
+  Organisms may include systems analogous to:
 
--   **Evolvable neural networks**\
-    Neural-gene segments create small neurons that read/write memory,
-    weight their inputs, and forward signals to others. The network
-    topology itself is encoded in the genome and subject to mutation.
+    * Polymerases (copying / reading sequences)
+    * Ribosomes (assembling functional units)
+    * RNases / Nucleases (cutting and recycling)
 
--   **Cells with physical structure**\
-    Organisms are modeled as one or more connected cells, each defined
-    by genome-expressed properties:
+  These systems are *not hardcoded types*, but emerge from smaller
+  base-units and interactions.
 
-    -   Membrane permeability / stiffness\
-    -   Channels and pumps\
-    -   Position/orientation\
-    -   Optional "child cells" forming simple multi-cell organisms
+* **Base-units and emergent machinery**
+  The simulation aims to push toward a lower-level model where:
 
--   **Environment-driven adaptation**\
-    The simulation world provides nutrients, hazards, and resource
-    gradients. Organisms survive by:
+    * Small building blocks ("base-units") define behavior
+    * Binding, matching, and catalysis emerge from interactions
+    * Complex machinery (like ribosomes) can evolve rather than be predefined
 
-    -   Maintaining energy\
-    -   Avoiding leakage via membrane channels\
-    -   Acquiring nutrients\
-    -   Coordinating cell-level behaviors\
-    -   Learning short-term strategies via neural feedback
+* **Evolvable neural and behavioral systems**
+  Organisms can form internal signaling and neural-like structures,
+  encoded in the genome and shaped by evolution.
 
-------------------------------------------------------------------------
+* **Cells with physical structure**
+  Organisms consist of one or more connected cells with properties like:
 
-## 🧬 Project Structure
+    * Membrane permeability
+    * Channels and pumps
+    * Spatial orientation
+    * Optional child cells forming multicellular structures
 
-    life-sim/
-    ├─ genome/           # Genome representation, parsing, gene interfaces, mutations
-    ├─ simulator/        # World model, physics, rendering, organism lifecycle
-    └─ docs/             # Architecture notes, gene specs, dev logs (optional)
+* **Environment-driven adaptation**
+  The world provides nutrients, hazards, and gradients. Survival depends on:
 
-Keeping these separate makes it possible to reuse `genome` for
-future experiments. Each directory includes a short README with planned
-components to guide initial contributions.
+    * Energy balance
+    * Resource acquisition
+    * Structural integrity
+    * Coordinated behavior
 
-------------------------------------------------------------------------
+---
+
+## 🧬 Conceptual Layers
+
+Life-Sim separates *what is encoded* from *how it is executed*:
+
+* **Genome layer**
+  Defines inheritable byte sequences and mutation rules.
+
+* **Biology layer**
+  Defines how sequences become active processes through:
+
+    * Polymer formation (DNA/RNA/protein analogs)
+    * Binding and matching rules
+    * Catalytic behavior (copying, cutting, assembling)
+    * Decay and recycling
+
+* **Simulation layer**
+  Defines the physical world in which organisms exist:
+
+    * Space, movement, diffusion
+    * Nutrients and hazards
+    * Interactions between organisms and environment
+
+This separation allows experimentation with different "execution chemistries"
+without changing the underlying genome format.
+
+---
+
+## 🧱 Project Structure
+
+```
+life-sim/
+├─ genome/           # Genome encoding, parsing, mutation, gene patterns
+├─ biology/          # Base-units, polymers, ribosome/polymerase-like systems, decay/recycling
+├─ simulator/        # World model, physics, rendering, organism lifecycle
+└─ docs/             # Architecture notes, experiments, dev logs
+```
+
+### genome/
+
+* Byte-level genome representation
+* Mutation and recombination
+* Gene pattern definitions
+* Expression hooks (entry points into biology layer)
+
+### biology/
+
+* Base-units (minimal functional building blocks)
+* Polymer representations (sequence chains)
+* Binding and matching rules
+* Machinery (emergent or constructed):
+
+    * Polymerases
+    * Ribosome-like assemblers
+    * RNase-like cutters
+* Reaction systems (copy, cut, bind, release)
+* Resource pools and recycling
+
+### simulator/
+
+* Spatial world and physics
+* Diffusion of signals and resources
+* Cell and organism lifecycle
+* Integration of biology processes into time steps
+
+---
+
+## 🧠 Design Philosophy
+
+Life-Sim is not trying to simulate biology accurately.
+Instead, it explores a question:
+
+> *What is the **minimum set of rules** required for something resembling life to emerge?*
+
+Key principles:
+
+* Avoid hardcoding high-level concepts ("ribosome", "neuron")
+* Prefer small, composable primitives
+* Let structure and behavior emerge from interactions
+* Keep the system evolvable at every layer
+
+---
 
 ## 🤖 AI-Assisted Development
 
-Life-Sim is developed collaboratively---partly by a human author, partly
-with the assistance of AI tools such as ChatGPT.\
-All major decisions, architectural direction, and final approvals are
-made by the human developer, but many ideas, drafts, and refactor
-suggestions emerge from AI--human dialogue.\
-This project aims to be transparent about this hybrid creative process.
+Life-Sim is developed collaboratively—partly by a human author, partly
+with the assistance of AI tools such as ChatGPT.
 
-------------------------------------------------------------------------
+AI contributes ideas, drafts, and refactor suggestions, while the human
+developer makes final architectural decisions.
+
+---
 
 ## 🚧 Status
 
-This project is in **early development**.\
-Features may change frequently as ideas evolve and experiments suggest
-better models.
+This project is in **early development**.
 
-------------------------------------------------------------------------
+The biological execution layer is actively evolving and may change
+significantly as new models are explored.
+
+---
 
 ## 📜 License
 
-This project is released under the **Creative Commons BY-NC 4.0**
-license.\
+This project is released under the **Creative Commons BY-NC 4.0** license.
+
 You may use and modify it for non-commercial purposes with proper
 attribution.
 
-------------------------------------------------------------------------
+---
 
 ## 🤝 Contributing
 
 This is currently a personal research project, but ideas, suggestions,
 and discussions are welcome via Issues or PRs.
 
-------------------------------------------------------------------------
+---
 
 ## 🧠 Motivation
 
-Life-Sim is a playground inspired by:
+Life-Sim is inspired by:
 
--   real-world biological evolution\
--   minimalist virtual machines\
--   emergent behavior in complex systems\
--   curiosity about how "intelligence" might form from non-intelligent
-    parts
+* Biological evolution
+* Minimalist virtual machines
+* Emergent behavior in complex systems
+* Curiosity about how "intelligence" forms from simple parts
 
 If those ideas excite you, feel free to follow along.
