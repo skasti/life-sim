@@ -39,6 +39,46 @@ class TRnaTest {
     }
 
     @Test
+    fun `scan returns zero for an empty tRNA`() {
+        assertEquals(0, TRna.empty().scan(NucleotideSequence.of("AUGC")))
+    }
+
+    @Test
+    fun `scan returns the start position of a complementary match`() {
+        val trna = TRna.of("CGAU")
+
+        assertEquals(0, trna.scan(NucleotideSequence.of("GCUA")))
+    }
+
+    @Test
+    fun `scan returns the first complementary matching position`() {
+        val trna = TRna.of("AUG")
+
+        assertEquals(2, trna.scan(NucleotideSequence.of("CCUACUAC")))
+    }
+
+    @Test
+    fun `scan returns minus one when no complementary match exists`() {
+        val trna = TRna.of("ACG")
+
+        assertEquals(-1, trna.scan(NucleotideSequence.of("CGUAAA")))
+    }
+
+    @Test
+    fun `scan returns minus one when tRNA is longer than the scanned sequence`() {
+        val trna = TRna.of("AUGCU")
+
+        assertEquals(-1, trna.scan(NucleotideSequence.of("AUG")))
+    }
+
+    @Test
+    fun `scan does not treat exact equality as a match without complementarity`() {
+        val trna = TRna.of("AUG")
+
+        assertEquals(-1, trna.scan(NucleotideSequence.of("CCAUGAUG")))
+    }
+
+    @Test
     fun `tRNA parse rejects invalid symbols`() {
         val exception = assertFailsWith<IllegalArgumentException> {
             TRna.parse("CGTX")

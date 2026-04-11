@@ -5,6 +5,8 @@ package life.sim.genome
  *
  * This is currently a lightweight domain wrapper around a [NucleotideSequence],
  * allowing genome and biology code to distinguish tRNA from other RNA types.
+ *
+ * Scanning uses complementary RNA binding rules rather than exact nucleotide equality.
  */
 @JvmInline
 value class TRna private constructor(
@@ -14,6 +16,34 @@ value class TRna private constructor(
         get() = sequence.size
 
     fun isEmpty(): Boolean = sequence.isEmpty()
+
+    fun scan(sequence: NucleotideSequence): Int {
+        if (isEmpty()) {
+            return 0
+        }
+
+        if (size > sequence.size) {
+            return -1
+        }
+
+        val lastStartIndex = sequence.size - size
+        for (startIndex in 0..lastStartIndex) {
+            var matches = true
+
+            for (offset in 0 until size) {
+                if (this.sequence[offset] != sequence[startIndex + offset].complement()) {
+                    matches = false
+                    break
+                }
+            }
+
+            if (matches) {
+                return startIndex
+            }
+        }
+
+        return -1
+    }
 
     fun toNucleotideSequence(): NucleotideSequence = sequence
 
