@@ -1,0 +1,73 @@
+package life.sim.genome
+
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class NucleotideSequenceTest {
+    @Test
+    fun `empty sequence has no nucleotides`() {
+        val sequence = NucleotideSequence.empty()
+
+        assertTrue(sequence.isEmpty())
+        assertEquals(0, sequence.size)
+        assertContentEquals(emptyList(), sequence.toList())
+    }
+
+    @Test
+    fun `sequence preserves nucleotide order`() {
+        val sequence = NucleotideSequence.of(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U)
+
+        assertFalse(sequence.isEmpty())
+        assertEquals(4, sequence.size)
+        assertEquals(Nucleotide.A, sequence[0])
+        assertEquals(Nucleotide.C, sequence[1])
+        assertEquals(Nucleotide.G, sequence[2])
+        assertEquals(Nucleotide.U, sequence[3])
+        assertContentEquals(
+            listOf(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U),
+            sequence.toList(),
+        )
+    }
+
+    @Test
+    fun `sequence can be iterated`() {
+        val sequence = NucleotideSequence.of(Nucleotide.G, Nucleotide.U, Nucleotide.A)
+
+        assertContentEquals(listOf(Nucleotide.G, Nucleotide.U, Nucleotide.A), sequence.toList())
+        assertContentEquals(listOf(Nucleotide.G, Nucleotide.U, Nucleotide.A), sequence.asSequence().toList())
+    }
+
+    @Test
+    fun `sequence compares by wrapped nucleotide content`() {
+        val left = NucleotideSequence.of(Nucleotide.A, Nucleotide.U, Nucleotide.G)
+        val right = NucleotideSequence.from(listOf(Nucleotide.A, Nucleotide.U, Nucleotide.G))
+
+        assertEquals(left, right)
+    }
+
+    @Test
+    fun `sequence copies input list on creation`() {
+        val source = mutableListOf(Nucleotide.A, Nucleotide.C)
+        val sequence = NucleotideSequence.from(source)
+
+        source[0] = Nucleotide.U
+        source.add(Nucleotide.G)
+
+        assertContentEquals(listOf(Nucleotide.A, Nucleotide.C), sequence.toList())
+    }
+
+    @Test
+    fun `to list returns a safe copy`() {
+        val sequence = NucleotideSequence.of(Nucleotide.C, Nucleotide.G)
+        val copy = sequence.toList().toMutableList()
+
+        copy[0] = Nucleotide.A
+        copy.add(Nucleotide.U)
+
+        assertContentEquals(listOf(Nucleotide.C, Nucleotide.G), sequence.toList())
+    }
+}
+
