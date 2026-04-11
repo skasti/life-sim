@@ -20,6 +20,9 @@ value class NucleotideSequence private constructor(
 
     override fun iterator(): Iterator<Nucleotide> = nucleotides.iterator()
 
+    fun complement(): NucleotideSequence =
+        NucleotideSequence(nucleotides.map(Nucleotide::complement))
+
     fun toList(): List<Nucleotide> = nucleotides.toList()
 
     companion object {
@@ -32,4 +35,6 @@ value class NucleotideSequence private constructor(
             NucleotideSequence(nucleotides.toList())
     }
 }
+
+fun List<Nucleotide>.toNucleotideSequence(): NucleotideSequence = NucleotideSequence.from(this)
 

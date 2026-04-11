@@ -17,6 +17,13 @@ class NucleotideSequenceTest {
     }
 
     @Test
+    fun `empty sequence complement is empty`() {
+        val sequence = NucleotideSequence.empty()
+
+        assertEquals(NucleotideSequence.empty(), sequence.complement())
+    }
+
+    @Test
     fun `sequence preserves nucleotide order`() {
         val sequence = NucleotideSequence.of(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U)
 
@@ -49,6 +56,23 @@ class NucleotideSequenceTest {
     }
 
     @Test
+    fun `sequence complement preserves order while complementing each nucleotide`() {
+        val sequence = NucleotideSequence.of(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U)
+
+        assertContentEquals(
+            listOf(Nucleotide.U, Nucleotide.G, Nucleotide.C, Nucleotide.A),
+            sequence.complement().toList(),
+        )
+    }
+
+    @Test
+    fun `sequence complement is reversible`() {
+        val sequence = NucleotideSequence.of(Nucleotide.G, Nucleotide.U, Nucleotide.A, Nucleotide.C)
+
+        assertEquals(sequence, sequence.complement().complement())
+    }
+
+    @Test
     fun `sequence copies input list on creation`() {
         val source = mutableListOf(Nucleotide.A, Nucleotide.C)
         val sequence = NucleotideSequence.from(source)
@@ -68,6 +92,24 @@ class NucleotideSequenceTest {
         copy.add(Nucleotide.U)
 
         assertContentEquals(listOf(Nucleotide.C, Nucleotide.G), sequence.toList())
+    }
+
+    @Test
+    fun `list helper creates an equivalent nucleotide sequence`() {
+        val sequence = listOf(Nucleotide.A, Nucleotide.U, Nucleotide.C).toNucleotideSequence()
+
+        assertEquals(NucleotideSequence.of(Nucleotide.A, Nucleotide.U, Nucleotide.C), sequence)
+    }
+
+    @Test
+    fun `list helper copies the source list`() {
+        val source = mutableListOf(Nucleotide.A, Nucleotide.C)
+        val sequence = source.toNucleotideSequence()
+
+        source[0] = Nucleotide.G
+        source.add(Nucleotide.U)
+
+        assertContentEquals(listOf(Nucleotide.A, Nucleotide.C), sequence.toList())
     }
 }
 
