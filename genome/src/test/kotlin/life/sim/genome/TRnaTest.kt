@@ -12,7 +12,7 @@ class TRnaTest {
 
         assertTrue(trna.isEmpty())
         assertEquals(0, trna.size)
-        assertEquals("", trna.toString())
+        assertEquals(">>", trna.toString())
         assertEquals(NucleotideSequence.empty(), trna.toNucleotideSequence())
     }
 
@@ -22,15 +22,15 @@ class TRnaTest {
         val trna = TRna.of(sequence)
 
         assertEquals(sequence, trna.toNucleotideSequence())
-        assertEquals("CGAU", trna.toString())
+        assertEquals(">CGAU>", trna.toString())
     }
 
     @Test
     fun `tRNA can be parsed from text`() {
-        val trna = TRna.parse("cgau")
+        val trna = TRna.parse(">cgau>")
 
         assertEquals(NucleotideSequence.of("CGAU"), trna.toNucleotideSequence())
-        assertEquals("CGAU", trna.toString())
+        assertEquals(">CGAU>", trna.toString())
     }
 
     @Test

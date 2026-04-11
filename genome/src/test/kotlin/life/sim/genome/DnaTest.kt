@@ -11,42 +11,42 @@ class DnaTest {
     fun `dna created from one strand infers the complementary reverse strand`() {
         val dna = Dna.of(NucleotideSequence.of("AUGGGCCAUGAACCGG"))
 
-        assertEquals(NucleotideSequence.of("AUGGGCCAUGAACCGG"), dna.forward)
-        assertEquals(NucleotideSequence.of("UACCCGGUACUUGGCC"), dna.reverse)
-        assertEquals("AUGGGCCAUGAACCGG\nUACCCGGUACUUGGCC", dna.toString())
+        assertEquals(NucleotideSequence.parse(">AUGGGCCAUGAACCGG>"), dna.forward)
+        assertEquals(NucleotideSequence.parse("<UACCCGGUACUUGGCC<"), dna.reverse)
+        assertEquals(">AUGGGCCAUGAACCGG>\n<UACCCGGUACUUGGCC<", dna.toString())
     }
 
     @Test
     fun `dna can be created from two strand strings`() {
         val dna = Dna.of("AUGC", "UACG")
 
-        assertEquals(NucleotideSequence.of("AUGC"), dna.forward)
-        assertEquals(NucleotideSequence.of("UACG"), dna.reverse)
-        assertEquals("AUGC\nUACG", dna.toString())
+        assertEquals(NucleotideSequence.parse(">AUGC>"), dna.forward)
+        assertEquals(NucleotideSequence.parse("<UACG<"), dna.reverse)
+        assertEquals(">AUGC>\n<UACG<", dna.toString())
     }
 
     @Test
     fun `dna can be parsed from two lines`() {
-        val dna = Dna.parse("AUGGGCCAUGAACCGG\nUACCCGGUACUUGGCC")
+        val dna = Dna.parse(">AUGGGCCAUGAACCGG>\n<UACCCGGUACUUGGCC<")
 
-        assertEquals(NucleotideSequence.of("AUGGGCCAUGAACCGG"), dna.forward)
-        assertEquals(NucleotideSequence.of("UACCCGGUACUUGGCC"), dna.reverse)
-        assertEquals("AUGGGCCAUGAACCGG\nUACCCGGUACUUGGCC", dna.toString())
+        assertEquals(NucleotideSequence.parse(">AUGGGCCAUGAACCGG>"), dna.forward)
+        assertEquals(NucleotideSequence.parse("<UACCCGGUACUUGGCC<"), dna.reverse)
+        assertEquals(">AUGGGCCAUGAACCGG>\n<UACCCGGUACUUGGCC<", dna.toString())
     }
 
     @Test
     fun `dna parse infers the complement when only one line is present`() {
-        val dna = Dna.parse("AUGGGCCAUGAACCGG")
+        val dna = Dna.parse(">AUGGGCCAUGAACCGG>")
 
-        assertEquals("AUGGGCCAUGAACCGG\nUACCCGGUACUUGGCC", dna.toString())
+        assertEquals(">AUGGGCCAUGAACCGG>\n<UACCCGGUACUUGGCC<", dna.toString())
     }
 
     @Test
     fun `dna parse supports crlf line endings`() {
-        val dna = Dna.parse("AUGG\r\nUACC")
+        val dna = Dna.parse(">AUGG>\r\n<UACC<")
 
-        assertEquals(NucleotideSequence.of("AUGG"), dna.forward)
-        assertEquals(NucleotideSequence.of("UACC"), dna.reverse)
+        assertEquals(NucleotideSequence.parse(">AUGG>"), dna.forward)
+        assertEquals(NucleotideSequence.parse("<UACC<"), dna.reverse)
     }
 
     @Test

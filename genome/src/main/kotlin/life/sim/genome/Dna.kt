@@ -31,22 +31,28 @@ class Dna private constructor(
     override fun hashCode(): Int = 31 * forward.hashCode() + reverse.hashCode()
 
     companion object {
-        fun empty(): Dna = Dna(NucleotideSequence.empty(), NucleotideSequence.empty())
+        fun empty(): Dna = Dna(
+            NucleotideSequence.empty(SequenceDirection.FORWARD),
+            NucleotideSequence.empty(SequenceDirection.BACKWARD),
+        )
 
         fun of(forward: NucleotideSequence, reverse: NucleotideSequence = forward.complement()): Dna {
-            require(forward.size == reverse.size) {
-                "DNA forward and reverse strands must have the same length, but were ${forward.size} and ${reverse.size}."
+            val normalizedForward = NucleotideSequence.from(forward.toList(), SequenceDirection.FORWARD)
+            val normalizedReverse = NucleotideSequence.from(reverse.toList(), SequenceDirection.BACKWARD)
+
+            require(normalizedForward.size == normalizedReverse.size) {
+                "DNA forward and reverse strands must have the same length, but were ${normalizedForward.size} and ${normalizedReverse.size}."
             }
 
-            for (index in 0 until forward.size) {
-                val expected = forward[index].complement()
-                val actual = reverse[index]
+            for (index in 0 until normalizedForward.size) {
+                val expected = normalizedForward[index].complement()
+                val actual = normalizedReverse[index]
                 require(expected == actual) {
-                    "DNA forward and reverse strands must be complementary at index $index, but found ${forward[index].symbol} and ${actual.symbol}."
+                    "DNA forward and reverse strands must be complementary at index $index, but found ${normalizedForward[index].symbol} and ${actual.symbol}."
                 }
             }
 
-            return Dna(forward, reverse)
+            return Dna(normalizedForward, normalizedReverse)
         }
 
         fun of(forward: String, reverse: String): Dna =

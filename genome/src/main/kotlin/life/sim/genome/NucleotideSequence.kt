@@ -7,9 +7,9 @@ package life.sim.genome
  * giving the genome layer a dedicated sequence type without committing to a
  * packed byte representation yet.
  */
-@JvmInline
-value class NucleotideSequence private constructor(
+class NucleotideSequence private constructor(
     private val nucleotides: List<Nucleotide>,
+    val direction: SequenceDirection,
 ) : Iterable<Nucleotide> {
     val size: Int
         get() = nucleotides.size
@@ -21,29 +21,73 @@ value class NucleotideSequence private constructor(
     override fun iterator(): Iterator<Nucleotide> = nucleotides.iterator()
 
     fun complement(): NucleotideSequence =
-        NucleotideSequence(nucleotides.map(Nucleotide::complement))
+        NucleotideSequence(nucleotides.map(Nucleotide::complement), direction.opposite())
 
     fun reversed(): NucleotideSequence =
-        NucleotideSequence(nucleotides.reversed())
+        NucleotideSequence(nucleotides.reversed(), direction.opposite())
 
-    override fun toString(): String = nucleotides.joinToString(separator = "") { it.symbol.toString() }
+    override fun toString(): String {
+        val content = nucleotides.joinToString(separator = "") { it.symbol.toString() }
+        return "${direction.marker}$content${direction.marker}"
+    }
 
     fun toList(): List<Nucleotide> = nucleotides.toList()
 
-    companion object {
-        fun empty(): NucleotideSequence = NucleotideSequence(emptyList())
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
+        }
 
-        fun of(vararg nucleotides: Nucleotide): NucleotideSequence =
-            NucleotideSequence(nucleotides.toList())
+        if (other !is NucleotideSequence) {
+            return false
+        }
+
+        return nucleotides == other.nucleotides && direction == other.direction
+    }
+
+    override fun hashCode(): Int = 31 * nucleotides.hashCode() + direction.hashCode()
+
+    companion object {
+        fun empty(direction: SequenceDirection = SequenceDirection.FORWARD): NucleotideSequence =
+            NucleotideSequence(emptyList(), direction)
+
+        fun of(vararg nucleotides: Nucleotide, direction: SequenceDirection = SequenceDirection.FORWARD): NucleotideSequence =
+            NucleotideSequence(nucleotides.toList(), direction)
 
         fun of(text: String): NucleotideSequence = parse(text)
 
-        fun from(nucleotides: List<Nucleotide>): NucleotideSequence =
-            NucleotideSequence(nucleotides.toList())
+        fun from(
+            nucleotides: List<Nucleotide>,
+            direction: SequenceDirection = SequenceDirection.FORWARD,
+        ): NucleotideSequence = NucleotideSequence(nucleotides.toList(), direction)
 
-        fun parse(text: String): NucleotideSequence =
-            NucleotideSequence(
-                text.mapIndexed { index, symbol ->
+        fun parse(text: String): NucleotideSequence {
+            val direction = when {
+                text.length >= 2 && text.startsWith(">") && text.endsWith(">") -> SequenceDirection.FORWARD
+                text.length >= 2 && text.startsWith("<") && text.endsWith("<") -> SequenceDirection.BACKWARD
+                text.startsWith(">") || text.endsWith(">") || text.startsWith("<") || text.endsWith("<") -> {
+                    throw IllegalArgumentException(
+                        "Nucleotide sequence text must be surrounded by matching direction markers or contain no markers, but was '$text'.",
+                    )
+                }
+
+                else -> SequenceDirection.FORWARD
+            }
+
+            val content = when {
+                text.length >= 2 && text.startsWith(">") && text.endsWith(">") -> text.substring(1, text.length - 1)
+                text.length >= 2 && text.startsWith("<") && text.endsWith("<") -> text.substring(1, text.length - 1)
+                text.contains('>') || text.contains('<') -> {
+                    throw IllegalArgumentException(
+                        "Nucleotide sequence text must be surrounded by matching direction markers or contain no markers, but was '$text'.",
+                    )
+                }
+
+                else -> text
+            }
+
+            return NucleotideSequence(
+                content.mapIndexed { index, symbol ->
                     try {
                         Nucleotide.fromChar(symbol)
                     } catch (_: IllegalArgumentException) {
@@ -52,7 +96,9 @@ value class NucleotideSequence private constructor(
                         )
                     }
                 },
+                direction,
             )
+        }
     }
 }
 

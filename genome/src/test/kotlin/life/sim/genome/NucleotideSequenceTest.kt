@@ -15,21 +15,22 @@ class NucleotideSequenceTest {
         assertTrue(sequence.isEmpty())
         assertEquals(0, sequence.size)
         assertContentEquals(emptyList(), sequence.toList())
-        assertEquals("", sequence.toString())
+        assertEquals(SequenceDirection.FORWARD, sequence.direction)
+        assertEquals(">>", sequence.toString())
     }
 
     @Test
     fun `empty sequence complement is empty`() {
         val sequence = NucleotideSequence.empty()
 
-        assertEquals(NucleotideSequence.empty(), sequence.complement())
+        assertEquals(NucleotideSequence.empty(SequenceDirection.BACKWARD), sequence.complement())
     }
 
     @Test
     fun `empty sequence reversed is empty`() {
         val sequence = NucleotideSequence.empty()
 
-        assertEquals(NucleotideSequence.empty(), sequence.reversed())
+        assertEquals(NucleotideSequence.empty(SequenceDirection.BACKWARD), sequence.reversed())
     }
 
     @Test
@@ -46,32 +47,41 @@ class NucleotideSequenceTest {
             listOf(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U),
             sequence.toList(),
         )
-        assertEquals("ACGU", sequence.toString())
+        assertEquals(SequenceDirection.FORWARD, sequence.direction)
+        assertEquals(">ACGU>", sequence.toString())
     }
 
     @Test
-    fun `parse creates a sequence from nucleotide text`() {
-        val sequence = NucleotideSequence.parse("ACGU")
+    fun `parse creates a forward sequence from directional nucleotide text`() {
+        val sequence = NucleotideSequence.parse(">ACGU>")
 
         assertEquals(NucleotideSequence.of(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U), sequence)
     }
 
     @Test
-    fun `parse accepts lowercase nucleotide text`() {
-        val sequence = NucleotideSequence.parse("acgu")
+    fun `parse accepts lowercase directional nucleotide text`() {
+        val sequence = NucleotideSequence.parse(">acgu>")
 
         assertEquals(NucleotideSequence.of(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U), sequence)
-        assertEquals("ACGU", sequence.toString())
+        assertEquals(">ACGU>", sequence.toString())
     }
 
     @Test
-    fun `parse returns an empty sequence for empty text`() {
+    fun `parse creates a backward sequence from directional nucleotide text`() {
+        val sequence = NucleotideSequence.parse("<ACGU<")
+
+        assertEquals(SequenceDirection.BACKWARD, sequence.direction)
+        assertEquals("<ACGU<", sequence.toString())
+    }
+
+    @Test
+    fun `parse returns an empty forward sequence for empty text`() {
         assertEquals(NucleotideSequence.empty(), NucleotideSequence.parse(""))
     }
 
     @Test
     fun `sequence parse and to string round trip`() {
-        val text = "AUGCUGAA"
+        val text = ">AUGCUGAA>"
 
         assertEquals(text, NucleotideSequence.parse(text).toString())
     }
@@ -100,6 +110,7 @@ class NucleotideSequenceTest {
             listOf(Nucleotide.U, Nucleotide.G, Nucleotide.C, Nucleotide.A),
             sequence.complement().toList(),
         )
+        assertEquals("<UGCA<", sequence.complement().toString())
     }
 
     @Test
@@ -110,7 +121,7 @@ class NucleotideSequenceTest {
             listOf(Nucleotide.U, Nucleotide.G, Nucleotide.C, Nucleotide.A),
             sequence.reversed().toList(),
         )
-        assertEquals("UGCA", sequence.reversed().toString())
+        assertEquals("<UGCA<", sequence.reversed().toString())
     }
 
     @Test
@@ -129,9 +140,9 @@ class NucleotideSequenceTest {
 
     @Test
     fun `sequence parse and reversed to string match text reversed`() {
-        val text = "AUGCUGAA"
+        val text = ">AUGCUGAA>"
 
-        assertEquals(text.reversed(), NucleotideSequence.parse(text).reversed().toString())
+        assertEquals("<${"AUGCUGAA".reversed()}<", NucleotideSequence.parse(text).reversed().toString())
     }
 
     @Test
@@ -177,11 +188,23 @@ class NucleotideSequenceTest {
     @Test
     fun `parse rejects invalid symbols with index information`() {
         val exception = assertFailsWith<IllegalArgumentException> {
-            NucleotideSequence.parse("ACXT")
+            NucleotideSequence.parse(">ACXT>")
         }
 
         assertEquals(
             "Invalid nucleotide 'X' at index 2. Expected one of A, C, G, or U.",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `parse rejects mismatched direction markers`() {
+        val exception = assertFailsWith<IllegalArgumentException> {
+            NucleotideSequence.parse(">ACGU<")
+        }
+
+        assertEquals(
+            "Nucleotide sequence text must be surrounded by matching direction markers or contain no markers, but was '>ACGU<'.",
             exception.message,
         )
     }

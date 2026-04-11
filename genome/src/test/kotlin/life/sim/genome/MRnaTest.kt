@@ -12,7 +12,7 @@ class MRnaTest {
 
         assertTrue(mrna.isEmpty())
         assertEquals(0, mrna.size)
-        assertEquals("", mrna.toString())
+        assertEquals(">>", mrna.toString())
         assertEquals(NucleotideSequence.empty(), mrna.toNucleotideSequence())
     }
 
@@ -22,15 +22,15 @@ class MRnaTest {
         val mrna = MRna.of(sequence)
 
         assertEquals(sequence, mrna.toNucleotideSequence())
-        assertEquals("AUGC", mrna.toString())
+        assertEquals(">AUGC>", mrna.toString())
     }
 
     @Test
     fun `mRNA can be parsed from text`() {
-        val mrna = MRna.parse("augc")
+        val mrna = MRna.parse(">augc>")
 
         assertEquals(NucleotideSequence.of("AUGC"), mrna.toNucleotideSequence())
-        assertEquals("AUGC", mrna.toString())
+        assertEquals(">AUGC>", mrna.toString())
     }
 
     @Test
