@@ -1,4 +1,4 @@
-package life.sim.genome
+package life.sim.biology.primitives
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -86,4 +86,5 @@ class NucleotideTest {
         assertEquals("Invalid nucleotide 'T'. Expected one of A, C, G, or U.", exception.message)
     }
 }
+
 

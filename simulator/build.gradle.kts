@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":genome"))
+    implementation(project(":biology"))
     testImplementation(kotlin("test"))
 }
 

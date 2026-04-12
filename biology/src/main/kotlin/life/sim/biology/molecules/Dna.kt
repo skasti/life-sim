@@ -1,9 +1,13 @@
-package life.sim.genome
+package life.sim.biology.molecules
+
+import life.sim.biology.primitives.NucleotideSequence
+import life.sim.biology.primitives.Nucleotide
+import life.sim.biology.primitives.SequenceDirection
 
 /**
  * A double-stranded, DNA-like duplex composed of two complementary nucleotide strands.
  *
- * This type intentionally reuses the genome module's existing [Nucleotide] model, so its strands are
+ * This type intentionally reuses the biology module's shared [Nucleotide] model, so its strands are
  * expressed with the RNA alphabet (`A`, `C`, `G`, `U`) and the corresponding complement rules
  * (`A` <-> `U`, `C` <-> `G`). In other words, this models DNA-style double-strand structure without
  * introducing a separate thymine-based alphabet; within this API, `U` stands in for `T`.
@@ -82,5 +86,7 @@ class Dna private constructor(
         }
     }
 }
+
+
 
 

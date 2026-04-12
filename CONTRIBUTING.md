@@ -30,7 +30,7 @@ Contributions should aim to preserve this exploratory spirit.
 Before writing code, please open an Issue if you plan to contribute:
 
 -   a new feature proposal\
--   a significant change to genome architecture\
+-   a significant change to biology or genetics architecture\
 -   a new module or system\
 -   documentation improvements\
 -   bug reports
@@ -53,8 +53,8 @@ When submitting PRs:
 -   Keep them focused and reasonably small\
 -   Write clear descriptions\
 -   Include rationale when changing core behavior\
--   Add tests when adding logic to the genome engine\
--   Follow Kotlin idioms and keep `genome` free of simulator-specific
+-   Add tests when adding logic to the biology model or simulation engine\
+-   Follow Kotlin idioms and keep `biology` free of simulator-specific
     dependencies
 
 PRs may be revised for consistency with the project's long-term
@@ -64,20 +64,21 @@ direction.
 
 ## 🧬 Code Style and Structure
 
-### Genome (`genome`)
+### Biology (`biology`)
 
--   **Pure logic only**: No references to rendering, physics, or
-    simulation types\
--   Clearly defined gene interfaces\
+-   **Pure domain logic only**: No references to rendering, physics, or
+    simulator world types\
+-   Keep primitives, molecules, and genetics concepts separated by
+    package\
 -   Deterministic behavior where possible\
 -   Avoid excessive allocation in core update loops\
--   Keep mutation and genome parsing fully isolated
+-   Keep reaction and mutation logic reusable outside the simulator
 
 ### Simulator (`simulator`)
 
 -   Handles all world interactions\
 -   Encodes environmental rules and physics\
--   Should call into genome logic, not the other way around\
+-   Should call into biology logic, not the other way around\
 -   Keeps organism lifecycle and rendering logic separate
 
 ------------------------------------------------------------------------
