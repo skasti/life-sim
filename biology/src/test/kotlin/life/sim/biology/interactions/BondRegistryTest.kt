@@ -1,0 +1,61 @@
+package life.sim.biology.interactions
+
+import life.sim.biology.molecules.MRna
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
+
+class BondRegistryTest {
+    private data class TestAgent(
+        val label: String,
+    ) : BoundAgent
+
+    @Test
+    fun `registry stores bonds and queries them by molecule and overlap`() {
+        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(11))
+        val first = Bond(surface.site(1, 4), TestAgent("repressor"), strength = 0.8, decayPerTick = 0.1)
+        val second = Bond(surface.site(4, 6), TestAgent("polymerase"), strength = 0.9, decayPerTick = 0.2)
+        val registry = BondRegistry(listOf(first, second))
+
+        assertEquals(listOf(first, second), registry.bondsFor(MoleculeId(11)))
+        assertEquals(listOf(first), registry.overlapping(surface.site(2, 4)))
+        assertEquals(listOf(first, second), registry.bondsOnSurface(surface.site(0, 1)))
+    }
+
+    @Test
+    fun `registry decay removes inactive bonds and keeps surviving strength`() {
+        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(12))
+        val transient = Bond(surface.site(0, 2), TestAgent("weak"), strength = 0.1, decayPerTick = 0.1)
+        val stable = Bond(surface.site(2, 5), TestAgent("stable"), strength = 0.9, decayPerTick = 0.2)
+        val registry = BondRegistry(listOf(transient, stable))
+
+        val remaining = registry.decayAll(2)
+
+        assertEquals(1, remaining.size)
+        assertEquals(0.5, remaining.single().strength)
+        assertEquals(1, registry.size)
+    }
+
+    @Test
+    fun `bond decay rejects negative tick counts`() {
+        val bond = Bond(MRna.of("AUG").bindingSurface(MoleculeId(13)).site(0, 2), TestAgent("repressor"), 1.0, 0.1)
+
+        val exception = assertFailsWith<IllegalArgumentException> {
+            bond.decay(-1)
+        }
+
+        assertEquals("Bond decay ticks must be greater than or equal to zero, but was -1.", exception.message)
+    }
+
+    @Test
+    fun `bond reports whether it is still active`() {
+        val bond = Bond(MRna.of("AUG").bindingSurface(MoleculeId(14)).site(0, 2), TestAgent("repressor"), 0.0, 0.1)
+
+        assertFalse(bond.isActive())
+        assertTrue(bond.copy(strength = 0.01).isActive())
+    }
+}
+

@@ -4,7 +4,7 @@ package life.sim.biology.primitives
  * An immutable sequence of [Nucleotide] values.
  *
  * This is currently a lightweight domain wrapper around a list of nucleotides,
- * giving the genome layer a dedicated sequence type without committing to a
+ * giving the biology layer a dedicated sequence type without committing to a
  * packed byte representation yet.
  */
 class NucleotideSequence private constructor(
@@ -19,6 +19,22 @@ class NucleotideSequence private constructor(
     operator fun get(index: Int): Nucleotide = nucleotides[index]
 
     override fun iterator(): Iterator<Nucleotide> = nucleotides.iterator()
+
+    fun slice(range: SequenceRange): NucleotideSequence = slice(range.start, range.endExclusive)
+
+    fun slice(start: Int, endExclusive: Int): NucleotideSequence {
+        require(start >= 0) {
+            "Slice start must be greater than or equal to zero, but was $start."
+        }
+        require(endExclusive >= start) {
+            "Slice endExclusive must be greater than or equal to start, but was $endExclusive for start $start."
+        }
+        require(endExclusive <= size) {
+            "Slice endExclusive must be less than or equal to sequence size $size, but was $endExclusive."
+        }
+
+        return NucleotideSequence(nucleotides.subList(start, endExclusive).toList(), direction)
+    }
 
     fun complement(): NucleotideSequence =
         NucleotideSequence(nucleotides.map(Nucleotide::complement), direction.opposite())

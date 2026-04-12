@@ -1,5 +1,6 @@
 package life.sim.biology.molecules
 
+import life.sim.biology.interactions.BindingMatcher
 import life.sim.biology.primitives.NucleotideSequence
 
 import kotlin.test.Test
@@ -57,6 +58,17 @@ class TRnaTest {
         val trna = TRna.of("AUG")
 
         assertEquals(2, trna.scan(NucleotideSequence.of("CCUACUAC")))
+    }
+
+    @Test
+    fun `scan uses the same complementary matching rules as the shared binding matcher`() {
+        val trna = TRna.of("AUG")
+        val target = NucleotideSequence.of("CCUACUAC")
+
+        assertEquals(
+            BindingMatcher.complementaryMatchStart(trna.toNucleotideSequence(), target),
+            trna.scan(target),
+        )
     }
 
     @Test

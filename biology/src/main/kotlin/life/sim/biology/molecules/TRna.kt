@@ -1,5 +1,6 @@
 package life.sim.biology.molecules
 
+import life.sim.biology.interactions.BindingMatcher
 import life.sim.biology.primitives.NucleotideSequence
 
 /**
@@ -19,33 +20,7 @@ value class TRna private constructor(
 
     fun isEmpty(): Boolean = sequence.isEmpty()
 
-    fun scan(target: NucleotideSequence): Int {
-        if (isEmpty()) {
-            return 0
-        }
-
-        if (size > target.size) {
-            return -1
-        }
-
-        val lastStartIndex = target.size - size
-        for (startIndex in 0..lastStartIndex) {
-            var matches = true
-
-            for (offset in 0 until size) {
-                if (this.sequence[offset] != target[startIndex + offset].complement()) {
-                    matches = false
-                    break
-                }
-            }
-
-            if (matches) {
-                return startIndex
-            }
-        }
-
-        return -1
-    }
+    fun scan(target: NucleotideSequence): Int = BindingMatcher.complementaryMatchStart(sequence, target)
 
     fun toNucleotideSequence(): NucleotideSequence = sequence
 
