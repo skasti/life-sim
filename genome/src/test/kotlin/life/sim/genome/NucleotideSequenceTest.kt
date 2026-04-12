@@ -104,24 +104,22 @@ class NucleotideSequenceTest {
 
     @Test
     fun `sequence complement preserves order while complementing each nucleotide`() {
-        val sequence = NucleotideSequence.of(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U)
-
+        val sequence = NucleotideSequence.of(Nucleotide.A, Nucleotide.U, Nucleotide.G, Nucleotide.C)
         assertContentEquals(
-            listOf(Nucleotide.U, Nucleotide.G, Nucleotide.C, Nucleotide.A),
+            listOf(Nucleotide.U, Nucleotide.A, Nucleotide.C, Nucleotide.G),
             sequence.complement().toList(),
         )
-        assertEquals("<UGCA<", sequence.complement().toString())
+        assertEquals("<UACG<", sequence.complement().toString())
     }
 
     @Test
     fun `sequence reversed preserves nucleotide values while reversing order`() {
-        val sequence = NucleotideSequence.of(Nucleotide.A, Nucleotide.C, Nucleotide.G, Nucleotide.U)
-
+        val sequence = NucleotideSequence.of(Nucleotide.A, Nucleotide.U, Nucleotide.G, Nucleotide.C)
         assertContentEquals(
-            listOf(Nucleotide.U, Nucleotide.G, Nucleotide.C, Nucleotide.A),
+            listOf(Nucleotide.C, Nucleotide.G, Nucleotide.U, Nucleotide.A),
             sequence.reversed().toList(),
         )
-        assertEquals("<UGCA<", sequence.reversed().toString())
+        assertEquals("<CGUA<", sequence.reversed().toString())
     }
 
     @Test
