@@ -1,4 +1,4 @@
-package life.sim.genome
+package life.sim.biology.primitives
 
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -207,4 +207,5 @@ class NucleotideSequenceTest {
         )
     }
 }
+
 

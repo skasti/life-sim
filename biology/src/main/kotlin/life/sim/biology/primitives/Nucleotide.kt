@@ -1,4 +1,4 @@
-package life.sim.genome
+package life.sim.biology.primitives
 
 /**
  * A nucleotide encoded as a 2-bit value.
@@ -52,4 +52,5 @@ enum class Nucleotide(val bits: Byte, val symbol: Char) {
         }
     }
 }
+
 

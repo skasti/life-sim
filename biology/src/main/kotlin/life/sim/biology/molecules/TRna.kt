@@ -1,4 +1,6 @@
-package life.sim.genome
+package life.sim.biology.molecules
+
+import life.sim.biology.primitives.NucleotideSequence
 
 /**
  * Transfer RNA.
@@ -59,4 +61,5 @@ value class TRna private constructor(
         fun parse(text: String): TRna = TRna(NucleotideSequence.parse(text))
     }
 }
+
 

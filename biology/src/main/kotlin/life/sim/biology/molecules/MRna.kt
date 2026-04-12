@@ -1,4 +1,6 @@
-package life.sim.genome
+package life.sim.biology.molecules
+
+import life.sim.biology.primitives.NucleotideSequence
 
 /**
  * Messenger RNA.
@@ -30,4 +32,5 @@ value class MRna private constructor(
         fun parse(text: String): MRna = MRna(NucleotideSequence.parse(text))
     }
 }
+
 

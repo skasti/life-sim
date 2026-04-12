@@ -13,10 +13,10 @@ simple, composable units.
 
 ## ✨ Core Ideas
 
-* **Byte-encoded genomes**
-  Organisms store their genetic information as raw bytes. Mutation,
-  inheritance, and expression all operate directly on this compact
-  representation.
+* **Byte-encoded heredity**
+  Organisms store inheritable information in compact encoded forms.
+  Mutation, inheritance, and expression all operate directly on these
+  low-level representations.
 
 * **Genes as patterns, not instructions**
   Genes are not necessarily executed directly. Instead, they define
@@ -42,7 +42,7 @@ simple, composable units.
 
 * **Evolvable neural and behavioral systems**
   Organisms can form internal signaling and neural-like structures,
-  encoded in the genome and shaped by evolution.
+  encoded in their hereditary information and shaped by evolution.
 
 * **Cells with physical structure**
   Organisms consist of one or more connected cells with properties like:
@@ -64,28 +64,28 @@ simple, composable units.
 
 ## 🧬 Conceptual Layers
 
-Life-Sim separates *what is encoded* from *how it is executed*:
+Life-Sim separates *heritable descriptions* from *active biological processes*,
+even when both live inside the same module during early development:
 
-* **Genome layer**
-  Defines inheritable byte sequences and mutation rules.
-
-* **Biology layer**
-  Defines how sequences become active processes through:
+* **Biology module**
+  Hosts the current low-level sequence primitives, molecule types, and the
+  emerging genetics model. It defines how encoded sequences become active
+  processes through:
 
     * Polymer formation (DNA/RNA/protein analogs)
     * Binding and matching rules
     * Catalytic behavior (copying, cutting, assembling)
     * Decay and recycling
 
-* **Simulation layer**
+* **Simulation module**
   Defines the physical world in which organisms exist:
 
     * Space, movement, diffusion
     * Nutrients and hazards
     * Interactions between organisms and environment
 
-This separation allows experimentation with different "execution chemistries"
-without changing the underlying genome format.
+This separation allows experimentation with different execution chemistries
+without tightly coupling sequence/molecule logic to the world simulation.
 
 ---
 
@@ -93,23 +93,19 @@ without changing the underlying genome format.
 
 ```
 life-sim/
-├─ genome/           # Genome encoding, parsing, mutation, gene patterns
-├─ biology/          # Base-units, polymers, ribosome/polymerase-like systems, decay/recycling
+├─ biology/          # Primitives, molecules, genetics, and reaction systems
 ├─ simulator/        # World model, physics, rendering, organism lifecycle
 └─ docs/             # Architecture notes, experiments, dev logs
 ```
 
-### genome/
-
-* Byte-level genome representation
-* Mutation and recombination
-* Gene pattern definitions
-* Expression hooks (entry points into biology layer)
-
 ### biology/
 
-* Base-units (minimal functional building blocks)
-* Polymer representations (sequence chains)
+* Currently organized into low-level packages such as:
+
+    * `life.sim.biology.primitives` for sequence building blocks like `Nucleotide`, `NucleotideSequence`, and `SequenceDirection`
+    * `life.sim.biology.molecules` for molecule types like `Dna`, `MRna`, and `TRna`
+
+* Genetics-oriented representations and future mutation logic
 * Binding and matching rules
 * Machinery (emergent or constructed):
 
@@ -118,6 +114,7 @@ life-sim/
     * RNase-like cutters
 * Reaction systems (copy, cut, bind, release)
 * Resource pools and recycling
+* Likely future package boundaries for genetics- and interaction-focused code as the biology layer grows
 
 ### simulator/
 
@@ -160,6 +157,10 @@ This project is in **early development**.
 
 The biological execution layer is actively evolving and may change
 significantly as new models are explored.
+
+The internal package layout of `biology` is also still evolving; today it is
+split into areas such as `biology.primitives` and `biology.molecules`, with
+room for future genetics and interaction packages.
 
 ---
 

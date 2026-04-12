@@ -1,4 +1,4 @@
-package life.sim.genome
+package life.sim.biology.primitives
 
 /**
  * The orientation of a nucleotide sequence.
@@ -12,4 +12,5 @@ enum class SequenceDirection(val marker: Char) {
         BACKWARD -> FORWARD
     }
 }
+
 

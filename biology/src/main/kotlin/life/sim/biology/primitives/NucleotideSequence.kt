@@ -1,4 +1,4 @@
-package life.sim.genome
+package life.sim.biology.primitives
 
 /**
  * An immutable sequence of [Nucleotide] values.
@@ -103,4 +103,5 @@ class NucleotideSequence private constructor(
 }
 
 fun List<Nucleotide>.toNucleotideSequence(): NucleotideSequence = NucleotideSequence.from(this)
+
 

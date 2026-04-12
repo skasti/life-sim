@@ -1,4 +1,6 @@
-package life.sim.genome
+package life.sim.biology.molecules
+
+import life.sim.biology.primitives.NucleotideSequence
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -95,4 +97,5 @@ class DnaTest {
         assertEquals("DNA forward and reverse strands must have the same length, but were 3 and 2.", exception.message)
     }
 }
+
 

@@ -1,4 +1,6 @@
-package life.sim.genome
+package life.sim.biology.molecules
+
+import life.sim.biology.primitives.NucleotideSequence
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -60,4 +62,5 @@ class MRnaTest {
         assertEquals(mrna, complement.complement())
     }
 }
+
 
