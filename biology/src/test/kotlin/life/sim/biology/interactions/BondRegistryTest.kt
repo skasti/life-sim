@@ -64,7 +64,7 @@ class BondRegistryTest {
         val remaining = registry.decayAll(2)
 
         assertEquals(1, remaining.size)
-        assertEquals(0.5, remaining.single().strength)
+        assertEquals(0.5, remaining.single().strength, absoluteTolerance = 1.0e-9)
         assertEquals(1, registry.size)
     }
 
