@@ -26,6 +26,15 @@ class BondRegistryTest {
     }
 
     @Test
+    fun `registry overlap queries ignore empty sites`() {
+        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(17))
+        val bond = Bond(surface.site(4, 6), TestAgent("polymerase"), strength = 0.9, decayPerTick = 0.2)
+        val registry = BondRegistry(listOf(bond))
+
+        assertTrue(registry.overlapping(surface.site(5, 5)).isEmpty())
+    }
+
+    @Test
     fun `registry ignores inactive bonds supplied at construction`() {
         val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(15))
         val active = Bond(surface.site(1, 4), TestAgent("active"), strength = 0.8, decayPerTick = 0.1)

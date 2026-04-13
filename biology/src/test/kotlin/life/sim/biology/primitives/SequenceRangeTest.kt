@@ -26,6 +26,15 @@ class SequenceRangeTest {
     }
 
     @Test
+    fun `empty ranges never overlap`() {
+        val empty = SequenceRange(5, 5)
+
+        assertFalse(empty.overlaps(SequenceRange(4, 6)))
+        assertFalse(SequenceRange(4, 6).overlaps(empty))
+        assertFalse(empty.overlaps(SequenceRange(5, 5)))
+    }
+
+    @Test
     fun `range rejects negative start`() {
         val exception = assertFailsWith<IllegalArgumentException> {
             SequenceRange(-1, 2)

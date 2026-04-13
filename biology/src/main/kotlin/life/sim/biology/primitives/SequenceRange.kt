@@ -4,6 +4,7 @@ package life.sim.biology.primitives
  * A half-open range over a nucleotide sequence.
  *
  * The [start] index is inclusive and [endExclusive] is exclusive.
+ * Empty ranges are valid, but never overlap any range.
  */
 data class SequenceRange(
     val start: Int,
@@ -23,6 +24,7 @@ data class SequenceRange(
 
     fun contains(index: Int): Boolean = index in start until endExclusive
 
-    fun overlaps(other: SequenceRange): Boolean = start < other.endExclusive && other.start < endExclusive
+    fun overlaps(other: SequenceRange): Boolean =
+        maxOf(start, other.start) < minOf(endExclusive, other.endExclusive)
 }
 

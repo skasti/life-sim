@@ -53,6 +53,17 @@ class BindingSiteTest {
     }
 
     @Test
+    fun `empty sites never overlap`() {
+        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(7))
+        val empty = surface.site(5, 5)
+        val occupied = surface.site(4, 6)
+
+        assertFalse(empty.overlaps(occupied))
+        assertFalse(occupied.overlaps(empty))
+        assertFalse(empty.overlaps(empty))
+    }
+
+    @Test
     fun `site rejects ranges beyond the surface length`() {
         val surface = MRna.of("AUGC").bindingSurface(MoleculeId(6))
 
