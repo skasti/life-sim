@@ -82,7 +82,7 @@ This gives a concrete address like:
 
 - molecule `11`
 - forward strand
-- indexes `12..20`
+- indexes `[12, 20)` (that is, indexes `12` through `19`)
 
 A `BindingSite` can also expose the exact subsequence at that site via `site.sequence`.
 
@@ -245,8 +245,7 @@ This logic is now shared with `TRna.scan(...)`, so tRNA scanning and general com
 
 ```mermaid
 flowchart LR
-    A[Pattern sequence
-    e.g. tRNA or binding motif] --> B[BindingMatcher]
+    A[Pattern sequence<br/>e.g. tRNA or binding motif] --> B[BindingMatcher]
     B --> C{Complementary match found?}
     C -- No --> D[Return -1 or null]
     C -- Yes --> E[Create SequenceRange]
@@ -307,7 +306,7 @@ The exact `repressor` type is not implemented yet, but it would implement `Bound
 
 ## Overlap and occupancy
 
-Two sites overlap only when both are true:
+Two sites overlap only when all of the following are true:
 
 1. they are on the same molecule
 2. they are on the same strand/surface
@@ -317,7 +316,7 @@ That means:
 
 - two sites on different molecules do **not** overlap
 - forward and reverse DNA strand sites do **not** overlap
-- adjacent half-open ranges like `1..4` and `4..6` do **not** overlap
+- adjacent half-open ranges like `[1, 4)` and `[4, 6)` do **not** overlap
 
 This is important for repression, blocking, or collision logic later.
 
