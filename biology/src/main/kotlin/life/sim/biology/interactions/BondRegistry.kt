@@ -6,7 +6,7 @@ package life.sim.biology.interactions
 class BondRegistry(
     bonds: Iterable<Bond> = emptyList(),
 ) : Iterable<Bond> {
-    private val bonds = bonds.toMutableList()
+    private val bonds = bonds.filter(Bond::isActive).toMutableList()
 
     val size: Int
         get() = bonds.size
@@ -14,7 +14,9 @@ class BondRegistry(
     fun isEmpty(): Boolean = bonds.isEmpty()
 
     fun add(bond: Bond): Bond {
-        bonds.add(bond)
+        if (bond.isActive()) {
+            bonds.add(bond)
+        }
         return bond
     }
 

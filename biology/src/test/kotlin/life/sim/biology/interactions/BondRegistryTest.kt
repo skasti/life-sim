@@ -26,6 +26,35 @@ class BondRegistryTest {
     }
 
     @Test
+    fun `registry ignores inactive bonds supplied at construction`() {
+        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(15))
+        val active = Bond(surface.site(1, 4), TestAgent("active"), strength = 0.8, decayPerTick = 0.1)
+        val inactive = Bond(surface.site(4, 6), TestAgent("inactive"), strength = 0.0, decayPerTick = 0.2)
+
+        val registry = BondRegistry(listOf(active, inactive))
+
+        assertEquals(listOf(active), registry.toList())
+        assertEquals(listOf(active), registry.bondsFor(MoleculeId(15)))
+        assertTrue(registry.overlapping(surface.site(4, 6)).isEmpty())
+        assertEquals(listOf(active), registry.bondsOnSurface(surface.site(0, 1)))
+    }
+
+    @Test
+    fun `registry add ignores inactive bonds`() {
+        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(16))
+        val inactive = Bond(surface.site(1, 4), TestAgent("inactive"), strength = 0.0, decayPerTick = 0.1)
+        val registry = BondRegistry()
+
+        val returned = registry.add(inactive)
+
+        assertEquals(inactive, returned)
+        assertTrue(registry.isEmpty())
+        assertTrue(registry.bondsFor(MoleculeId(16)).isEmpty())
+        assertTrue(registry.bondsOnSurface(surface.site(0, 1)).isEmpty())
+        assertTrue(registry.overlapping(surface.site(1, 4)).isEmpty())
+    }
+
+    @Test
     fun `registry decay removes inactive bonds and keeps surviving strength`() {
         val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(12))
         val transient = Bond(surface.site(0, 2), TestAgent("weak"), strength = 0.1, decayPerTick = 0.1)
