@@ -27,11 +27,18 @@ class SequenceRangeTest {
 
     @Test
     fun `empty ranges never overlap`() {
-        val empty = SequenceRange(5, 5)
+        val emptyAtStart = SequenceRange(2, 2)
+        val emptyInside = SequenceRange(5, 5)
+        val emptyAtEnd = SequenceRange(8, 8)
+        val occupied = SequenceRange(2, 8)
 
-        assertFalse(empty.overlaps(SequenceRange(4, 6)))
-        assertFalse(SequenceRange(4, 6).overlaps(empty))
-        assertFalse(empty.overlaps(SequenceRange(5, 5)))
+        assertFalse(emptyAtStart.overlaps(occupied))
+        assertFalse(occupied.overlaps(emptyAtStart))
+        assertFalse(emptyInside.overlaps(occupied))
+        assertFalse(occupied.overlaps(emptyInside))
+        assertFalse(emptyAtEnd.overlaps(occupied))
+        assertFalse(occupied.overlaps(emptyAtEnd))
+        assertFalse(emptyInside.overlaps(SequenceRange(5, 5)))
     }
 
     @Test
