@@ -4,9 +4,9 @@ package life.sim.biology.interactions
  * Mutable in-memory store of active bonds.
  */
 class BondRegistry(
-    bonds: Iterable<Bond> = emptyList(),
+    initialBonds: Iterable<Bond> = emptyList(),
 ) : Iterable<Bond> {
-    private val bonds = bonds.filter(Bond::isActive).toMutableList()
+    private val bonds = initialBonds.filter(Bond::isActive).toMutableList()
 
     val size: Int
         get() = bonds.size
