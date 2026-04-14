@@ -50,7 +50,7 @@ data class Bond(
     fun involves(moleculeId: MoleculeId): Boolean =
         left.moleculeId == moleculeId || right.moleculeId == moleculeId
 
-    fun siteEndpoints(): List<BindingSite> =
+    fun bindingSites(): List<BindingSite> =
         listOfNotNull(left.site, right.site)
 
     fun decay(ticks: Int = 1): Bond {

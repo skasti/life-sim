@@ -31,13 +31,13 @@ class BondRegistry(
     fun bondsFor(moleculeId: MoleculeId): List<Bond> = bonds.filter { it.involves(moleculeId) }
 
     fun bondsInvolving(site: BindingSite): List<Bond> =
-        bonds.filter { bond -> bond.siteEndpoints().any { it == site } }
+        bonds.filter { bond -> bond.bindingSites().any { it == site } }
 
     fun bondsOnSurface(site: BindingSite): List<Bond> =
-        bonds.filter { bond -> bond.siteEndpoints().any { it.sameSurfaceAs(site) } }
+        bonds.filter { bond -> bond.bindingSites().any { it.sameSurfaceAs(site) } }
 
     fun overlapping(site: BindingSite): List<Bond> =
-        bonds.filter { bond -> bond.siteEndpoints().any { it.overlaps(site) } }
+        bonds.filter { bond -> bond.bindingSites().any { it.overlaps(site) } }
 
     fun decayAll(ticks: Int = 1): List<Bond> {
         require(ticks >= 0) {
