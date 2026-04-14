@@ -4,6 +4,7 @@ The documentation space collects architecture notes, biology and genetics specif
 
 Suggested subfolders:
 - `architecture/` for diagrams and biology/simulator module overviews
+- `biology/` for biology-layer design notes such as molecules, interactions, and reaction models
 - `genes/` for gene, regulatory, or heredity specifications
 - `logs/` for dev journals and experiment notes
 - `references/` for external research links and summaries

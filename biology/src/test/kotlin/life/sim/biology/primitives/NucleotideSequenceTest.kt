@@ -166,6 +166,28 @@ class NucleotideSequenceTest {
     }
 
     @Test
+    fun `slice returns the requested sub sequence preserving direction`() {
+        val sequence = NucleotideSequence.parse("<AUGCUA<")
+
+        assertEquals(NucleotideSequence.parse("<GCU<"), sequence.slice(2, 5))
+        assertEquals(NucleotideSequence.parse("<UGC<"), sequence.slice(SequenceRange(1, 4)))
+    }
+
+    @Test
+    fun `slice rejects out of bounds end exclusive`() {
+        val sequence = NucleotideSequence.of("AUG")
+
+        val exception = assertFailsWith<IllegalArgumentException> {
+            sequence.slice(1, 4)
+        }
+
+        assertEquals(
+            "Slice endExclusive must be less than or equal to sequence size 3, but was 4.",
+            exception.message,
+        )
+    }
+
+    @Test
     fun `list helper creates an equivalent nucleotide sequence`() {
         val sequence = listOf(Nucleotide.A, Nucleotide.U, Nucleotide.C).toNucleotideSequence()
 
