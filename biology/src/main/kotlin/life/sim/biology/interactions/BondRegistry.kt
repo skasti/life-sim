@@ -28,11 +28,16 @@ class BondRegistry(
 
     fun toList(): List<Bond> = bonds.toList()
 
-    fun bondsFor(moleculeId: MoleculeId): List<Bond> = bonds.filter { it.site.moleculeId == moleculeId }
+    fun bondsFor(moleculeId: MoleculeId): List<Bond> = bonds.filter { it.involves(moleculeId) }
 
-    fun bondsOnSurface(site: BindingSite): List<Bond> = bonds.filter { it.site.sameSurfaceAs(site) }
+    fun bondsInvolving(site: BindingSite): List<Bond> =
+        bonds.filter { bond -> bond.bindingSites().any { it == site } }
 
-    fun overlapping(site: BindingSite): List<Bond> = bonds.filter { it.site.overlaps(site) }
+    fun bondsOnSurface(site: BindingSite): List<Bond> =
+        bonds.filter { bond -> bond.bindingSites().any { it.sameSurfaceAs(site) } }
+
+    fun overlapping(site: BindingSite): List<Bond> =
+        bonds.filter { bond -> bond.bindingSites().any { it.overlaps(site) } }
 
     fun decayAll(ticks: Int = 1): List<Bond> {
         require(ticks >= 0) {
@@ -50,4 +55,3 @@ class BondRegistry(
 
     override fun iterator(): Iterator<Bond> = bonds.toList().iterator()
 }
-
