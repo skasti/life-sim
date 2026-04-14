@@ -67,6 +67,7 @@ class BondRegistryTest {
         val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(15))
         val exactSite = surface.site(1, 4)
         val otherSite = surface.site(4, 6)
+        val rightOnlySite = surface.site(0, 2)
         val first = Bond(
             left = SiteEndpoint(exactSite),
             right = WholeMoleculeEndpoint(MoleculeId(99)),
@@ -79,16 +80,24 @@ class BondRegistryTest {
             strength = 0.8,
             decayPerTick = 0.1,
         )
+        val siteOnRight = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(102)),
+            right = SiteEndpoint(rightOnlySite),
+            strength = 0.8,
+            decayPerTick = 0.1,
+        )
         val wholeOnly = Bond(
             left = WholeMoleculeEndpoint(MoleculeId(15)),
             right = WholeMoleculeEndpoint(MoleculeId(101)),
             strength = 0.8,
             decayPerTick = 0.1,
         )
-        val registry = BondRegistry(listOf(first, second, wholeOnly))
+        val registry = BondRegistry(listOf(first, second, siteOnRight, wholeOnly))
 
         assertEquals(listOf(first), registry.bondsInvolving(exactSite))
-        assertEquals(listOf(first, second), registry.bondsOnSurface(surface.site(0, 1)))
+        assertEquals(listOf(siteOnRight), registry.bondsInvolving(rightOnlySite))
+        assertEquals(listOf(first, second, siteOnRight), registry.bondsOnSurface(surface.site(0, 1)))
+        assertEquals(listOf(siteOnRight), registry.overlapping(surface.site(0, 1)))
     }
 
     @Test
