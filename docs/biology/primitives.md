@@ -129,7 +129,7 @@ Half-open ranges are used throughout interaction code to make slicing and overla
 ## Example workflow
 
 1. Parse a sequence: `NucleotideSequence.parse(">AUGCUA>")`
-2. Select a region: `slice(SequenceRange(1, 4))` → `UGC`
+2. Select a region: `slice(SequenceRange(1, 4))` → `>UGC>`
 3. Compute complement for pairing logic
 4. Use `SequenceRange` values as coordinates in binding models
 
