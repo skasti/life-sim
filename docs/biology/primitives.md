@@ -88,7 +88,7 @@ Direction is part of sequence identity in this model.
 - explicit forward: `>AUGC>`
 - explicit backward: `<AUGC<`
 
-Markers must be paired and matching. Invalid markers or symbols raise `IllegalArgumentException` with index-aware error messages.
+Markers must be paired and matching. Invalid markers and invalid symbols both raise `IllegalArgumentException`; invalid nucleotide symbols use index-aware error messages, while marker-related errors are reported against the full input string.
 
 `toString()` emits marker-wrapped text, e.g. `>AUGC>`.
 
