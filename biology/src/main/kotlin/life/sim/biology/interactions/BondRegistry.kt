@@ -6,7 +6,9 @@ package life.sim.biology.interactions
 class BondRegistry(
     initialBonds: Iterable<Bond> = emptyList(),
 ) : Iterable<Bond> {
-    private val bonds = initialBonds.filter(Bond::isActive).toMutableList()
+    private val bonds = initialBonds
+        .filter(Bond::isActive)
+        .toCollection(linkedSetOf())
 
     val size: Int
         get() = bonds.size
@@ -53,5 +55,5 @@ class BondRegistry(
         return toList()
     }
 
-    override fun iterator(): Iterator<Bond> = bonds.toList().iterator()
+    override fun iterator(): Iterator<Bond> = bonds.iterator()
 }

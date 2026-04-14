@@ -60,4 +60,27 @@ data class Bond(
 
         return copy(strength = (strength - (decayPerTick * ticks)).coerceAtLeast(0.0))
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
+        }
+        if (other !is Bond) {
+            return false
+        }
+
+        val endpointsMatch = (left == other.left && right == other.right) ||
+            (left == other.right && right == other.left)
+
+        return endpointsMatch &&
+            strength == other.strength &&
+            decayPerTick == other.decayPerTick
+    }
+
+    override fun hashCode(): Int {
+        var result = left.hashCode() + right.hashCode()
+        result = 31 * result + strength.hashCode()
+        result = 31 * result + decayPerTick.hashCode()
+        return result
+    }
 }
