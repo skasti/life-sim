@@ -37,8 +37,9 @@ simple, composable units.
   The simulation aims to push toward a lower-level model where:
 
     * Small building blocks ("base-units") define behavior
-    * Binding, matching, and catalysis emerge from interactions
+    * Binding, matching, and catalysis emerge from molecule-to-molecule associations
     * Complex machinery (like ribosomes) can evolve rather than be predefined
+    * Temporary complexes can form as dynamic networks of bonded molecules
 
 * **Evolvable neural and behavioral systems**
   Organisms can form internal signaling and neural-like structures,
@@ -104,6 +105,7 @@ life-sim/
 
     * `life.sim.biology.primitives` for sequence building blocks like `Nucleotide`, `NucleotideSequence`, and `SequenceDirection`
     * `life.sim.biology.molecules` for molecule types like `Dna`, `MRna`, and `TRna`
+    * `life.sim.biology.interactions` for runtime molecule associations and bond-network behavior
 
 * Genetics-oriented representations and future mutation logic
 * Binding and matching rules
