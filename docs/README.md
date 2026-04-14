@@ -9,7 +9,6 @@ Suggested subfolders:
 - `logs/` for dev journals and experiment notes
 - `references/` for external research links and summaries
 
-
 Current biology docs:
 - `biology/primitives.md`
 - `biology/molecules.md`
