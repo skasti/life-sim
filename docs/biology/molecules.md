@@ -45,7 +45,7 @@ If any invariant fails, construction throws `IllegalArgumentException`.
 
 Text parsing supports one or two lines:
 
-- one line: parses forward and auto-generates reverse complement
+- one line: parses forward and auto-generates the complementary reverse strand
 - two lines: parses both and validates complementarity
 
 `toString()` serializes DNA as two lines (`forward` then `reverse`).
