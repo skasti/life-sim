@@ -56,7 +56,7 @@ class Polypeptide private constructor(
                         AminoAcid.fromChar(symbol)
                     } catch (exception: IllegalArgumentException) {
                         throw IllegalArgumentException(
-                            "Invalid amino-acid '$symbol' at index $index.",
+                            "Invalid amino-acid '$symbol' at index $index. Expected one of ${AminoAcid.entries.joinToString(", ") { it.symbol.toString() }}.",
                         )
                     }
                 },
