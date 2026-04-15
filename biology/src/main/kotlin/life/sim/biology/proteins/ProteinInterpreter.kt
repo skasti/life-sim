@@ -2,12 +2,15 @@ package life.sim.biology.proteins
 
 import life.sim.biology.molecules.AminoAcid
 import life.sim.biology.molecules.Polypeptide
+import life.sim.biology.primitives.Nucleotide
+import life.sim.biology.primitives.NucleotideSequence
 
 /**
  * Interprets [Polypeptide] chains as composable domains by motif matching.
  */
 object ProteinInterpreter {
     private const val DOMAIN_WINDOW_RADIUS = 2
+    private const val BINDER_PATTERN_LENGTH = 6
 
     private data class DomainPattern(
         val name: String,
@@ -22,6 +25,7 @@ object ProteinInterpreter {
             motif = "KRGK",
             factory = { local ->
                 SequenceBinder(
+                    bindingPattern = deriveBinderPattern(local),
                     affinity = clamp01(0.45 + weightedSignal(local, chargeWeight = 0.08, hydrophobicWeight = 0.02)),
                     specificity = clamp01(0.35 + weightedSignal(local, chargeWeight = 0.04, hydrophobicWeight = 0.05)),
                 )
@@ -124,6 +128,25 @@ object ProteinInterpreter {
     private fun hydrophobicScore(residue: AminoAcid): Double = when (residue) {
         AminoAcid.A, AminoAcid.I, AminoAcid.L, AminoAcid.M, AminoAcid.F, AminoAcid.W, AminoAcid.Y, AminoAcid.V -> 1.0
         else -> 0.0
+    }
+
+    private fun deriveBinderPattern(localWindow: List<AminoAcid>): NucleotideSequence {
+        val seed = localWindow.foldIndexed(17) { index, acc, residue ->
+            (acc * 31) + (residue.symbol.code * (index + 1))
+        }
+
+        var state = seed
+        val pattern = List(BINDER_PATTERN_LENGTH) {
+            state = state * 1103515245 + 12345
+            when ((state ushr 16) and 0x3) {
+                0 -> Nucleotide.A
+                1 -> Nucleotide.C
+                2 -> Nucleotide.G
+                else -> Nucleotide.U
+            }
+        }
+
+        return NucleotideSequence.from(pattern)
     }
 
     private fun clamp01(value: Double): Double = value.coerceIn(0.0, 1.0)

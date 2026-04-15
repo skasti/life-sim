@@ -1,5 +1,8 @@
 package life.sim.biology.proteins
 
+import life.sim.biology.primitives.NucleotideSequence
+
+
 /**
  * Runtime behavior exposed by one interpreted protein domain.
  */
@@ -8,6 +11,7 @@ sealed interface MolecularCapability {
 }
 
 data class SequenceBinder(
+    val bindingPattern: NucleotideSequence,
     val affinity: Double,
     val specificity: Double,
 ) : MolecularCapability {

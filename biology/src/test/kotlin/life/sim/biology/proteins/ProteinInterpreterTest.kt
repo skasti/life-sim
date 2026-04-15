@@ -25,12 +25,24 @@ class ProteinInterpreterTest {
         assertEquals("BinderDomain", base.single().name)
         assertEquals("BinderDomain", mutated.single().name)
 
-        val baseAffinity = (base.single().capabilities.single() as SequenceBinder).affinity
-        val mutatedAffinity = (mutated.single().capabilities.single() as SequenceBinder).affinity
+        val baseBinder = base.single().capabilities.single() as SequenceBinder
+        val mutatedBinder = mutated.single().capabilities.single() as SequenceBinder
 
-        assertTrue(baseAffinity != mutatedAffinity)
+        assertTrue(baseBinder.affinity != mutatedBinder.affinity)
     }
 
+    @Test
+    fun `small mutation near motif alters binder target pattern`() {
+        val base = ProteinInterpreter.interpret(Polypeptide.of("AAKRGKAA"))
+        val mutated = ProteinInterpreter.interpret(Polypeptide.of("AAKRGKDA"))
+
+        val baseBinder = base.single().capabilities.single() as SequenceBinder
+        val mutatedBinder = mutated.single().capabilities.single() as SequenceBinder
+
+        assertTrue(baseBinder.bindingPattern != mutatedBinder.bindingPattern)
+        assertEquals(6, baseBinder.bindingPattern.size)
+        assertEquals(6, mutatedBinder.bindingPattern.size)
+    }
 
     @Test
     fun `interpreter detects ligase motif and clamps catalytic strength`() {
