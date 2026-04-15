@@ -95,6 +95,8 @@ This allows:
 - `strength`
 - `decayPerTick`
 
+Bond identity is **undirected**: swapping `left` and `right` does not create a different bond.
+
 It keeps lifecycle helpers:
 
 - `isActive()`

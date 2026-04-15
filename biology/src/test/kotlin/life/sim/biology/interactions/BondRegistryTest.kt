@@ -145,6 +145,54 @@ class BondRegistryTest {
     }
 
     @Test
+    fun `registry stores only one active entry for mirrored bonds`() {
+        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(18))
+        val bond = Bond(
+            left = SiteEndpoint(surface.site(1, 4)),
+            right = WholeMoleculeEndpoint(MoleculeId(23)),
+            strength = 0.9,
+            decayPerTick = 0.1,
+        )
+        val mirrored = Bond(
+            left = bond.right,
+            right = bond.left,
+            strength = bond.strength,
+            decayPerTick = bond.decayPerTick,
+        )
+        val registry = BondRegistry()
+
+        registry.add(bond)
+        registry.add(mirrored)
+
+        assertEquals(1, registry.size)
+        assertEquals(listOf(bond), registry.toList())
+    }
+
+    @Test
+    fun `registry iterator is a snapshot and is unaffected by later mutations`() {
+        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(24))
+        val first = Bond(
+            left = SiteEndpoint(surface.site(0, 2)),
+            right = WholeMoleculeEndpoint(MoleculeId(25)),
+            strength = 0.8,
+            decayPerTick = 0.1,
+        )
+        val second = Bond(
+            left = SiteEndpoint(surface.site(2, 4)),
+            right = WholeMoleculeEndpoint(MoleculeId(26)),
+            strength = 0.7,
+            decayPerTick = 0.1,
+        )
+        val registry = BondRegistry(listOf(first))
+
+        val iterator = registry.iterator()
+        registry.add(second)
+
+        assertEquals(listOf(first), iterator.asSequence().toList())
+        assertEquals(listOf(first, second), registry.toList())
+    }
+
+    @Test
     fun `registry decay removes inactive bonds and keeps surviving strength`() {
         val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(12))
         val transient = Bond(
