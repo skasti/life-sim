@@ -57,8 +57,7 @@ object ProteinInterpreter {
     )
 
     fun interpret(polypeptide: Polypeptide): List<ProteinDomain> {
-        val chain = polypeptide.toList()
-        if (chain.isEmpty()) {
+        if (polypeptide.isEmpty()) {
             return emptyList()
         }
 
@@ -66,13 +65,13 @@ object ProteinInterpreter {
         for (pattern in patterns) {
             val motif = pattern.motif
             val motifResidues = pattern.motifResidues
-            if (motifResidues.size > chain.size) {
+            if (motifResidues.size > polypeptide.size) {
                 continue
             }
 
-            for (start in 0..(chain.size - motifResidues.size)) {
-                if (matches(chain, start, motifResidues)) {
-                    val local = localWindow(chain, start, motifResidues.size)
+            for (start in 0..(polypeptide.size - motifResidues.size)) {
+                if (matches(polypeptide, start, motifResidues)) {
+                    val local = localWindow(polypeptide, start, motifResidues.size)
                     domains += ProteinDomain(
                         name = pattern.name,
                         startInclusive = start,
@@ -87,9 +86,9 @@ object ProteinInterpreter {
         return domains.sortedWith(compareBy(ProteinDomain::startInclusive, ProteinDomain::name))
     }
 
-    private fun matches(chain: List<AminoAcid>, start: Int, motifResidues: List<AminoAcid>): Boolean {
+    private fun matches(polypeptide: Polypeptide, start: Int, motifResidues: List<AminoAcid>): Boolean {
         for (offset in motifResidues.indices) {
-            if (chain[start + offset] != motifResidues[offset]) {
+            if (polypeptide[start + offset] != motifResidues[offset]) {
                 return false
             }
         }
@@ -97,10 +96,10 @@ object ProteinInterpreter {
         return true
     }
 
-    private fun localWindow(chain: List<AminoAcid>, motifStart: Int, motifLength: Int): List<AminoAcid> {
+    private fun localWindow(polypeptide: Polypeptide, motifStart: Int, motifLength: Int): List<AminoAcid> {
         val from = (motifStart - DOMAIN_WINDOW_RADIUS).coerceAtLeast(0)
-        val to = (motifStart + motifLength + DOMAIN_WINDOW_RADIUS).coerceAtMost(chain.size)
-        return chain.subList(from, to)
+        val to = (motifStart + motifLength + DOMAIN_WINDOW_RADIUS).coerceAtMost(polypeptide.size)
+        return (from until to).map(polypeptide::get)
     }
 
     private fun weightedSignal(
