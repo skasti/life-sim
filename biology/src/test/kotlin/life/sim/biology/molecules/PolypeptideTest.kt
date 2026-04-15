@@ -45,4 +45,16 @@ class PolypeptideTest {
             exception.message,
         )
     }
+
+    @Test
+    fun `parse rejects trailing whitespace instead of trimming`() {
+        val exception = assertFailsWith<IllegalArgumentException> {
+            Polypeptide.parse("MKR ")
+        }
+
+        assertEquals(
+            "Invalid amino-acid ' ' at index 3. Invalid amino-acid ' '. Expected one of A, R, N, D, C, E, Q, G, H, I, L, K, M, F, P, S, T, W, Y, V.",
+            exception.message,
+        )
+    }
 }

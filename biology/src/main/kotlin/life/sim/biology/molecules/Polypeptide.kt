@@ -51,7 +51,7 @@ class Polypeptide private constructor(
 
         fun parse(text: String): Polypeptide =
             Polypeptide(
-                text.trim().mapIndexed { index, symbol ->
+                text.mapIndexed { index, symbol ->
                     try {
                         AminoAcid.fromChar(symbol)
                     } catch (exception: IllegalArgumentException) {
