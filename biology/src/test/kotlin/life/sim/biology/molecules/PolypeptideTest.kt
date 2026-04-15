@@ -16,6 +16,27 @@ class PolypeptideTest {
     }
 
     @Test
+    fun `from copies source list`() {
+        val residues = mutableListOf(AminoAcid.M, AminoAcid.K, AminoAcid.R)
+
+        val peptide = Polypeptide.from(residues)
+        residues[1] = AminoAcid.A
+
+        assertEquals("MKR", peptide.toString())
+    }
+
+    @Test
+    fun `toList returns defensive copy`() {
+        val peptide = Polypeptide.of("MKR")
+
+        val exported = peptide.toList().toMutableList()
+        exported[1] = AminoAcid.A
+
+        assertEquals("MKR", peptide.toString())
+        assertEquals(listOf(AminoAcid.M, AminoAcid.A, AminoAcid.R), exported)
+    }
+
+    @Test
     fun `subsequence returns requested slice`() {
         val peptide = Polypeptide.of("MKRGLY")
 
