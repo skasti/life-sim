@@ -16,7 +16,7 @@ Current molecule types:
 - `TRna` — transfer RNA wrapper with complementary scanning support
 - `Polypeptide` — translated amino-acid chain used as input to protein-domain interpretation
 
-The current biology model uses the shared RNA nucleotide alphabet (`A`, `C`, `G`, `U`) across all molecule types.
+Nucleotide-based molecule types (`Dna`, `MRna`, and `TRna`) use the shared RNA alphabet (`A`, `C`, `G`, `U`), while `Polypeptide` uses the amino-acid alphabet.
 
 ---
 
