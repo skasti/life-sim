@@ -55,5 +55,5 @@ class BondRegistry(
         return toList()
     }
 
-    override fun iterator(): Iterator<Bond> = bonds.iterator()
+    override fun iterator(): Iterator<Bond> = bonds.toList().iterator()
 }
