@@ -12,6 +12,7 @@ object ProteinInterpreter {
     private data class DomainPattern(
         val name: String,
         val motif: String,
+        val motifResidues: List<AminoAcid> = motif.map(AminoAcid::fromChar),
         val factory: (localWindow: List<AminoAcid>) -> MolecularCapability,
     )
 
@@ -64,17 +65,18 @@ object ProteinInterpreter {
         val domains = mutableListOf<ProteinDomain>()
         for (pattern in patterns) {
             val motif = pattern.motif
-            if (motif.length > chain.size) {
+            val motifResidues = pattern.motifResidues
+            if (motifResidues.size > chain.size) {
                 continue
             }
 
-            for (start in 0..(chain.size - motif.length)) {
-                if (matches(chain, start, motif)) {
-                    val local = localWindow(chain, start, motif.length)
+            for (start in 0..(chain.size - motifResidues.size)) {
+                if (matches(chain, start, motifResidues)) {
+                    val local = localWindow(chain, start, motifResidues.size)
                     domains += ProteinDomain(
                         name = pattern.name,
                         startInclusive = start,
-                        endExclusive = start + motif.length,
+                        endExclusive = start + motifResidues.size,
                         motif = motif,
                         capabilities = listOf(pattern.factory(local)),
                     )
@@ -85,9 +87,9 @@ object ProteinInterpreter {
         return domains.sortedWith(compareBy(ProteinDomain::startInclusive, ProteinDomain::name))
     }
 
-    private fun matches(chain: List<AminoAcid>, start: Int, motif: String): Boolean {
-        for (offset in motif.indices) {
-            if (chain[start + offset] != AminoAcid.fromChar(motif[offset])) {
+    private fun matches(chain: List<AminoAcid>, start: Int, motifResidues: List<AminoAcid>): Boolean {
+        for (offset in motifResidues.indices) {
+            if (chain[start + offset] != motifResidues[offset]) {
                 return false
             }
         }
