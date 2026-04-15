@@ -22,10 +22,15 @@ object ProteinBinding {
     ): Bond? {
         val targetSite = BindingMatcher.complementaryMatchSite(binder.bindingPattern, target) ?: return null
 
+        val normalizedStrength = binder.affinity.coerceIn(0.0, 1.0)
+        if (normalizedStrength <= 0.0) {
+            return null
+        }
+
         val bond = Bond(
             left = WholeMoleculeEndpoint(proteinId),
             right = SiteEndpoint(targetSite),
-            strength = binder.affinity.coerceIn(0.0, 1.0),
+            strength = normalizedStrength,
             decayPerTick = DEFAULT_DECAY_PER_TICK,
         )
 

@@ -53,6 +53,24 @@ class ProteinBindingTest {
         assertTrue(registry.isEmpty())
     }
 
+
+    @Test
+    fun `tryBind returns null when affinity normalizes to inactive bond strength`() {
+        val binder = interpretedBinderFrom("AAKRGKAA").copy(affinity = 0.0)
+        val target = MRna.of("UUG${asText(binder.bindingPattern.complement())}CC").bindingSurface(MoleculeId(32))
+        val registry = BondRegistry()
+
+        val bond = ProteinBinding.tryBind(
+            proteinId = MoleculeId(203),
+            binder = binder,
+            target = target,
+            registry = registry,
+        )
+
+        assertNull(bond)
+        assertTrue(registry.isEmpty())
+    }
+
     @Test
     fun `different amino acid context yields different binder target and different match site`() {
         val firstBinder = interpretedBinderFrom("AAKRGKAA")
