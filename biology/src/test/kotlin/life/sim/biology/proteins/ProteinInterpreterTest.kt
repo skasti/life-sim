@@ -31,6 +31,20 @@ class ProteinInterpreterTest {
         assertTrue(baseAffinity != mutatedAffinity)
     }
 
+
+    @Test
+    fun `interpreter detects ligase motif and clamps catalytic strength`() {
+        val domains = ProteinInterpreter.interpret(Polypeptide.of("AAGGHAA"))
+
+        assertEquals(1, domains.size)
+        val ligaseDomain = domains.single()
+        assertEquals("LigaseDomain", ligaseDomain.name)
+        assertEquals("GGH", ligaseDomain.motif)
+
+        val ligaseCapability = ligaseDomain.capabilities.single() as Ligase
+        assertTrue(ligaseCapability.catalyticStrength in 0.0..1.0)
+    }
+
     @Test
     fun `interpreter returns empty when no motifs match`() {
         val domains = ProteinInterpreter.interpret(Polypeptide.of("AAAAAAA"))
