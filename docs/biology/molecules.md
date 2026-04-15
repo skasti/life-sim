@@ -2,7 +2,7 @@
 
 This document describes the molecule-level types in `life.sim.biology.molecules`.
 
-These types wrap primitive nucleotide sequences with biological meaning, while keeping data structures compact and immutable.
+These types wrap primitive biological sequences (nucleotide strands and amino-acid chains) with biological meaning, while keeping data structures compact and immutable.
 
 ---
 
