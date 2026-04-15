@@ -103,4 +103,23 @@ class BondTest {
 
         assertNotEquals(first, differentDecay)
     }
+
+    @Test
+    fun `signed zero values are compared consistently with hash code`() {
+        val positiveZeroStrength = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(15)),
+            right = WholeMoleculeEndpoint(MoleculeId(16)),
+            strength = 0.0,
+            decayPerTick = 0.1,
+        )
+        val negativeZeroStrength = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(16)),
+            right = WholeMoleculeEndpoint(MoleculeId(15)),
+            strength = -0.0,
+            decayPerTick = 0.1,
+        )
+
+        assertNotEquals(positiveZeroStrength, negativeZeroStrength)
+        assertNotEquals(positiveZeroStrength.hashCode(), negativeZeroStrength.hashCode())
+    }
 }

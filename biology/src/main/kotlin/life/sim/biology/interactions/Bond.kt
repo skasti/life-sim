@@ -73,8 +73,8 @@ data class Bond(
             (left == other.right && right == other.left)
 
         return endpointsMatch &&
-            strength == other.strength &&
-            decayPerTick == other.decayPerTick
+            strength.compareTo(other.strength) == 0 &&
+            decayPerTick.compareTo(other.decayPerTick) == 0
     }
 
     override fun hashCode(): Int {
