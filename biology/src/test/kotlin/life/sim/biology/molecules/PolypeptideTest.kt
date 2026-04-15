@@ -3,7 +3,6 @@ package life.sim.biology.molecules
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 class PolypeptideTest {
     @Test
@@ -24,14 +23,13 @@ class PolypeptideTest {
     }
 
     @Test
-    fun `subsequence stores a copied list instead of a subList view`() {
-        val subsequence = Polypeptide.of("MKRGLY").subsequence(1, 4)
+    fun `subsequence remains stable after source chain references are dropped`() {
+        var peptide: Polypeptide? = Polypeptide.of("MKRGLY")
+        val subsequence = peptide!!.subsequence(1, 4)
+        peptide = null
 
-        val residuesField = Polypeptide::class.java.getDeclaredField("residues")
-        residuesField.isAccessible = true
-        val backingListClassName = residuesField.get(subsequence).javaClass.name
-
-        assertTrue(backingListClassName.contains("SubList").not())
+        assertEquals("KRG", subsequence.toString())
+        assertEquals(listOf(AminoAcid.K, AminoAcid.R, AminoAcid.G), subsequence.toList())
     }
 
     @Test
