@@ -23,11 +23,21 @@ class PolypeptideTest {
     }
 
     @Test
-    fun `subsequence remains usable after source chain reference is dropped`() {
-        var peptide: Polypeptide? = Polypeptide.of("MKRGLY")
-        val subsequence = peptide!!.subsequence(1, 4)
-        peptide = null
+    fun `subsequence is not affected by mutations to original source list`() {
+        val residues = mutableListOf(
+            AminoAcid.M,
+            AminoAcid.K,
+            AminoAcid.R,
+            AminoAcid.G,
+            AminoAcid.L,
+            AminoAcid.Y,
+        )
+        val peptide = Polypeptide.from(residues)
+        val subsequence = peptide.subsequence(1, 4)
 
+        residues[2] = AminoAcid.A
+
+        assertEquals("MKRGLY", peptide.toString())
         assertEquals("KRG", subsequence.toString())
     }
 
