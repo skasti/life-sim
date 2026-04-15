@@ -23,7 +23,7 @@ class Polypeptide private constructor(
             "Polypeptide end index must be in $startInclusive..$size, but was $endExclusive."
         }
 
-        return Polypeptide(residues.subList(startInclusive, endExclusive))
+        return Polypeptide(residues.subList(startInclusive, endExclusive).toList())
     }
 
     override fun toString(): String = residues.joinToString(separator = "") { it.symbol.toString() }
