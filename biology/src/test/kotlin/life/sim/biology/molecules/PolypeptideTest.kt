@@ -29,7 +29,7 @@ class PolypeptideTest {
         }
 
         assertEquals(
-            "Invalid amino-acid 'Z'. Expected one of A, R, N, D, C, E, Q, G, H, I, L, K, M, F, P, S, T, W, Y, V.",
+            "Invalid amino-acid 'Z' at index 2. Invalid amino-acid 'Z'. Expected one of A, R, N, D, C, E, Q, G, H, I, L, K, M, F, P, S, T, W, Y, V.",
             exception.message,
         )
     }

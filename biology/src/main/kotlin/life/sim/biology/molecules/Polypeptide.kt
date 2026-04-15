@@ -49,6 +49,16 @@ class Polypeptide private constructor(
         fun of(text: String): Polypeptide = parse(text)
 
         fun parse(text: String): Polypeptide =
-            Polypeptide(text.trim().map(AminoAcid::fromChar))
+            Polypeptide(
+                text.trim().mapIndexed { index, symbol ->
+                    try {
+                        AminoAcid.fromChar(symbol)
+                    } catch (exception: IllegalArgumentException) {
+                        throw IllegalArgumentException(
+                            "Invalid amino-acid '$symbol' at index $index. ${exception.message}",
+                        )
+                    }
+                },
+            )
     }
 }
