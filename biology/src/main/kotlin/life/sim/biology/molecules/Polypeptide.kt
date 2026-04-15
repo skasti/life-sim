@@ -23,6 +23,7 @@ class Polypeptide private constructor(
             "Polypeptide end index must be in $startInclusive..$size, but was $endExclusive."
         }
 
+        // Copy the selected range so subsequences do not retain a subList view of the full chain.
         return Polypeptide(residues.subList(startInclusive, endExclusive).toList())
     }
 
