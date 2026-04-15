@@ -78,7 +78,15 @@ data class Bond(
     }
 
     override fun hashCode(): Int {
-        var result = left.hashCode() + right.hashCode()
+        val leftHash = left.hashCode()
+        val rightHash = right.hashCode()
+        val (firstEndpointHash, secondEndpointHash) = if (leftHash <= rightHash) {
+            leftHash to rightHash
+        } else {
+            rightHash to leftHash
+        }
+
+        var result = 31 * firstEndpointHash + secondEndpointHash
         result = 31 * result + strength.hashCode()
         result = 31 * result + decayPerTick.hashCode()
         return result
