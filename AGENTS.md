@@ -10,7 +10,7 @@ Use the roadmap in GitHub Issue #19 and the root `README.md` as strategic contex
 
 ## Change guidelines
 
-1. Avoid wide-spread refactors unless the task explicitly asks for it or maintainers approve it.
+1. Avoid widespread refactors unless the task explicitly asks for it or maintainers approve it.
 2. Keep changes focused and minimal; prefer small, reviewable commits.
 3. When implementing or changing behavior, update relevant docs in the same PR.
 4. Prefer composition over hardcoded specialized entities.
