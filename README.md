@@ -95,8 +95,11 @@ At a high level, upcoming work centers on:
 
 ## Design Philosophy
 
-Life-Sim does **not** aim to be a biologically accurate simulator. Instead, it
-aims to discover minimal rule sets that can produce lifelike complexity.
+Life-Sim is heavily inspired by real biology and aims to stay as biologically
+grounded as practical. It still does **not** aim for full biological fidelity
+or to simulate every mechanism (for example, detailed protein folding);
+instead, it focuses on discovering minimal rule sets that can produce lifelike
+complexity.
 
 Principles:
 
