@@ -24,16 +24,13 @@ class ProteinBindingTest {
         val target = MRna.of("UUG${asText(binder.bindingPattern.complement())}CC").bindingSurface(MoleculeId(20))
         val registry = BondRegistry()
 
-        val decision = ProteinBinding.tryBind(
+        val bond = ProteinBinding.tryBind(
             proteinId = MoleculeId(99),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertEquals(BindingOutcome.BOUND, decision.outcome)
-        assertTrue(decision.displaced.isEmpty())
-        val bond = decision.bond
         assertNotNull(bond)
         assertEquals(1, registry.size)
         assertEquals(bond, registry.toList().single())
@@ -49,15 +46,14 @@ class ProteinBindingTest {
         val target = MRna.of("AAAAAAA").bindingSurface(MoleculeId(30))
         val registry = BondRegistry()
 
-        val decision = ProteinBinding.tryBind(
+        val bond = ProteinBinding.tryBind(
             proteinId = MoleculeId(101),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertEquals(BindingOutcome.REJECTED_NO_SITE, decision.outcome)
-        assertEquals(null, decision.bond)
+        assertNull(bond)
         assertTrue(registry.isEmpty())
     }
 
@@ -67,15 +63,14 @@ class ProteinBindingTest {
         val target = MRna.of("UUG${asText(binder.bindingPattern.complement())}CC").bindingSurface(MoleculeId(32))
         val registry = BondRegistry()
 
-        val decision = ProteinBinding.tryBind(
+        val bond = ProteinBinding.tryBind(
             proteinId = MoleculeId(203),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertEquals(BindingOutcome.REJECTED_INACTIVE_STRENGTH, decision.outcome)
-        assertEquals(null, decision.bond)
+        assertNull(bond)
         assertTrue(registry.isEmpty())
     }
 
@@ -86,23 +81,21 @@ class ProteinBindingTest {
         val target = MRna.of(buildTargetWithOnlySecondMatch(secondBinder.bindingPattern)).bindingSurface(MoleculeId(31))
         val registry = BondRegistry()
 
-        val firstDecision = ProteinBinding.tryBind(
+        val firstBond = ProteinBinding.tryBind(
             proteinId = MoleculeId(201),
             binder = firstBinder,
             target = target,
             registry = registry,
         )
-        val secondDecision = ProteinBinding.tryBind(
+        val secondBond = ProteinBinding.tryBind(
             proteinId = MoleculeId(202),
             binder = secondBinder,
             target = target,
             registry = registry,
         )
 
-        assertEquals(BindingOutcome.REJECTED_NO_SITE, firstDecision.outcome)
-        assertEquals(null, firstDecision.bond)
-        assertEquals(BindingOutcome.BOUND, secondDecision.outcome)
-        assertNotNull(secondDecision.bond)
+        assertNull(firstBond)
+        assertNotNull(secondBond)
         assertEquals(1, registry.size)
     }
 
@@ -119,16 +112,14 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(strongerOccupant))
 
-        val decision = ProteinBinding.tryBind(
+        val bond = ProteinBinding.tryBind(
             proteinId = MoleculeId(501),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertEquals(BindingOutcome.REJECTED_CONFLICT, decision.outcome)
-        assertNull(decision.bond)
-        assertTrue(decision.displaced.isEmpty())
+        assertNull(bond)
         assertEquals(listOf(strongerOccupant), registry.toList())
     }
 
@@ -145,17 +136,15 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(weakerOccupant))
 
-        val decision = ProteinBinding.tryBind(
+        val bond = ProteinBinding.tryBind(
             proteinId = MoleculeId(511),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertEquals(BindingOutcome.BOUND_AFTER_DISPLACEMENT, decision.outcome)
-        assertEquals(listOf(weakerOccupant), decision.displaced)
-        assertNotNull(decision.bond)
-        assertEquals(listOf(decision.bond), registry.toList())
+        assertNotNull(bond)
+        assertEquals(listOf(bond), registry.toList())
     }
 
     @Test
@@ -177,19 +166,17 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(overlappingWeak, nonOverlapping))
 
-        val decision = ProteinBinding.tryBind(
+        val bond = ProteinBinding.tryBind(
             proteinId = MoleculeId(522),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertEquals(BindingOutcome.BOUND_AFTER_DISPLACEMENT, decision.outcome)
-        assertEquals(listOf(overlappingWeak), decision.displaced)
-        assertNotNull(decision.bond)
+        assertNotNull(bond)
         assertEquals(2, registry.size)
         assertTrue(registry.toList().contains(nonOverlapping))
-        assertTrue(registry.toList().contains(decision.bond))
+        assertTrue(registry.toList().contains(bond))
     }
 
     @Test
@@ -205,14 +192,14 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(existing))
 
-        val decision = ProteinBinding.tryBind(
+        val bond = ProteinBinding.tryBind(
             proteinId = MoleculeId(531),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertEquals(BindingOutcome.REJECTED_CONFLICT, decision.outcome)
+        assertNull(bond)
         assertEquals(listOf(existing), registry.toList())
     }
 
@@ -236,17 +223,15 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(overlappingFirst, overlappingSecond))
 
-        val decision = ProteinBinding.tryBind(
+        val bond = ProteinBinding.tryBind(
             proteinId = MoleculeId(542),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertEquals(BindingOutcome.BOUND_AFTER_DISPLACEMENT, decision.outcome)
-        assertEquals(setOf(overlappingFirst, overlappingSecond), decision.displaced.toSet())
-        assertNotNull(decision.bond)
-        assertEquals(listOf(decision.bond), registry.toList())
+        assertNotNull(bond)
+        assertEquals(listOf(bond), registry.toList())
     }
 
     private fun interpretedBinderFrom(sequence: String): SequenceBinder {

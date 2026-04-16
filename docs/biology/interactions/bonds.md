@@ -215,37 +215,33 @@ classDiagram
 flowchart LR
     A[SequenceBinder.bindingPattern] --> B[BindingMatcher]
     B --> C{Complementary match found?}
-    C -- No --> D[BindingDecision: REJECTED_NO_SITE]
+    C -- No --> D[Return null]
     C -- Yes --> E[Create SequenceRange]
     E --> F[Create BindingSite on target surface]
     F --> G{Affinity > 0?}
-    G -- No --> H[BindingDecision: REJECTED_INACTIVE_STRENGTH]
+    G -- No --> H[Return null]
     G -- Yes --> I{Stronger/equal overlap exists?}
-    I -- Yes --> J[BindingDecision: REJECTED_CONFLICT]
+    I -- Yes --> J[Return null]
     I -- No --> K[Remove weaker overlapping bonds]
     K --> L[Create and store Bond]
-    L --> M[BindingDecision: BOUND or BOUND_AFTER_DISPLACEMENT]
+    L --> M[Return Bond]
 ```
 
 ---
 
-## `ProteinBinding.tryBind(...)` outcome model
+## `ProteinBinding.tryBind(...)` return model
 
-`ProteinBinding.tryBind(...)` now returns a `BindingDecision` instead of `Bond?`.
+`ProteinBinding.tryBind(...)` returns a nullable `Bond`.
 
-`BindingDecision` contains:
+The return contract is:
 
-- `outcome: BindingOutcome` — high-level result of the bind attempt
-- `bond: Bond?` — populated only for successful outcomes
-- `displaced: List<Bond>` — weaker overlapping bonds removed during successful displacement
+- returns a `Bond` when matching succeeds and occupancy checks pass
+- returns `null` when there is no complementary site, the affinity normalizes to inactive (`<= 0`), or an equal/stronger overlapping bond occupies the region
 
-`BindingOutcome` values:
+Conflict resolution still happens inside `ProteinBinding` by mutating `BondRegistry`:
 
-- `BOUND`: binding succeeded without displacing an existing overlapping bond
-- `BOUND_AFTER_DISPLACEMENT`: binding succeeded after removing one or more weaker overlaps
-- `REJECTED_NO_SITE`: no complementary site was found on the target surface
-- `REJECTED_INACTIVE_STRENGTH`: binder affinity resolved to inactive strength (`<= 0`)
-- `REJECTED_CONFLICT`: an equal- or stronger overlapping bond already occupied the site
+- weaker overlapping bonds are removed before creating a stronger replacement bond
+- callers can validate side effects by inspecting registry state rather than consuming a displaced-bonds payload
 
 ---
 
