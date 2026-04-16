@@ -215,13 +215,37 @@ classDiagram
 flowchart LR
     A[SequenceBinder.bindingPattern] --> B[BindingMatcher]
     B --> C{Complementary match found?}
-    C -- No --> D[Return -1 or null]
+    C -- No --> D[BindingDecision: REJECTED_NO_SITE]
     C -- Yes --> E[Create SequenceRange]
     E --> F[Create BindingSite on target surface]
-    F --> G[Create SiteEndpoint or mixed Bond]
-    G --> H[Store in BondRegistry]
-    H --> I[Return created Bond]
+    F --> G{Affinity > 0?}
+    G -- No --> H[BindingDecision: REJECTED_INACTIVE_STRENGTH]
+    G -- Yes --> I{Stronger/equal overlap exists?}
+    I -- Yes --> J[BindingDecision: REJECTED_CONFLICT]
+    I -- No --> K[Remove weaker overlapping bonds]
+    K --> L[Create and store Bond]
+    L --> M[BindingDecision: BOUND or BOUND_AFTER_DISPLACEMENT]
 ```
+
+---
+
+## `ProteinBinding.tryBind(...)` outcome model
+
+`ProteinBinding.tryBind(...)` now returns a `BindingDecision` instead of `Bond?`.
+
+`BindingDecision` contains:
+
+- `outcome: BindingOutcome` — high-level result of the bind attempt
+- `bond: Bond?` — populated only for successful outcomes
+- `displaced: List<Bond>` — weaker overlapping bonds removed during successful displacement
+
+`BindingOutcome` values:
+
+- `BOUND`: binding succeeded without displacing an existing overlapping bond
+- `BOUND_AFTER_DISPLACEMENT`: binding succeeded after removing one or more weaker overlaps
+- `REJECTED_NO_SITE`: no complementary site was found on the target surface
+- `REJECTED_INACTIVE_STRENGTH`: binder affinity resolved to inactive strength (`<= 0`)
+- `REJECTED_CONFLICT`: an equal- or stronger overlapping bond already occupied the site
 
 ---
 
@@ -298,7 +322,6 @@ The current model supports both occupancy and connectivity:
 
 Current limitations include:
 
-- no built-in conflict resolution beyond explicit query/filter logic
 - no affinity-scoring or competitive binding policy yet
 - registry is still in-memory and not yet integrated with broader simulation state
 - complex membership derivation is not yet packaged as a dedicated helper API
