@@ -215,13 +215,33 @@ classDiagram
 flowchart LR
     A[SequenceBinder.bindingPattern] --> B[BindingMatcher]
     B --> C{Complementary match found?}
-    C -- No --> D[Return -1 or null]
+    C -- No --> D[Return null]
     C -- Yes --> E[Create SequenceRange]
     E --> F[Create BindingSite on target surface]
-    F --> G[Create SiteEndpoint or mixed Bond]
-    G --> H[Store in BondRegistry]
-    H --> I[Return created Bond]
+    F --> G{Affinity > 0?}
+    G -- No --> H[Return null]
+    G -- Yes --> I{Stronger/equal overlap exists?}
+    I -- Yes --> J[Return null]
+    I -- No --> K[Remove weaker overlapping bonds]
+    K --> L[Create and store Bond]
+    L --> M[Return Bond]
 ```
+
+---
+
+## `ProteinBinding.tryBind(...)` return model
+
+`ProteinBinding.tryBind(...)` returns a nullable `Bond`.
+
+The return contract is:
+
+- returns a `Bond` when matching succeeds and occupancy checks pass
+- returns `null` when there is no complementary site, the affinity normalizes to inactive (`<= 0`), or an equal/stronger overlapping bond occupies the region
+
+Conflict resolution still happens inside `ProteinBinding` by mutating `BondRegistry`:
+
+- weaker overlapping bonds are removed before creating a stronger replacement bond
+- callers can validate side effects by inspecting registry state rather than consuming a displaced-bonds payload
 
 ---
 
@@ -298,7 +318,6 @@ The current model supports both occupancy and connectivity:
 
 Current limitations include:
 
-- no built-in conflict resolution beyond explicit query/filter logic
 - no affinity-scoring or competitive binding policy yet
 - registry is still in-memory and not yet integrated with broader simulation state
 - complex membership derivation is not yet packaged as a dedicated helper API
