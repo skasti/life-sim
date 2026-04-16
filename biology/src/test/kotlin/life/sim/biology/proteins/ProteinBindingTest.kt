@@ -24,13 +24,16 @@ class ProteinBindingTest {
         val target = MRna.of("UUG${asText(binder.bindingPattern.complement())}CC").bindingSurface(MoleculeId(20))
         val registry = BondRegistry()
 
-        val bond = ProteinBinding.tryBind(
+        val decision = ProteinBinding.tryBind(
             proteinId = MoleculeId(99),
             binder = binder,
             target = target,
             registry = registry,
         )
 
+        assertEquals(BindingOutcome.BOUND, decision.outcome)
+        assertTrue(decision.displaced.isEmpty())
+        val bond = decision.bond
         assertNotNull(bond)
         assertEquals(1, registry.size)
         assertEquals(bond, registry.toList().single())
@@ -41,36 +44,38 @@ class ProteinBindingTest {
     }
 
     @Test
-    fun `tryBind returns null and leaves registry unchanged when no complementary site exists`() {
+    fun `tryBind rejects and leaves registry unchanged when no complementary site exists`() {
         val binder = interpretedBinderFrom("AAKRGKAA")
         val target = MRna.of("AAAAAAA").bindingSurface(MoleculeId(30))
         val registry = BondRegistry()
 
-        val bond = ProteinBinding.tryBind(
+        val decision = ProteinBinding.tryBind(
             proteinId = MoleculeId(101),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertNull(bond)
+        assertEquals(BindingOutcome.REJECTED_NO_SITE, decision.outcome)
+        assertEquals(null, decision.bond)
         assertTrue(registry.isEmpty())
     }
 
     @Test
-    fun `tryBind returns null when affinity normalizes to inactive bond strength`() {
+    fun `tryBind rejects when affinity normalizes to inactive bond strength`() {
         val binder = interpretedBinderFrom("AAKRGKAA").copy(affinity = 0.0)
         val target = MRna.of("UUG${asText(binder.bindingPattern.complement())}CC").bindingSurface(MoleculeId(32))
         val registry = BondRegistry()
 
-        val bond = ProteinBinding.tryBind(
+        val decision = ProteinBinding.tryBind(
             proteinId = MoleculeId(203),
             binder = binder,
             target = target,
             registry = registry,
         )
 
-        assertNull(bond)
+        assertEquals(BindingOutcome.REJECTED_INACTIVE_STRENGTH, decision.outcome)
+        assertEquals(null, decision.bond)
         assertTrue(registry.isEmpty())
     }
 
@@ -81,21 +86,23 @@ class ProteinBindingTest {
         val target = MRna.of(buildTargetWithOnlySecondMatch(secondBinder.bindingPattern)).bindingSurface(MoleculeId(31))
         val registry = BondRegistry()
 
-        val firstBond = ProteinBinding.tryBind(
+        val firstDecision = ProteinBinding.tryBind(
             proteinId = MoleculeId(201),
             binder = firstBinder,
             target = target,
             registry = registry,
         )
-        val secondBond = ProteinBinding.tryBind(
+        val secondDecision = ProteinBinding.tryBind(
             proteinId = MoleculeId(202),
             binder = secondBinder,
             target = target,
             registry = registry,
         )
 
-        assertNull(firstBond)
-        assertNotNull(secondBond)
+        assertEquals(BindingOutcome.REJECTED_NO_SITE, firstDecision.outcome)
+        assertEquals(null, firstDecision.bond)
+        assertEquals(BindingOutcome.BOUND, secondDecision.outcome)
+        assertNotNull(secondDecision.bond)
         assertEquals(1, registry.size)
     }
 
@@ -112,7 +119,7 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(strongerOccupant))
 
-        val decision = ProteinBinding.tryBindWithConflicts(
+        val decision = ProteinBinding.tryBind(
             proteinId = MoleculeId(501),
             binder = binder,
             target = target,
@@ -138,7 +145,7 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(weakerOccupant))
 
-        val decision = ProteinBinding.tryBindWithConflicts(
+        val decision = ProteinBinding.tryBind(
             proteinId = MoleculeId(511),
             binder = binder,
             target = target,
@@ -170,7 +177,7 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(overlappingWeak, nonOverlapping))
 
-        val decision = ProteinBinding.tryBindWithConflicts(
+        val decision = ProteinBinding.tryBind(
             proteinId = MoleculeId(522),
             binder = binder,
             target = target,
@@ -198,7 +205,7 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(existing))
 
-        val decision = ProteinBinding.tryBindWithConflicts(
+        val decision = ProteinBinding.tryBind(
             proteinId = MoleculeId(531),
             binder = binder,
             target = target,
@@ -229,7 +236,7 @@ class ProteinBindingTest {
         )
         val registry = BondRegistry(listOf(overlappingFirst, overlappingSecond))
 
-        val decision = ProteinBinding.tryBindWithConflicts(
+        val decision = ProteinBinding.tryBind(
             proteinId = MoleculeId(542),
             binder = binder,
             target = target,

@@ -37,13 +37,6 @@ object ProteinBinding {
         binder: SequenceBinder,
         target: BindingSurface,
         registry: BondRegistry,
-    ): Bond? = tryBindWithConflicts(proteinId, binder, target, registry).bond
-
-    fun tryBindWithConflicts(
-        proteinId: MoleculeId,
-        binder: SequenceBinder,
-        target: BindingSurface,
-        registry: BondRegistry,
     ): BindingDecision {
         val targetSite = BindingMatcher.complementaryMatchSite(binder.bindingPattern, target)
             ?: return BindingDecision(outcome = BindingOutcome.REJECTED_NO_SITE)
