@@ -208,17 +208,19 @@ classDiagram
 
 ## Matching flow
 
-`BindingMatcher` still handles complementary sequence matching and site generation.
+`BindingMatcher` still handles complementary sequence matching and site generation, including
+`ProteinBinding.tryBind(...)` calls from interpreted `SequenceBinder` capabilities.
 
 ```mermaid
 flowchart LR
-    A[Pattern sequence] --> B[BindingMatcher]
+    A[SequenceBinder.bindingPattern] --> B[BindingMatcher]
     B --> C{Complementary match found?}
     C -- No --> D[Return -1 or null]
     C -- Yes --> E[Create SequenceRange]
     E --> F[Create BindingSite on target surface]
     F --> G[Create SiteEndpoint or mixed Bond]
     G --> H[Store in BondRegistry]
+    H --> I[Return created Bond]
 ```
 
 ---

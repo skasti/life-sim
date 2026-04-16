@@ -115,6 +115,9 @@ A `Polypeptide` can be passed into `ProteinInterpreter` (in `life.sim.biology.pr
 The interpreter scans motif patterns and emits one or more `ProteinDomain`s, each of which exposes
 `MolecularCapability` values such as `SequenceBinder`, `Cutter`, `Ligase`, or `Blocker`.
 
+`SequenceBinder` capabilities now include a derived nucleotide `bindingPattern`, so interpreted binders
+carry concrete sequence targets that can be used during runtime matching.
+
 This keeps sequence storage separate from interpreted function and supports composing multiple
 capabilities from a single chain.
 
@@ -125,6 +128,9 @@ capabilities from a single chain.
 Molecule values describe structural identity.
 
 Runtime occupancy and binding state are modeled separately by the interactions layer (`BindingSurface`, `BindingSite`, `Bond`, `BondRegistry`).
+
+The `ProteinBinding.tryBind(...)` helper bridges interpretation to runtime associations by using a
+`SequenceBinder` pattern plus `BindingMatcher` to create and register concrete `Bond` values.
 
 That separation allows molecule values to remain immutable while runtime systems track transient binding dynamics.
 
