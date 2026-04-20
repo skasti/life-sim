@@ -13,7 +13,7 @@ Help contributors produce focused, biologically grounded changes that align with
   - `biology/README.md`
   - `simulator/README.md`
   - `docs/README.md`
-  - Roadmap: GitHub Issue #19
+  - Roadmap: [GitHub Issue #19](https://github.com/<OWNER>/<REPO>/issues/19)
 
 ## Implementation guidelines
 
