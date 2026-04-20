@@ -318,7 +318,7 @@ The current model supports both occupancy and connectivity:
 
 Current limitations include:
 
-- no affinity-scoring or competitive binding policy yet
+- a basic competitive overlap policy exists for site occupancy, but richer affinity-scoring and higher-level binding/blockage policies are not yet modeled
 - registry is still in-memory and not yet integrated with broader simulation state
 - complex membership derivation is not yet packaged as a dedicated helper API
 
