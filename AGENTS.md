@@ -6,7 +6,7 @@ Scope: this entire repository unless overridden by a more specific nested `AGENT
 ## Project intent
 
 Life-Sim explores emergent biology-like behavior from simple, composable building blocks.
-Use the roadmap in GitHub Issue #19 and the root `README.md` as strategic context.
+Use the roadmap linked from the root `README.md` as strategic context.
 
 ## Change guidelines
 
