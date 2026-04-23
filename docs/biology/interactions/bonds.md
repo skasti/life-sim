@@ -214,17 +214,17 @@ classDiagram
 ```mermaid
 flowchart LR
     A[SequenceBinder.bindingPattern] --> B[BindingMatcher]
-    B --> C{Complementary match found?}
+    B --> C{Any complementary match sites?}
     C -- No --> D[Return null]
-    C -- Yes --> E[Create SequenceRange]
-    E --> F[Create BindingSite on target surface]
-    F --> G{Affinity > 0?}
-    G -- No --> H[Return null]
-    G -- Yes --> I{Stronger/equal overlap exists?}
-    I -- Yes --> J[Return null]
-    I -- No --> K[Remove weaker overlapping bonds]
-    K --> L[Create and store Bond]
-    L --> M[Return Bond]
+    C -- Yes --> E[Iterate sites left to right]
+    E --> F{Affinity > 0?}
+    F -- No --> G[Return null]
+    F -- Yes --> H{Stronger/equal overlap exists at current site?}
+    H -- Yes --> I[Skip site, continue scan]
+    H -- No --> J[Remove weaker overlapping bonds at site]
+    J --> K[Create and store Bond]
+    K --> L[Return Bond]
+    I --> E
 ```
 
 ---
@@ -235,12 +235,12 @@ flowchart LR
 
 The return contract is:
 
-- returns a `Bond` when matching succeeds and occupancy checks pass
-- returns `null` when there is no complementary site, the affinity normalizes to inactive (`<= 0`), or an equal/stronger overlapping bond occupies the region
+- returns a `Bond` at the first viable complementary site (deterministic left-to-right scan)
+- returns `null` when there is no complementary site, affinity normalizes to inactive (`<= 0`), or all matching sites are blocked by equal/stronger overlaps
 
 Conflict resolution still happens inside `ProteinBinding` by mutating `BondRegistry`:
 
-- weaker overlapping bonds are removed before creating a stronger replacement bond
+- weaker overlapping bonds are removed at the chosen viable site before creating a stronger replacement bond
 - callers can validate side effects by inspecting registry state rather than consuming a displaced-bonds payload
 
 ---

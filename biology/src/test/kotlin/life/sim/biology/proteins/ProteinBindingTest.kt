@@ -260,6 +260,131 @@ class ProteinBindingTest {
         assertEquals(listOf(bond), registry.toList())
     }
 
+    @Test
+    fun `tryBind skips first blocked matching site and binds at second viable site`() {
+        val binder = interpretedBinderFrom("AAKRGKAA").copy(affinity = 0.7)
+        val target = MRna.of("AA${asText(binder.bindingPattern.complement())}CC${asText(binder.bindingPattern.complement())}GG")
+            .bindingSurface(MoleculeId(560))
+        val matchingSites = BindingMatcher.complementaryMatchSites(binder.bindingPattern, target).toList()
+        val blockedFirst = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(561)),
+            right = SiteEndpoint(matchingSites.first()),
+            strength = 0.9,
+            decayPerTick = 0.05,
+        )
+        val registry = BondRegistry(listOf(blockedFirst))
+
+        val bond = ProteinBinding.tryBind(
+            proteinId = MoleculeId(562),
+            binder = binder,
+            target = target,
+            registry = registry,
+        )
+
+        assertNotNull(bond)
+        assertEquals(matchingSites[1], (bond.right as SiteEndpoint).site)
+        assertTrue(registry.toList().contains(blockedFirst))
+        assertTrue(registry.toList().contains(bond))
+    }
+
+    @Test
+    fun `tryBind skips multiple blocked matching sites and binds at later viable site`() {
+        val binder = interpretedBinderFrom("AAKRGKAA").copy(affinity = 0.7)
+        val target = MRna.of(
+            "AA${asText(binder.bindingPattern.complement())}CC${asText(binder.bindingPattern.complement())}GG${asText(binder.bindingPattern.complement())}UU",
+        ).bindingSurface(MoleculeId(570))
+        val matchingSites = BindingMatcher.complementaryMatchSites(binder.bindingPattern, target).toList()
+        val blockedFirst = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(571)),
+            right = SiteEndpoint(matchingSites[0]),
+            strength = 0.8,
+            decayPerTick = 0.05,
+        )
+        val blockedSecond = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(572)),
+            right = SiteEndpoint(matchingSites[1]),
+            strength = 0.9,
+            decayPerTick = 0.05,
+        )
+        val registry = BondRegistry(listOf(blockedFirst, blockedSecond))
+
+        val bond = ProteinBinding.tryBind(
+            proteinId = MoleculeId(573),
+            binder = binder,
+            target = target,
+            registry = registry,
+        )
+
+        assertNotNull(bond)
+        assertEquals(matchingSites[2], (bond.right as SiteEndpoint).site)
+        assertEquals(3, registry.size)
+    }
+
+    @Test
+    fun `tryBind returns null when all matching sites are blocked by equal or stronger overlaps`() {
+        val binder = interpretedBinderFrom("AAKRGKAA").copy(affinity = 0.7)
+        val target = MRna.of("AA${asText(binder.bindingPattern.complement())}CC${asText(binder.bindingPattern.complement())}GG")
+            .bindingSurface(MoleculeId(580))
+        val matchingSites = BindingMatcher.complementaryMatchSites(binder.bindingPattern, target).toList()
+        val blockedFirst = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(581)),
+            right = SiteEndpoint(matchingSites[0]),
+            strength = 0.7,
+            decayPerTick = 0.05,
+        )
+        val blockedSecond = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(582)),
+            right = SiteEndpoint(matchingSites[1]),
+            strength = 0.95,
+            decayPerTick = 0.05,
+        )
+        val registry = BondRegistry(listOf(blockedFirst, blockedSecond))
+
+        val bond = ProteinBinding.tryBind(
+            proteinId = MoleculeId(583),
+            binder = binder,
+            target = target,
+            registry = registry,
+        )
+
+        assertNull(bond)
+        assertEquals(listOf(blockedFirst, blockedSecond), registry.toList())
+    }
+
+    @Test
+    fun `tryBind displaces weaker overlap at later viable site while scanning`() {
+        val binder = interpretedBinderFrom("AAKRGKAA").copy(affinity = 0.8)
+        val target = MRna.of("AA${asText(binder.bindingPattern.complement())}CC${asText(binder.bindingPattern.complement())}GG")
+            .bindingSurface(MoleculeId(590))
+        val matchingSites = BindingMatcher.complementaryMatchSites(binder.bindingPattern, target).toList()
+        val strongFirst = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(591)),
+            right = SiteEndpoint(matchingSites[0]),
+            strength = 0.9,
+            decayPerTick = 0.05,
+        )
+        val weakSecond = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(592)),
+            right = SiteEndpoint(matchingSites[1]),
+            strength = 0.3,
+            decayPerTick = 0.05,
+        )
+        val registry = BondRegistry(listOf(strongFirst, weakSecond))
+
+        val bond = ProteinBinding.tryBind(
+            proteinId = MoleculeId(593),
+            binder = binder,
+            target = target,
+            registry = registry,
+        )
+
+        assertNotNull(bond)
+        assertEquals(matchingSites[1], (bond.right as SiteEndpoint).site)
+        assertEquals(2, registry.size)
+        assertTrue(registry.toList().contains(strongFirst))
+        assertTrue(registry.toList().contains(bond))
+    }
+
     private fun interpretedBinderFrom(sequence: String): SequenceBinder {
         val domain = ProteinInterpreter.interpret(Polypeptide.of(sequence)).single()
         return domain.capabilities.single() as SequenceBinder

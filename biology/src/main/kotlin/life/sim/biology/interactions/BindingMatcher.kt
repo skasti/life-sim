@@ -36,12 +36,34 @@ object BindingMatcher {
     }
 
     fun complementaryMatchSite(pattern: NucleotideSequence, surface: BindingSurface): BindingSite? {
-        val start = complementaryMatchStart(pattern, surface.sequence)
-        return if (start < 0) {
-            null
-        } else {
-            BindingSite(surface, SequenceRange(start, start + pattern.size))
+        return complementaryMatchSites(pattern, surface).firstOrNull()
+    }
+
+    fun complementaryMatchSites(pattern: NucleotideSequence, surface: BindingSurface): Sequence<BindingSite> {
+        if (pattern.isEmpty()) {
+            return sequenceOf(surface.site(0, 0))
+        }
+
+        if (pattern.size > surface.length) {
+            return emptySequence()
+        }
+
+        val lastStartIndex = surface.length - pattern.size
+        return sequence {
+            for (startIndex in 0..lastStartIndex) {
+                var matches = true
+
+                for (offset in 0 until pattern.size) {
+                    if (pattern[offset] != surface.sequence[startIndex + offset].complement()) {
+                        matches = false
+                        break
+                    }
+                }
+
+                if (matches) {
+                    yield(BindingSite(surface, SequenceRange(startIndex, startIndex + pattern.size)))
+                }
+            }
         }
     }
 }
-
