@@ -203,6 +203,32 @@ class ProteinBindingTest {
         assertEquals(listOf(existing), registry.toList())
     }
 
+
+    @Test
+    fun `sub-epsilon affinity still displaces weaker overlap`() {
+        val binder = interpretedBinderFrom("AAKRGKAA").copy(affinity = 5.0e-10)
+        val target = MRna.of("UUG${asText(binder.bindingPattern.complement())}CC").bindingSurface(MoleculeId(45))
+        val targetSite = BindingMatcher.complementaryMatchSite(binder.bindingPattern, target)!!
+        val weakerOccupant = Bond(
+            left = WholeMoleculeEndpoint(MoleculeId(550)),
+            right = SiteEndpoint(targetSite),
+            strength = 1.0e-12,
+            decayPerTick = 0.05,
+        )
+        val registry = BondRegistry(listOf(weakerOccupant))
+
+        val bond = ProteinBinding.tryBind(
+            proteinId = MoleculeId(551),
+            binder = binder,
+            target = target,
+            registry = registry,
+        )
+
+        assertNotNull(bond)
+        assertEquals(5.0e-10, bond.strength, absoluteTolerance = 1.0e-15)
+        assertEquals(listOf(bond), registry.toList())
+    }
+
     @Test
     fun `multiple overlapping weaker occupants are displaced together`() {
         val binder = interpretedBinderFrom("AAKRGKAA").copy(affinity = 0.95)

@@ -31,8 +31,13 @@ object ProteinBinding {
 
         val overlapping = registry.overlapping(targetSite)
         val strongestOverlap = overlapping.maxOfOrNull(Bond::strength)
+        val conflictThreshold = if (normalizedStrength > CONFLICT_EPSILON) {
+            normalizedStrength - CONFLICT_EPSILON
+        } else {
+            normalizedStrength
+        }
 
-        if (strongestOverlap != null && strongestOverlap >= normalizedStrength - CONFLICT_EPSILON) {
+        if (strongestOverlap != null && strongestOverlap >= conflictThreshold) {
             return null
         }
 
