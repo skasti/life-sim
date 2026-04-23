@@ -13,6 +13,7 @@ import life.sim.biology.interactions.WholeMoleculeEndpoint
  */
 object ProteinBinding {
     private const val DEFAULT_DECAY_PER_TICK = 0.05
+    private const val CONFLICT_EPSILON = 1.0e-9
 
     fun tryBind(
         proteinId: MoleculeId,
@@ -20,12 +21,27 @@ object ProteinBinding {
         target: BindingSurface,
         registry: BondRegistry,
     ): Bond? {
-        val targetSite = BindingMatcher.complementaryMatchSite(binder.bindingPattern, target) ?: return null
+        val targetSite = BindingMatcher.complementaryMatchSite(binder.bindingPattern, target)
+            ?: return null
 
         val normalizedStrength = binder.affinity.coerceIn(0.0, 1.0)
         if (normalizedStrength <= 0.0) {
             return null
         }
+
+        val overlapping = registry.overlapping(targetSite)
+        val strongestOverlap = overlapping.maxOfOrNull(Bond::strength)
+        val conflictThreshold = if (normalizedStrength > CONFLICT_EPSILON) {
+            normalizedStrength - CONFLICT_EPSILON
+        } else {
+            normalizedStrength
+        }
+
+        if (strongestOverlap != null && strongestOverlap >= conflictThreshold) {
+            return null
+        }
+
+        overlapping.forEach(registry::remove)
 
         val bond = Bond(
             left = WholeMoleculeEndpoint(proteinId),
@@ -35,6 +51,7 @@ object ProteinBinding {
         )
 
         registry.add(bond)
+
         return bond
     }
 }
