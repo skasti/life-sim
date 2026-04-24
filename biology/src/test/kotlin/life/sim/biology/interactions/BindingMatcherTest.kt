@@ -7,6 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class BindingMatcherTest {
     @Test
@@ -41,5 +42,19 @@ class BindingMatcherTest {
 
         assertNull(BindingMatcher.complementaryMatchSite(NucleotideSequence.of("ACG"), surface))
     }
-}
 
+    @Test
+    fun `complementary match sites yields sites in deterministic left to right order`() {
+        val pattern = NucleotideSequence.of("AUG")
+        val surface = MRna.of("GGUACUACAA").bindingSurface(MoleculeId(9))
+
+        val sites = BindingMatcher.complementaryMatchSites(pattern, surface).toList()
+
+        assertEquals(2, sites.size)
+        assertEquals(2, sites[0].range.start)
+        assertEquals(5, sites[0].range.endExclusive)
+        assertEquals(5, sites[1].range.start)
+        assertEquals(8, sites[1].range.endExclusive)
+        assertTrue(sites[0].range.start < sites[1].range.start)
+    }
+}
