@@ -18,7 +18,7 @@ Current molecule types:
 
 Nucleotide-based molecule types (`Dna`, `MRna`, and `TRna`) use the shared RNA alphabet (`A`, `C`, `G`, `U`), while `Polypeptide` uses the amino-acid alphabet.
 
-Related protein-runtime types such as `ActiveProtein` live in `life.sim.biology.proteins` and are referenced here only when describing interpretation flow.
+Related protein-runtime types such as `ActiveProtein` live in `life.sim.biology.proteins` and are referenced here only when describing interpretation flow. See [`docs/biology/proteins.md`](./proteins.md) for protein-package details.
 
 ---
 
