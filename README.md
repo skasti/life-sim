@@ -50,8 +50,9 @@ The repository currently has a strong **biology foundation** and an early
   (DNA/RNA-like polymers, amino acids, polypeptides).
 * **Interaction mechanics are implemented**
   (binding sites/surfaces/strands, bonds, matcher, bond registry).
-* **Protein interpretation has started**
-  with motif/domain-capability mapping in `ProteinInterpreter`.
+* **Protein interpretation is modeled at runtime**
+  with motif/domain-capability mapping in `ProteinInterpreter` and
+  first-class `ActiveProtein` molecules that preserve interpreted output.
 * **Simulator module exists**
   but still contains placeholder/demo-level behavior compared with biology.
 
