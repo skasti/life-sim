@@ -15,9 +15,10 @@ Current molecule types:
 - `MRna` — messenger RNA wrapper
 - `TRna` — transfer RNA wrapper with complementary scanning support
 - `Polypeptide` — translated amino-acid chain used as input to protein-domain interpretation
-- `ActiveProtein` — runtime protein molecule with stable `MoleculeId`, source chain, and interpreted protein outputs
 
 Nucleotide-based molecule types (`Dna`, `MRna`, and `TRna`) use the shared RNA alphabet (`A`, `C`, `G`, `U`), while `Polypeptide` uses the amino-acid alphabet.
+
+Related protein-runtime types such as `ActiveProtein` live in `life.sim.biology.proteins` and are referenced here only when describing interpretation flow.
 
 ---
 
