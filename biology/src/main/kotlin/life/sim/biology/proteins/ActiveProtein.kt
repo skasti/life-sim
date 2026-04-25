@@ -20,12 +20,16 @@ data class ActiveProtein(
             moleculeId: MoleculeId,
             source: Polypeptide,
             domains: List<ProteinDomain>,
-        ): ActiveProtein = ActiveProtein(
-            moleculeId = moleculeId,
-            source = source,
-            domains = domains,
-            capabilities = domains.flatMap(ProteinDomain::capabilities),
-        )
+        ): ActiveProtein {
+            val immutableDomains = domains.toList()
+
+            return ActiveProtein(
+                moleculeId = moleculeId,
+                source = source,
+                domains = immutableDomains,
+                capabilities = immutableDomains.flatMap(ProteinDomain::capabilities),
+            )
+        }
 
         /**
          * Interprets [source] and returns a first-class runtime protein molecule.

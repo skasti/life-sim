@@ -6,6 +6,7 @@ import life.sim.biology.primitives.NucleotideSequence
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotSame
 
 class ActiveProteinTest {
     @Test
@@ -59,5 +60,48 @@ class ActiveProteinTest {
         assertEquals(source, activeProtein.source)
         assertEquals(ProteinInterpreter.interpret(source), activeProtein.domains)
         assertEquals(activeProtein.domains.flatMap(ProteinDomain::capabilities), activeProtein.capabilities)
+    }
+
+    @Test
+    fun `fromDomains copies input domain list to keep domains and capabilities consistent`() {
+        val source = Polypeptide.of("AAKRGKTTHEMH")
+        val mutableDomains = mutableListOf(
+            ProteinDomain(
+                name = "BinderDomain",
+                startInclusive = 2,
+                endExclusive = 6,
+                motif = "KRGK",
+                capabilities = listOf(
+                    SequenceBinder(
+                        bindingPattern = NucleotideSequence.of("ACGUAC"),
+                        affinity = 0.7,
+                        specificity = 0.4,
+                    ),
+                ),
+            ),
+        )
+
+        val activeProtein = ActiveProtein.fromDomains(
+            moleculeId = MoleculeId(77),
+            source = source,
+            domains = mutableDomains,
+        )
+
+        mutableDomains.add(
+            ProteinDomain(
+                name = "CutterDomain",
+                startInclusive = 8,
+                endExclusive = 12,
+                motif = "HEMH",
+                capabilities = listOf(Cutter(catalyticStrength = 0.8)),
+            ),
+        )
+
+        assertNotSame(mutableDomains, activeProtein.domains)
+        assertEquals(1, activeProtein.domains.size)
+        assertEquals(
+            activeProtein.domains.flatMap(ProteinDomain::capabilities),
+            activeProtein.capabilities,
+        )
     }
 }
