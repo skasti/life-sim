@@ -13,10 +13,19 @@ Planned simulator responsibilities include:
 - driving the main simulation tick/update loop
 - providing runtime hooks for visualization, debugging, and interaction
 
-The module currently contains a minimal **libGDX desktop application shell**.
-It opens a window and runs a render loop that clears the frame each tick.
-This is the current entrypoint and runtime scaffold for upcoming world/object rendering
-and simulation orchestration work.
+The module currently contains a **libGDX desktop demo scene**.
+It opens a window and renders a small, static, hand-authored baseline scene for manual
+visual verification of core biology rendering output.
+
+## Demo scene contents
+
+On launch, the simulator renders all of the following together in a single static scene:
+
+- one nucleotide example
+- one nucleotide sequence example
+- one DNA duplex example (forward and reverse strands)
+
+This is intentionally a rendering/demo scene only; it is **not** yet a dynamic simulation.
 
 ## Entrypoint
 
@@ -27,6 +36,10 @@ The desktop launcher lives at:
 The render-loop application class lives at:
 
 - `simulator/src/main/kotlin/life/sim/simulator/SimulatorApplication.kt`
+
+The hand-authored demo data lives at:
+
+- `simulator/src/main/kotlin/life/sim/simulator/DemoScene.kt`
 
 ## Run locally
 
@@ -44,8 +57,8 @@ From the repository root:
 Expected result:
 
 - A desktop window titled **Life-Sim Simulator** opens.
-- The app stays responsive with a running render loop.
-- The frame is cleared every render tick.
+- The app renders a static scene showing nucleotide, sequence, and DNA text output.
+- The scene can be used as a baseline for manual rendering verification during future simulator changes.
 
 ## Next steps
 
@@ -53,4 +66,5 @@ Planned follow-up work includes:
 
 - camera controls
 - scene/world object management
-- rendering molecules/organisms and debug overlays
+- dynamic simulation/render integration
+- richer molecule/organism rendering and debug overlays
