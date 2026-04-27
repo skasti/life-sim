@@ -2,6 +2,7 @@ package life.sim.biology.proteins
 
 import life.sim.biology.interactions.MoleculeId
 import life.sim.biology.molecules.Polypeptide
+import java.util.Collections
 import kotlin.ConsistentCopyVisibility
 
 /**
@@ -24,9 +25,13 @@ data class ActiveProtein private constructor(
             source: Polypeptide,
             domains: List<ProteinDomain>,
         ): ActiveProtein {
-            val immutableDomains = domains.map { domain ->
-                domain.copy(capabilities = domain.capabilities.toList())
-            }
+            val immutableDomains = Collections.unmodifiableList(
+                domains.map { domain ->
+                    domain.copy(
+                        capabilities = Collections.unmodifiableList(domain.capabilities.toList()),
+                    )
+                },
+            )
 
             return ActiveProtein(
                 moleculeId = moleculeId,

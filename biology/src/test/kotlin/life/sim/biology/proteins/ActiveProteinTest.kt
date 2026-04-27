@@ -6,6 +6,7 @@ import life.sim.biology.primitives.NucleotideSequence
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotSame
 
 class ActiveProteinTest {
@@ -135,6 +136,54 @@ class ActiveProteinTest {
 
         assertNotSame(mutableCapabilities, activeProtein.domains.single().capabilities)
         assertEquals(1, activeProtein.domains.single().capabilities.size)
+        assertEquals(
+            activeProtein.domains.flatMap(ProteinDomain::capabilities),
+            activeProtein.capabilities,
+        )
+    }
+
+    @Test
+    fun `fromDomains exposes unmodifiable domain and capability lists`() {
+        val source = Polypeptide.of("AAKRGKTTHEMH")
+        val activeProtein = ActiveProtein.fromDomains(
+            moleculeId = MoleculeId(99),
+            source = source,
+            domains = listOf(
+                ProteinDomain(
+                    name = "BinderDomain",
+                    startInclusive = 2,
+                    endExclusive = 6,
+                    motif = "KRGK",
+                    capabilities = listOf(
+                        SequenceBinder(
+                            bindingPattern = NucleotideSequence.of("ACGUAC"),
+                            affinity = 0.7,
+                            specificity = 0.4,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val exposedDomains = activeProtein.domains as MutableList<ProteinDomain>
+        assertFailsWith<UnsupportedOperationException> {
+            exposedDomains.add(
+                ProteinDomain(
+                    name = "CutterDomain",
+                    startInclusive = 8,
+                    endExclusive = 12,
+                    motif = "HEMH",
+                    capabilities = listOf(Cutter(catalyticStrength = 0.8)),
+                ),
+            )
+        }
+
+        val exposedCapabilities = activeProtein.domains.single().capabilities as MutableList<MolecularCapability>
+        assertFailsWith<UnsupportedOperationException> {
+            exposedCapabilities.add(Cutter(catalyticStrength = 0.6))
+        }
+
+        assertEquals(1, activeProtein.domains.size)
         assertEquals(
             activeProtein.domains.flatMap(ProteinDomain::capabilities),
             activeProtein.capabilities,
