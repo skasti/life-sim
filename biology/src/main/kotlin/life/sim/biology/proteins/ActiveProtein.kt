@@ -14,7 +14,8 @@ data class ActiveProtein private constructor(
     val source: Polypeptide,
     val domains: List<ProteinDomain>,
 ) {
-    val capabilities: List<MolecularCapability> = domains.flatMap(ProteinDomain::capabilities)
+    val capabilities: List<MolecularCapability> =
+        Collections.unmodifiableList(domains.flatMap(ProteinDomain::capabilities))
 
     companion object {
         /**

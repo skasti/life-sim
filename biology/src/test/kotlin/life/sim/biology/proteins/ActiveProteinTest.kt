@@ -183,6 +183,11 @@ class ActiveProteinTest {
             exposedCapabilities.add(Cutter(catalyticStrength = 0.6))
         }
 
+        val flattenedCapabilities = activeProtein.capabilities as MutableList<MolecularCapability>
+        assertFailsWith<UnsupportedOperationException> {
+            flattenedCapabilities.add(Cutter(catalyticStrength = 0.5))
+        }
+
         assertEquals(1, activeProtein.domains.size)
         assertEquals(
             activeProtein.domains.flatMap(ProteinDomain::capabilities),
