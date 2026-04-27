@@ -52,8 +52,8 @@ The repository currently has a strong **biology foundation** and an early
   (binding sites/surfaces/strands, bonds, matcher, bond registry).
 * **Protein interpretation has started**
   with motif/domain-capability mapping in `ProteinInterpreter`.
-* **Simulator module exists**
-  but still contains placeholder/demo-level behavior compared with biology.
+* **Simulator module uses libGDX shell**
+  with a desktop launcher and minimal render loop that clears each frame.
 
 The project is still intentionally exploratory and architecture may continue
 to evolve quickly.

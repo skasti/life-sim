@@ -13,3 +13,6 @@ Current biology docs:
 - `biology/primitives.md`
 - `biology/molecules.md`
 - `biology/interactions/bonds.md`
+Current simulator docs:
+- `../simulator/README.md` (libGDX shell, launcher location, run instructions)
+
