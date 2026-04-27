@@ -104,4 +104,40 @@ class ActiveProteinTest {
             activeProtein.capabilities,
         )
     }
+
+    @Test
+    fun `fromDomains copies domain capability lists to keep flattened capabilities consistent`() {
+        val source = Polypeptide.of("AAKRGKTTHEMH")
+        val mutableCapabilities = mutableListOf<MolecularCapability>(
+            SequenceBinder(
+                bindingPattern = NucleotideSequence.of("ACGUAC"),
+                affinity = 0.7,
+                specificity = 0.4,
+            ),
+        )
+        val mutableDomains = listOf(
+            ProteinDomain(
+                name = "BinderDomain",
+                startInclusive = 2,
+                endExclusive = 6,
+                motif = "KRGK",
+                capabilities = mutableCapabilities,
+            ),
+        )
+
+        val activeProtein = ActiveProtein.fromDomains(
+            moleculeId = MoleculeId(88),
+            source = source,
+            domains = mutableDomains,
+        )
+
+        mutableCapabilities.add(Cutter(catalyticStrength = 0.8))
+
+        assertNotSame(mutableCapabilities, activeProtein.domains.single().capabilities)
+        assertEquals(1, activeProtein.domains.single().capabilities.size)
+        assertEquals(
+            activeProtein.domains.flatMap(ProteinDomain::capabilities),
+            activeProtein.capabilities,
+        )
+    }
 }

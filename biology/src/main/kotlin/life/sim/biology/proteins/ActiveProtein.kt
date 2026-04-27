@@ -2,16 +2,19 @@ package life.sim.biology.proteins
 
 import life.sim.biology.interactions.MoleculeId
 import life.sim.biology.molecules.Polypeptide
+import kotlin.ConsistentCopyVisibility
 
 /**
  * First-class runtime protein molecule with stable identity and preserved interpretation output.
  */
-data class ActiveProtein(
+@ConsistentCopyVisibility
+data class ActiveProtein private constructor(
     val moleculeId: MoleculeId,
     val source: Polypeptide,
     val domains: List<ProteinDomain>,
-    val capabilities: List<MolecularCapability>,
 ) {
+    val capabilities: List<MolecularCapability> = domains.flatMap(ProteinDomain::capabilities)
+
     companion object {
         /**
          * Creates an [ActiveProtein] from already interpreted [domains] and flattens capability access.
@@ -21,13 +24,14 @@ data class ActiveProtein(
             source: Polypeptide,
             domains: List<ProteinDomain>,
         ): ActiveProtein {
-            val immutableDomains = domains.toList()
+            val immutableDomains = domains.map { domain ->
+                domain.copy(capabilities = domain.capabilities.toList())
+            }
 
             return ActiveProtein(
                 moleculeId = moleculeId,
                 source = source,
                 domains = immutableDomains,
-                capabilities = immutableDomains.flatMap(ProteinDomain::capabilities),
             )
         }
 
