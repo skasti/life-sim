@@ -53,8 +53,8 @@ The repository currently has a strong **biology foundation** and an early
 * **Protein interpretation is modeled at runtime**
   with motif/domain-capability mapping in `ProteinInterpreter` and
   first-class `ActiveProtein` molecules that preserve interpreted output.
-* **Simulator module exists**
-  but still contains placeholder/demo-level behavior compared with biology.
+* **Simulator module uses libGDX shell**
+  with a desktop launcher and minimal render loop that clears each frame.
 
 The project is still intentionally exploratory and architecture may continue
 to evolve quickly.
