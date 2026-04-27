@@ -18,6 +18,8 @@ Current molecule types:
 
 Nucleotide-based molecule types (`Dna`, `MRna`, and `TRna`) use the shared RNA alphabet (`A`, `C`, `G`, `U`), while `Polypeptide` uses the amino-acid alphabet.
 
+Related protein-runtime types such as `ActiveProtein` live in `life.sim.biology.proteins` and are referenced here only when describing interpretation flow. See [`docs/biology/proteins.md`](./proteins.md) for protein-package details.
+
 ---
 
 ## `Dna`
@@ -115,11 +117,18 @@ A `Polypeptide` can be passed into `ProteinInterpreter` (in `life.sim.biology.pr
 The interpreter scans motif patterns and emits one or more `ProteinDomain`s, each of which exposes
 `MolecularCapability` values such as `SequenceBinder`, `Cutter`, `Ligase`, or `Blocker`.
 
-`SequenceBinder` capabilities now include a derived nucleotide `bindingPattern`, so interpreted binders
+`SequenceBinder` capabilities include a derived nucleotide `bindingPattern`, so interpreted binders
 carry concrete sequence targets that can be used during runtime matching.
 
-This keeps sequence storage separate from interpreted function and supports composing multiple
-capabilities from a single chain.
+When a protein needs to exist as an explicit runtime molecule, `ActiveProtein` can be created with:
+
+- `moleculeId: MoleculeId` (stable runtime identity)
+- `source: Polypeptide` (the source amino-acid chain)
+- `domains: List<ProteinDomain>` (preserved interpreted domains)
+- `capabilities: List<MolecularCapability>` (flattened capabilities derived from `domains`)
+
+This keeps sequence storage separate from interpreted function while still allowing runtime code
+to pass a first-class protein molecule value instead of carrying temporary tuples.
 
 ---
 
@@ -131,6 +140,8 @@ Runtime occupancy and binding state are modeled separately by the interactions l
 
 The `ProteinBinding.tryBind(...)` helper bridges interpretation to runtime associations by using a
 `SequenceBinder` pattern plus `BindingMatcher` to create and register concrete `Bond` values.
+`ActiveProtein` complements this by preserving interpreted domains/capabilities alongside the
+protein's stable runtime `MoleculeId`.
 
 That separation allows molecule values to remain immutable while runtime systems track transient binding dynamics.
 
