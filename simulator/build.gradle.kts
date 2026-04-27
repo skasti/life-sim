@@ -19,7 +19,7 @@ application {
     mainClass.set("life.sim.simulator.DesktopLauncherKt")
 }
 
-tasks.withType<JavaExec>().configureEach {
+tasks.named<JavaExec>("run") {
     if (System.getProperty("os.name").contains("Mac", ignoreCase = true)) {
         jvmArgs("-XstartOnFirstThread")
     }
