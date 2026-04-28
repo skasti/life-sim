@@ -40,13 +40,9 @@ class SimulatorApplication : ApplicationAdapter() {
         }
         shapeRenderer = ShapeRenderer()
         updateProjectionMatrices(Gdx.graphics.width, Gdx.graphics.height)
-
-        NucleotideRenderer()
-        NucleotideSequenceRenderer()
-        DnaRenderer()
-
-        Renderers.init()
     }
+
+
 
     override fun render() {
         ScreenUtils.clear(0.05f, 0.05f, 0.08f, 1f)
@@ -109,6 +105,13 @@ class SimulatorApplication : ApplicationAdapter() {
             } else {
                 lineHeight
             }
+        }
+
+        internal fun initializeRenderers() {
+            NucleotideRenderer()
+            NucleotideSequenceRenderer()
+            DnaRenderer()
+            Renderers.init()
         }
     }
 }

@@ -1,7 +1,12 @@
 package life.sim.simulator
 
+import life.sim.biology.molecules.Dna
+import life.sim.biology.primitives.Nucleotide
+import life.sim.biology.primitives.NucleotideSequence
+import life.sim.simulator.rendering.Renderers
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class SimulatorApplicationTest {
     @Test
@@ -23,6 +28,15 @@ class SimulatorApplicationTest {
             22f,
             SimulatorApplication.fpsCounterBaselineY(viewportHeight = 28f, lineHeight = 22f),
         )
+    }
+
+    @Test
+    fun `initializeRenderers initializes type specific renderers for nucleotide sequence and dna`() {
+        SimulatorApplication.initializeRenderers()
+
+        assertNotNull(Renderers.forType<Nucleotide>())
+        assertNotNull(Renderers.forType<NucleotideSequence>())
+        assertNotNull(Renderers.forType<Dna>())
     }
 }
 
