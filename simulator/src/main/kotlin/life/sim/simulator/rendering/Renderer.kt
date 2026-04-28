@@ -32,10 +32,10 @@ data class RenderContext(
         shapeRenderer.rect(x, y, width, height)
     }
 
-    fun drawLine(x: Float, y: Float, width: Float, height: Float, color: Color) {
+    fun drawLine(a: Vector2, b: Vector2, width: Float, color: Color) {
         ensureShapeMode()
         shapeRenderer.color = color
-        shapeRenderer.rect(x, y, width, height)
+        shapeRenderer.rectLine(a, b, width)
     }
 
     fun drawFilledTriangle(

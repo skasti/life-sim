@@ -40,6 +40,7 @@ class SimulatorApplication : ApplicationAdapter() {
         }
         shapeRenderer = ShapeRenderer()
         updateProjectionMatrices(Gdx.graphics.width, Gdx.graphics.height)
+        initializeRenderers()
     }
 
 

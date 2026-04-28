@@ -73,10 +73,9 @@ class NucleotideSequenceRenderer(
 
         if (style.showBackbone) {
             context.drawLine(
-                x = position.x - 8f,
-                y = position.y + tileSize * 0.5f,
-                width = totalWidth + 16f,
-                height = 3f,
+                Vector2(position.x - 8f, position.y + tileSize * 0.5f),
+                Vector2(position.x + totalWidth + 8f, position.y + tileSize * 0.5f),
+                width = 3f,
                 color = BACKBONE_COLOR,
             )
         }
@@ -185,10 +184,9 @@ class DnaRenderer(
         var connectorX = position.x + tileSize * 0.47f
         repeat(value.size) {
             context.drawLine(
-                x = connectorX,
-                y = bottomY + tileSize,
+                a = Vector2(connectorX, topY),
+                b = Vector2(connectorX, bottomY + tileSize),
                 width = tileSize * 0.08f,
-                height = strandGap,
                 color = PAIR_CONNECTOR_COLOR,
             )
             connectorX += tileSize + tileGap
