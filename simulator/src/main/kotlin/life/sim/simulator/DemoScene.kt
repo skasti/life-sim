@@ -63,7 +63,7 @@ data class DemoScene(
         private const val DNA_Y = DNA_LABEL_Y - 26f
 
         fun sample(): DemoScene = DemoScene(
-            nucleotide = Nucleotide.A,
+            nucleotide = Nucleotide.G,
             sequence = NucleotideSequence.of(">AUGCGAUCGUAA>"),
             dna = Dna.of(">ACGUACGUAC>"),
         )

@@ -109,10 +109,10 @@ class NucleotideRenderer(
     }
 
     internal fun boundsWithinTile(geometry: NucleotideGeometry, position: Vector2): Boolean {
-        val minX = position.x
-        val maxX = position.x + tileSize
-        val minY = position.y
-        val maxY = position.y + tileSize
+        val minX = position.x - tileSize * 0.75f
+        val maxX = position.x + tileSize * 1.75f
+        val minY = position.y - tileSize * 0.75f
+        val maxY = position.y + tileSize * 1.75f
 
         val rectsInBounds = geometry.filledRects.all { rect ->
             rect.x >= minX &&
@@ -121,20 +121,59 @@ class NucleotideRenderer(
                 rect.y + rect.height <= maxY
         }
 
-        val trianglesInBounds = geometry.filledTriangles.all { triangle ->
+        if (!rectsInBounds) {
+            return false
+        }
+
+        val filledTrianglesInBounds = geometry.filledTriangles.all { triangle ->
             val xs = listOf(triangle.x1, triangle.x2, triangle.x3)
             val ys = listOf(triangle.y1, triangle.y2, triangle.y3)
             xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
         }
 
-        val arcsInBounds = geometry.filledArcs.all { arc ->
+        if (!filledTrianglesInBounds) {
+            return false
+        }
+
+        val trianglesInBounds = geometry.triangles.all { triangle ->
+            val xs = listOf(triangle.x1, triangle.x2, triangle.x3)
+            val ys = listOf(triangle.y1, triangle.y2, triangle.y3)
+            xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
+        }
+
+        if (!trianglesInBounds) {
+            return false
+        }
+
+        val filledArcsInBounds = geometry.filledArcs.all { arc ->
             arc.x - arc.radius >= minX &&
                 arc.x + arc.radius <= maxX &&
                 arc.y - arc.radius >= minY &&
                 arc.y + arc.radius <= maxY
         }
 
-        return rectsInBounds && trianglesInBounds && arcsInBounds
+        if (!filledArcsInBounds) {
+            return false
+        }
+
+        val arcsInBounds = geometry.arcs.all { arc ->
+            arc.x - arc.radius >= minX &&
+                arc.x + arc.radius <= maxX &&
+                arc.y - arc.radius >= minY &&
+                arc.y + arc.radius <= maxY
+        }
+
+        if (!arcsInBounds) {
+            return false
+        }
+
+        val linesInBounds = geometry.lines.all { line ->
+            listOf(line.a, line.b).all { point ->
+                point.x in minX..maxX && point.y in minY..maxY
+            }
+        }
+
+        return linesInBounds
     }
 
     private fun inverseTriangleOnSide(position: Vector2, side: PairingSide): List<Triangle> {
@@ -180,19 +219,19 @@ class NucleotideRenderer(
             PairingSide.LEFT -> listOf(
                 Triangle(
                     x,
-                    y,
+                    y + tileSize,
                     x,
-                    y - tileSize * 0.5f,
+                    y + tileSize * 0.5f,
                     x - pairingBandSize,
-                    y,
+                    y + tileSize,
                 ),
                 Triangle(
                     x,
-                    y - tileSize * 0.5f,
+                    y + tileSize * 0.5f,
                     x,
-                    y - tileSize,
+                    y,
                     x - pairingBandSize,
-                    y - tileSize,
+                    y,
                 ),
             )
             PairingSide.RIGHT -> listOf(
@@ -356,7 +395,7 @@ internal enum class ConnectorPolarity {
 }
 
 data class NucleotideOrientation(
-    val pairingSide: PairingSide = PairingSide.RIGHT,
+    val pairingSide: PairingSide = PairingSide.LEFT,
 )
 
 enum class PairingSide {
