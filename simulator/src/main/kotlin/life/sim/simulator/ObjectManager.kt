@@ -24,6 +24,8 @@ class ObjectManager {
     }
 
     fun update(deltaSeconds: Float) {
+        // Process queues before and after update to ensure deterministic update/render order and that objects added/removed during update are handled in the same tick.
+        processQueues()
         updatable.forEach { it.update(deltaSeconds) }
         processQueues()
     }
