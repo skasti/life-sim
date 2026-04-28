@@ -2,6 +2,7 @@ package life.sim.simulator
 
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
@@ -14,6 +15,7 @@ class SimulatorApplication : ApplicationAdapter() {
     private lateinit var batch: SpriteBatch
     private lateinit var font: BitmapFont
     private lateinit var shapeRenderer: ShapeRenderer
+    private val camera = OrthographicCamera()
     private var currentScene: Scene = DemoScene.sample()
 
     override fun create() {
@@ -22,6 +24,7 @@ class SimulatorApplication : ApplicationAdapter() {
             data.setScale(1.4f)
         }
         shapeRenderer = ShapeRenderer()
+        updateProjectionMatrices(Gdx.graphics.width, Gdx.graphics.height)
     }
 
     override fun render() {
@@ -37,9 +40,20 @@ class SimulatorApplication : ApplicationAdapter() {
         )
     }
 
+    override fun resize(width: Int, height: Int) {
+        updateProjectionMatrices(width, height)
+    }
+
     override fun dispose() {
         batch.dispose()
         font.dispose()
         shapeRenderer.dispose()
+    }
+
+    private fun updateProjectionMatrices(width: Int, height: Int) {
+        camera.setToOrtho(false, width.toFloat(), height.toFloat())
+        camera.update()
+        batch.projectionMatrix = camera.combined
+        shapeRenderer.projectionMatrix = camera.combined
     }
 }

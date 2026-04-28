@@ -35,11 +35,11 @@ On launch, the simulator renders all of the following together in a single stati
 - one nucleotide sequence example
 - one DNA duplex example (forward and reverse strands)
 
-Rendering includes both text labels and a minimal graphical treatment:
+Rendering now uses type-specific renderers and includes both text labels and a minimal graphical treatment:
 
-- colored nucleotide tiles
-- sequence tile strip
-- duplex backbone lines plus simple pair connectors
+- `NucleotideRenderer` for nucleotide tiles with centered symbols
+- `NucleotideSequenceRenderer` for sequence layout, backbones, and direction indicators
+- `DnaRenderer` for duplex layout and pair connectors built on the sequence renderer
 
 This remains intentionally a rendering/demo scene only; it is **not** yet a dynamic simulation.
 
