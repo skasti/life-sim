@@ -24,7 +24,7 @@ class SimulatorApplication : ApplicationAdapter() {
     private lateinit var shapeRenderer: ShapeRenderer
     private lateinit var renderContext: RenderContext
     private val camera = OrthographicCamera()
-    private var currentScene: Scene = DemoScene.sample()
+    private lateinit var currentScene: Scene
 
     override fun create() {
         batch = SpriteBatch()
@@ -50,6 +50,8 @@ class SimulatorApplication : ApplicationAdapter() {
             viewportWidth = Gdx.graphics.width.toFloat(),
             viewportHeight = Gdx.graphics.height.toFloat(),
         )
+        currentScene = DemoScene.sample()
+        currentScene.init()
     }
 
 
@@ -60,7 +62,9 @@ class SimulatorApplication : ApplicationAdapter() {
         ScreenUtils.clear(0.05f, 0.05f, 0.08f, 1f)
         renderContext.viewportWidth = Gdx.graphics.width.toFloat()
         renderContext.viewportHeight = Gdx.graphics.height.toFloat()
+
         currentScene.render(renderContext)
+
         drawFpsCounter(Gdx.graphics.height.toFloat())
     }
 

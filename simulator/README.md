@@ -19,13 +19,27 @@ visual verification of core biology rendering output.
 
 ## Scene/state baseline
 
-The simulator now uses a simple `Scene` abstraction:
+The simulator now uses a simple `Scene` abstraction backed by simulator-side scene objects:
 
 - `SimulatorApplication` owns the libGDX lifecycle and delegates update/render work
-- `DemoScene` is the active scene implementation
-- each scene exposes `update()` and `render(...)`
+- each scene exposes an `ObjectManager` that owns scene-object lifecycle
+- the default `Scene.render(...)` path finalizes the `RenderContext` each frame (`finish()`)
+- scenes use an explicit `init()` hook for setup that depends on systems created alongside the scene
+- `SimObject` is the common base concept for objects that exist in a scene
+- objects may optionally implement `Updateable`, `Renderable`, or both
+- `ObjectManager` keeps deterministic insertion order for update/render iteration
 
 This keeps the simulator shell thin and leaves scene-specific behavior in scene objects.
+
+### `SimWrapper` bridge object
+
+`SimWrapper(position: Vector2, content: Any)` is the initial scene-object bridge between simulator infrastructure and biology-domain values.
+
+- it stores scene position plus wrapped domain content
+- it resolves the matching renderer once during construction
+- render frames reuse the resolved renderer instead of re-running lookup each frame
+
+This keeps biology/domain objects independent of simulator rendering lifecycle concerns while still allowing them to be managed as scene objects.
 
 ## Demo scene contents
 

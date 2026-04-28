@@ -6,7 +6,6 @@ import life.sim.biology.molecules.Dna
 import life.sim.biology.primitives.Nucleotide
 import life.sim.biology.primitives.NucleotideSequence
 import life.sim.simulator.rendering.RenderContext
-import life.sim.simulator.rendering.Renderers
 
 /**
  * Static, hand-authored rendering inputs used as a visual baseline for simulator work.
@@ -16,42 +15,53 @@ data class DemoScene(
     val sequence: NucleotideSequence,
     val dna: Dna,
 ) : Scene {
+    override val objectManager = ObjectManager()
+    private var initialized = false
+
     val sequenceText: String = sequence.toString()
     val dnaForwardText: String = dna.forward.toString()
     val dnaReverseText: String = dna.reverse.toString()
 
-    override fun update(deltaSeconds: Float) = Unit
+    override fun init() {
+        if (initialized) {
+            return
+        }
+
+        objectManager.add(
+            SimWrapper(Vector2(MOLECULE_X, NUCLEOTIDE_Y), nucleotide),
+            SimWrapper(Vector2(MOLECULE_X, SEQUENCE_Y), sequence),
+            SimWrapper(Vector2(MOLECULE_X, DNA_Y), dna),
+        )
+
+        objectManager.processQueues()
+        initialized = true
+    }
 
     override fun render(
         context: RenderContext,
     ) {
-        val leftMargin = context.viewportWidth * 0.07f
-
         val titleY = context.viewportHeight * 0.95f
-        val nucleotideLabelY = context.viewportHeight * 0.82f
-        val sequenceLabelY = context.viewportHeight * 0.66f
-        val dnaLabelY = context.viewportHeight * 0.49f
 
-        val moleculeX = leftMargin + context.viewportWidth * 0.22f
-        val nucleotideTileY = nucleotideLabelY - 26f
-        val sequenceTileY = sequenceLabelY - 26f
-        val dnaTileY = dnaLabelY - 26f
+        context.drawText("Life-Sim Rendering Demo (static scene)", LABEL_X, titleY, Color.WHITE)
+        context.drawText("Nucleotide", LABEL_X, NUCLEOTIDE_LABEL_Y, Color.WHITE)
+        context.drawText("Nucleotide sequence", LABEL_X, SEQUENCE_LABEL_Y, Color.WHITE)
+        context.drawText("DNA duplex", LABEL_X, DNA_LABEL_Y, Color.WHITE)
 
-        context.drawText("Life-Sim Rendering Demo (static scene)", leftMargin, titleY, Color.WHITE)
-
-        context.drawText("Nucleotide", leftMargin, nucleotideLabelY, Color.WHITE)
-        Renderers.render(nucleotide, Vector2(moleculeX, nucleotideTileY), context)
-
-        context.drawText("Nucleotide sequence", leftMargin, sequenceLabelY, Color.WHITE)
-        Renderers.render(sequence, Vector2(moleculeX, sequenceTileY), context)
-
-        context.drawText("DNA duplex", leftMargin, dnaLabelY, Color.WHITE)
-        Renderers.render(dna, Vector2(moleculeX, dnaTileY), context)
-
-        context.finish()
+        super.render(context)
     }
 
     companion object {
+        private const val LABEL_X = 90f
+        private const val MOLECULE_X = 370f
+
+        private const val NUCLEOTIDE_LABEL_Y = 590f
+        private const val SEQUENCE_LABEL_Y = 475f
+        private const val DNA_LABEL_Y = 355f
+
+        private const val NUCLEOTIDE_Y = NUCLEOTIDE_LABEL_Y - 26f
+        private const val SEQUENCE_Y = SEQUENCE_LABEL_Y - 26f
+        private const val DNA_Y = DNA_LABEL_Y - 26f
+
         fun sample(): DemoScene = DemoScene(
             nucleotide = Nucleotide.G,
             sequence = NucleotideSequence.of(">AUGCGAUCGUAA>"),

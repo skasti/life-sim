@@ -16,4 +16,17 @@ class DemoSceneTest {
         assertEquals(">ACGUACGUAC>", scene.dnaForwardText)
         assertEquals("<UGCAUGCAUG<", scene.dnaReverseText)
     }
+
+    @Test
+    fun `init populates demo scene object manager once`() {
+        SimulatorApplication.initializeRenderers()
+        val scene = DemoScene.sample()
+
+        assertEquals(0, scene.objectManager.objectCount())
+
+        scene.init()
+        scene.init()
+
+        assertEquals(3, scene.objectManager.objectCount())
+    }
 }
