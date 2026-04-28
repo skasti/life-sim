@@ -23,17 +23,27 @@ interface Renderable {
  */
 class ObjectManager {
     private val objects = mutableListOf<SimObject>()
+    private val addQueue = mutableListOf<SimObject>()
+    private val removeQueue = mutableListOf<SimObject>()
 
-    fun add(obj: SimObject) {
-        objects += obj
+    fun add(vararg newObjects: SimObject) {
+        for (obj in newObjects)
+            addQueue += obj
     }
 
     fun remove(obj: SimObject) {
-        objects -= obj
+        removeQueue += obj
     }
 
     fun update(deltaSeconds: Float) {
         updateablesInOrder().forEach { it.update(deltaSeconds) }
+
+        // Apply queued changes after update pass to avoid concurrent modification issues and ensure deterministic ordering.
+        objects -= removeQueue.toSet()
+        removeQueue.clear()
+
+        objects += addQueue
+        addQueue.clear()
     }
 
     fun render(context: RenderContext) {
