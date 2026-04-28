@@ -7,7 +7,7 @@ data class DesktopShellConfig(
     val title: String = "Life-Sim Simulator",
     val width: Int = 1280,
     val height: Int = 720,
-    val foregroundFps: Int = 60,
+    val foregroundFps: Int = 175,
     val vsyncEnabled: Boolean = true,
 )
 
