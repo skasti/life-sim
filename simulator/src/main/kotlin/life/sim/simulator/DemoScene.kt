@@ -1,9 +1,6 @@
 package life.sim.simulator
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.molecules.Dna
 import life.sim.biology.primitives.Nucleotide
@@ -26,21 +23,16 @@ data class DemoScene(
     override fun update(deltaSeconds: Float) = Unit
 
     override fun render(
-        batch: SpriteBatch,
-        font: BitmapFont,
-        shapeRenderer: ShapeRenderer,
-        viewportWidth: Float,
-        viewportHeight: Float,
+        context: RenderContext,
     ) {
-        val context = RenderContext(batch, font, shapeRenderer)
-        val leftMargin = viewportWidth * 0.07f
+        val leftMargin = context.viewportWidth * 0.07f
 
-        val titleY = viewportHeight * 0.95f
-        val nucleotideLabelY = viewportHeight * 0.82f
-        val sequenceLabelY = viewportHeight * 0.66f
-        val dnaLabelY = viewportHeight * 0.49f
+        val titleY = context.viewportHeight * 0.95f
+        val nucleotideLabelY = context.viewportHeight * 0.82f
+        val sequenceLabelY = context.viewportHeight * 0.66f
+        val dnaLabelY = context.viewportHeight * 0.49f
 
-        val moleculeX = leftMargin + viewportWidth * 0.22f
+        val moleculeX = leftMargin + context.viewportWidth * 0.22f
         val nucleotideTileY = nucleotideLabelY - 26f
         val sequenceTileY = sequenceLabelY - 26f
         val dnaTileY = dnaLabelY - 26f

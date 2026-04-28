@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.ScreenUtils
 import life.sim.simulator.rendering.DnaRenderer
 import life.sim.simulator.rendering.NucleotideRenderer
 import life.sim.simulator.rendering.NucleotideSequenceRenderer
+import life.sim.simulator.rendering.RenderContext
 import life.sim.simulator.rendering.Renderers
 
 /**
@@ -21,6 +22,7 @@ class SimulatorApplication : ApplicationAdapter() {
     private lateinit var batch: SpriteBatch
     private lateinit var font: BitmapFont
     private lateinit var shapeRenderer: ShapeRenderer
+    private lateinit var renderContext: RenderContext
     private val camera = OrthographicCamera()
     private var currentScene: Scene = DemoScene.sample()
 
@@ -41,22 +43,24 @@ class SimulatorApplication : ApplicationAdapter() {
         shapeRenderer = ShapeRenderer()
         updateProjectionMatrices(Gdx.graphics.width, Gdx.graphics.height)
         initializeRenderers()
-    }
-
-
-
-    override fun render() {
-        ScreenUtils.clear(0.05f, 0.05f, 0.08f, 1f)
-
-        currentScene.update(Gdx.graphics.deltaTime)
-        currentScene.render(
+        renderContext = RenderContext(
             batch = batch,
             font = font,
             shapeRenderer = shapeRenderer,
             viewportWidth = Gdx.graphics.width.toFloat(),
             viewportHeight = Gdx.graphics.height.toFloat(),
         )
+    }
 
+
+
+    override fun render() {
+        currentScene.update(Gdx.graphics.deltaTime)
+
+        ScreenUtils.clear(0.05f, 0.05f, 0.08f, 1f)
+        renderContext.viewportWidth = Gdx.graphics.width.toFloat()
+        renderContext.viewportHeight = Gdx.graphics.height.toFloat()
+        currentScene.render(renderContext)
         drawFpsCounter(Gdx.graphics.height.toFloat())
     }
 

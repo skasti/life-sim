@@ -16,6 +16,8 @@ data class RenderContext(
     val batch: SpriteBatch,
     val font: BitmapFont,
     val shapeRenderer: ShapeRenderer,
+    var viewportWidth: Float,
+    var viewportHeight: Float,
 ) {
     private enum class DrawMode {
         NONE,
