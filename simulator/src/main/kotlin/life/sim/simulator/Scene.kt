@@ -21,6 +21,10 @@ interface Scene {
     fun render(
         context: RenderContext,
     ) {
-        objectManager.render(context)
+        try {
+            objectManager.render(context)
+        } finally {
+            context.finish()
+        }
     }
 }
