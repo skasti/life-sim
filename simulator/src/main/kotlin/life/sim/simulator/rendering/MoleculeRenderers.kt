@@ -13,6 +13,7 @@ class NucleotideRenderer(
     private val pairingBandSize = tileSize * 0.28f
     private val angledInsetSize = pairingBandSize * 0.7f
     private val roundedInsetSize = pairingBandSize * 0.58f
+    private val socketFlankRatio = 0.28f
 
     init {
         Renderers.register(Nucleotide::class, this)
@@ -29,28 +30,11 @@ class NucleotideRenderer(
     fun render(value: Nucleotide, position: Vector2, context: RenderContext, orientation: NucleotideOrientation) {
         val color = nucleotideColor(value)
         val geometry = geometryFor(value, position, orientation)
-        context.drawFilledRect(geometry.bodyX, geometry.bodyY, geometry.bodyWidth, geometry.bodyHeight, color)
-
-        geometry.protrusionTriangles.forEach { triangle ->
-            context.drawFilledTriangle(triangle.x1, triangle.y1, triangle.x2, triangle.y2, triangle.x3, triangle.y3, color)
-        }
-        geometry.protrusionRects.forEach { rect ->
+        geometry.filledRects.forEach { rect ->
             context.drawFilledRect(rect.x, rect.y, rect.width, rect.height, color)
         }
-
-        geometry.socketTriangles.forEach { triangle ->
-            context.drawFilledTriangle(
-                triangle.x1,
-                triangle.y1,
-                triangle.x2,
-                triangle.y2,
-                triangle.x3,
-                triangle.y3,
-                SOCKET_HINT_COLOR,
-            )
-        }
-        geometry.socketRects.forEach { rect ->
-            context.drawFilledRect(rect.x, rect.y, rect.width, rect.height, SOCKET_HINT_COLOR)
+        geometry.filledTriangles.forEach { triangle ->
+            context.drawFilledTriangle(triangle.x1, triangle.y1, triangle.x2, triangle.y2, triangle.x3, triangle.y3, color)
         }
 
         context.drawCenteredText(value.symbol.toString(), position.x + tileSize * 0.5f, position.y + tileSize * 0.5f)
@@ -80,53 +64,37 @@ class NucleotideRenderer(
             ConnectorFamily.ANGLED -> angledInsetSize
             ConnectorFamily.ROUNDED -> roundedInsetSize
         }
-
-        val body = if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-            when (orientation.pairingSide) {
-                PairingSide.LEFT -> Rect(position.x + pairingBandSize, position.y, tileSize - pairingBandSize, tileSize)
-                PairingSide.RIGHT -> Rect(position.x, position.y, tileSize - pairingBandSize, tileSize)
-                PairingSide.TOP -> Rect(position.x, position.y, tileSize, tileSize - pairingBandSize)
-                PairingSide.BOTTOM -> Rect(position.x, position.y + pairingBandSize, tileSize, tileSize - pairingBandSize)
-            }
-        } else {
-            Rect(position.x, position.y, tileSize, tileSize)
-        }
-
-        val protrusionTriangles = mutableListOf<Triangle>()
-        val protrusionRects = mutableListOf<Rect>()
-        val socketTriangles = mutableListOf<Triangle>()
-        val socketRects = mutableListOf<Rect>()
+        val filledTriangles = mutableListOf<Triangle>()
+        val filledRects = mutableListOf<Rect>()
 
         when (profile.family) {
             ConnectorFamily.ANGLED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    protrusionTriangles += triangleOnSide(position, orientation.pairingSide, inset)
+                    filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
+                    filledTriangles += triangleOnSide(position, orientation.pairingSide, inset)
                 } else {
-                    socketTriangles += triangleOnSide(position, orientation.pairingSide, inset)
+                    filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
+                    filledRects += socketFlankRects(position, orientation.pairingSide)
+                    filledTriangles += angledSocketFlankTriangles(position, orientation.pairingSide)
                 }
             }
 
             ConnectorFamily.ROUNDED -> {
-                val roundedShape = roundedOnSide(position, orientation.pairingSide, inset)
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    protrusionRects += roundedShape.rect
-                    protrusionTriangles += roundedShape.tip
+                    val roundedShape = roundedOnSide(position, orientation.pairingSide, inset)
+                    filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
+                    filledRects += roundedShape.rect
+                    filledTriangles += roundedShape.tip
                 } else {
-                    socketRects += roundedShape.rect
-                    socketTriangles += roundedShape.tip
+                    filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
+                    filledRects += socketFlankRects(position, orientation.pairingSide)
                 }
             }
         }
 
         return NucleotideGeometry(
-            bodyX = body.x,
-            bodyY = body.y,
-            bodyWidth = body.width,
-            bodyHeight = body.height,
-            protrusionTriangles = protrusionTriangles,
-            protrusionRects = protrusionRects,
-            socketTriangles = socketTriangles,
-            socketRects = socketRects,
+            filledTriangles = filledTriangles,
+            filledRects = filledRects,
         )
     }
 
@@ -136,20 +104,130 @@ class NucleotideRenderer(
         val minY = position.y
         val maxY = position.y + tileSize
 
-        val rectsInBounds = geometry.allRects().all { rect ->
+        val rectsInBounds = geometry.filledRects.all { rect ->
             rect.x >= minX &&
                 rect.y >= minY &&
                 rect.x + rect.width <= maxX &&
                 rect.y + rect.height <= maxY
         }
 
-        val trianglesInBounds = geometry.allTriangles().all { triangle ->
+        val trianglesInBounds = geometry.filledTriangles.all { triangle ->
             val xs = listOf(triangle.x1, triangle.x2, triangle.x3)
             val ys = listOf(triangle.y1, triangle.y2, triangle.y3)
             xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
         }
 
         return rectsInBounds && trianglesInBounds
+    }
+
+    private fun bodyWithoutPairingBand(position: Vector2, side: PairingSide): Rect = when (side) {
+        PairingSide.LEFT -> Rect(position.x + pairingBandSize, position.y, tileSize - pairingBandSize, tileSize)
+        PairingSide.RIGHT -> Rect(position.x, position.y, tileSize - pairingBandSize, tileSize)
+        PairingSide.TOP -> Rect(position.x, position.y, tileSize, tileSize - pairingBandSize)
+        PairingSide.BOTTOM -> Rect(position.x, position.y + pairingBandSize, tileSize, tileSize - pairingBandSize)
+    }
+
+    private fun socketFlankRects(position: Vector2, side: PairingSide): List<Rect> {
+        val x = position.x
+        val y = position.y
+        val flank = tileSize * socketFlankRatio
+        return when (side) {
+            PairingSide.TOP -> listOf(
+                Rect(x, y + tileSize - pairingBandSize, flank, pairingBandSize),
+                Rect(x + tileSize - flank, y + tileSize - pairingBandSize, flank, pairingBandSize),
+            )
+            PairingSide.BOTTOM -> listOf(
+                Rect(x, y, flank, pairingBandSize),
+                Rect(x + tileSize - flank, y, flank, pairingBandSize),
+            )
+            PairingSide.LEFT -> listOf(
+                Rect(x, y, pairingBandSize, flank),
+                Rect(x, y + tileSize - flank, pairingBandSize, flank),
+            )
+            PairingSide.RIGHT -> listOf(
+                Rect(x + tileSize - pairingBandSize, y, pairingBandSize, flank),
+                Rect(x + tileSize - pairingBandSize, y + tileSize - flank, pairingBandSize, flank),
+            )
+        }
+    }
+
+    private fun angledSocketFlankTriangles(position: Vector2, side: PairingSide): List<Triangle> {
+        val x = position.x
+        val y = position.y
+        return when (side) {
+            PairingSide.TOP -> listOf(
+                Triangle(
+                    x + tileSize * 0.22f,
+                    y + tileSize - pairingBandSize,
+                    x + tileSize * 0.5f,
+                    y + tileSize - pairingBandSize * 0.35f,
+                    x + tileSize * 0.22f,
+                    y + tileSize,
+                ),
+                Triangle(
+                    x + tileSize * 0.78f,
+                    y + tileSize - pairingBandSize,
+                    x + tileSize * 0.5f,
+                    y + tileSize - pairingBandSize * 0.35f,
+                    x + tileSize * 0.78f,
+                    y + tileSize,
+                ),
+            )
+            PairingSide.BOTTOM -> listOf(
+                Triangle(
+                    x + tileSize * 0.22f,
+                    y + pairingBandSize,
+                    x + tileSize * 0.5f,
+                    y + pairingBandSize * 0.35f,
+                    x + tileSize * 0.22f,
+                    y,
+                ),
+                Triangle(
+                    x + tileSize * 0.78f,
+                    y + pairingBandSize,
+                    x + tileSize * 0.5f,
+                    y + pairingBandSize * 0.35f,
+                    x + tileSize * 0.78f,
+                    y,
+                ),
+            )
+            PairingSide.LEFT -> listOf(
+                Triangle(
+                    x + pairingBandSize,
+                    y + tileSize * 0.22f,
+                    x + pairingBandSize * 0.35f,
+                    y + tileSize * 0.5f,
+                    x,
+                    y + tileSize * 0.22f,
+                ),
+                Triangle(
+                    x + pairingBandSize,
+                    y + tileSize * 0.78f,
+                    x + pairingBandSize * 0.35f,
+                    y + tileSize * 0.5f,
+                    x,
+                    y + tileSize * 0.78f,
+                ),
+            )
+            PairingSide.RIGHT -> listOf(
+                Triangle(
+                    x + tileSize - pairingBandSize,
+                    y + tileSize * 0.22f,
+                    x + tileSize - pairingBandSize * 0.35f,
+                    y + tileSize * 0.5f,
+                    x + tileSize,
+                    y + tileSize * 0.22f,
+                ),
+                Triangle(
+                    x + tileSize - pairingBandSize,
+                    y + tileSize * 0.78f,
+                    x + tileSize - pairingBandSize * 0.35f,
+                    y + tileSize * 0.5f,
+                    x + tileSize,
+                    y + tileSize * 0.78f,
+                ),
+            )
+        }
     }
 
     private fun triangleOnSide(position: Vector2, side: PairingSide, inset: Float): Triangle {
@@ -247,7 +325,6 @@ class NucleotideRenderer(
         private val URACIL_COLOR = Color(0.36f, 0.78f, 0.95f, 1f)
         private val CYTOSINE_COLOR = Color(0.55f, 0.88f, 0.42f, 1f)
         private val GUANINE_COLOR = Color(0.9f, 0.42f, 0.76f, 1f)
-        private val SOCKET_HINT_COLOR = Color(0.08f, 0.1f, 0.16f, 0.35f)
 
         private val ANGLED_PROTRUSION = ConnectorProfile(ConnectorFamily.ANGLED, ConnectorPolarity.PROTRUSION)
         private val ANGLED_INDENTATION = ConnectorProfile(ConnectorFamily.ANGLED, ConnectorPolarity.INDENTATION)
@@ -283,18 +360,9 @@ enum class PairingSide {
 }
 
 internal data class NucleotideGeometry(
-    val bodyX: Float,
-    val bodyY: Float,
-    val bodyWidth: Float,
-    val bodyHeight: Float,
-    val protrusionTriangles: List<Triangle>,
-    val protrusionRects: List<Rect>,
-    val socketTriangles: List<Triangle>,
-    val socketRects: List<Rect>,
-) {
-    fun allRects(): List<Rect> = listOf(Rect(bodyX, bodyY, bodyWidth, bodyHeight)) + protrusionRects + socketRects
-    fun allTriangles(): List<Triangle> = protrusionTriangles + socketTriangles
-}
+    val filledTriangles: List<Triangle>,
+    val filledRects: List<Rect>,
+)
 
 internal data class Rect(
     val x: Float,
