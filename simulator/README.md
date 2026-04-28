@@ -81,6 +81,7 @@ Expected result:
 
 - A desktop window titled **Life-Sim Simulator** opens.
 - The app renders a static scene showing nucleotide/sequence/DNA text plus simple graphics.
+- A small FPS counter is pinned to the lower-left corner as a lightweight debug overlay.
 - The scene can be used as a baseline for manual rendering verification during future simulator changes.
 
 ## Next steps

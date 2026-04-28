@@ -2,6 +2,7 @@ package life.sim.simulator
 
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -48,6 +49,8 @@ class SimulatorApplication : ApplicationAdapter() {
             viewportWidth = Gdx.graphics.width.toFloat(),
             viewportHeight = Gdx.graphics.height.toFloat(),
         )
+
+        drawFpsCounter(Gdx.graphics.height.toFloat())
     }
 
     override fun resize(width: Int, height: Int) {
@@ -65,5 +68,37 @@ class SimulatorApplication : ApplicationAdapter() {
         camera.update()
         batch.projectionMatrix = camera.combined
         shapeRenderer.projectionMatrix = camera.combined
+    }
+
+    private fun drawFpsCounter(viewportHeight: Float) {
+        // Keep shell-level diagnostics outside scene implementations so overlays stay consistent
+        // as the simulator grows beyond the demo scene.
+        val y = fpsCounterBaselineY(viewportHeight = viewportHeight, lineHeight = font.lineHeight)
+
+        batch.begin()
+        font.color = Color.WHITE
+        font.draw(batch, formatFpsCounterText(Gdx.graphics.framesPerSecond), FPS_COUNTER_PADDING, y)
+        batch.end()
+    }
+
+    companion object {
+        internal const val FPS_COUNTER_PADDING = 12f
+
+        internal fun formatFpsCounterText(framesPerSecond: Int): String = "FPS: $framesPerSecond"
+
+        internal fun fpsCounterBaselineY(
+            viewportHeight: Float,
+            lineHeight: Float,
+            padding: Float = FPS_COUNTER_PADDING,
+        ): Float {
+            val preferredBaseline = padding + lineHeight
+            val maxVisibleBaseline = viewportHeight - padding
+
+            return if (maxVisibleBaseline >= lineHeight) {
+                minOf(preferredBaseline, maxVisibleBaseline)
+            } else {
+                lineHeight
+            }
+        }
     }
 }
