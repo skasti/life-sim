@@ -6,9 +6,15 @@ import life.sim.simulator.rendering.RenderContext
  * Scene/state contract for simulator runtime behavior.
  */
 interface Scene {
-    fun update(deltaSeconds: Float)
+    val objectManager: ObjectManager
+
+    fun update(deltaSeconds: Float) {
+        objectManager.update(deltaSeconds)
+    }
 
     fun render(
         context: RenderContext,
-    )
+    ) {
+        objectManager.render(context)
+    }
 }

@@ -8,6 +8,7 @@ import kotlin.test.assertIs
 class DemoSceneTest {
     @Test
     fun `sample returns a scene with deterministic nucleotide sequence and dna fixtures`() {
+        SimulatorApplication.initializeRenderers()
         val scene = DemoScene.sample()
 
         assertIs<Scene>(scene)

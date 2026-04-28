@@ -6,7 +6,6 @@ import life.sim.biology.molecules.Dna
 import life.sim.biology.primitives.Nucleotide
 import life.sim.biology.primitives.NucleotideSequence
 import life.sim.simulator.rendering.RenderContext
-import life.sim.simulator.rendering.Renderers
 
 /**
  * Static, hand-authored rendering inputs used as a visual baseline for simulator work.
@@ -16,11 +15,21 @@ data class DemoScene(
     val sequence: NucleotideSequence,
     val dna: Dna,
 ) : Scene {
+    override val objectManager = ObjectManager()
+
+    private val nucleotideWrapper = SimWrapper(Vector2(), nucleotide)
+    private val sequenceWrapper = SimWrapper(Vector2(), sequence)
+    private val dnaWrapper = SimWrapper(Vector2(), dna)
+
     val sequenceText: String = sequence.toString()
     val dnaForwardText: String = dna.forward.toString()
     val dnaReverseText: String = dna.reverse.toString()
 
-    override fun update(deltaSeconds: Float) = Unit
+    init {
+        objectManager.add(nucleotideWrapper)
+        objectManager.add(sequenceWrapper)
+        objectManager.add(dnaWrapper)
+    }
 
     override fun render(
         context: RenderContext,
@@ -37,17 +46,16 @@ data class DemoScene(
         val sequenceTileY = sequenceLabelY - 26f
         val dnaTileY = dnaLabelY - 26f
 
+        nucleotideWrapper.position.set(moleculeX, nucleotideTileY)
+        sequenceWrapper.position.set(moleculeX, sequenceTileY)
+        dnaWrapper.position.set(moleculeX, dnaTileY)
+
         context.drawText("Life-Sim Rendering Demo (static scene)", leftMargin, titleY, Color.WHITE)
-
         context.drawText("Nucleotide", leftMargin, nucleotideLabelY, Color.WHITE)
-        Renderers.render(nucleotide, Vector2(moleculeX, nucleotideTileY), context)
-
         context.drawText("Nucleotide sequence", leftMargin, sequenceLabelY, Color.WHITE)
-        Renderers.render(sequence, Vector2(moleculeX, sequenceTileY), context)
-
         context.drawText("DNA duplex", leftMargin, dnaLabelY, Color.WHITE)
-        Renderers.render(dna, Vector2(moleculeX, dnaTileY), context)
 
+        super.render(context)
         context.finish()
     }
 
