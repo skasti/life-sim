@@ -288,7 +288,7 @@ class NucleotideRenderer(
         val capCenterOffset = inset * 0.5f
         return when (side) {
             PairingSide.LEFT -> RoundedShape(
-                rect = Rect(x + pairingBandSize - inset * 0.9f, y + tileSize * 0.33f, inset * 0.6f, tileSize * 0.34f),
+                rect = Rect(x + pairingBandSize - inset * 0.6f, y + tileSize * 0.33f, inset * 0.6f, tileSize * 0.34f),
                 cap = Arc(
                     x + pairingBandSize - capCenterOffset,
                     y + tileSize * 0.5f,
