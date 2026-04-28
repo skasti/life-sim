@@ -44,7 +44,6 @@ data class DemoScene(
         val dnaLabelY = viewportHeight * 0.49f
 
         val moleculeX = leftMargin + viewportWidth * 0.22f
-        val summaryTextX = viewportWidth * 0.68f
         val nucleotideTileY = nucleotideLabelY - 26f
         val sequenceTileY = sequenceLabelY - 26f
         val dnaTileY = dnaLabelY - 26f
@@ -56,12 +55,9 @@ data class DemoScene(
 
         context.drawText("Nucleotide sequence", leftMargin, sequenceLabelY, Color.WHITE)
         Renderers.render(sequence, Vector2(moleculeX, sequenceTileY), context)
-        context.drawText(sequenceText, summaryTextX, sequenceLabelY, Color(0.84f, 0.88f, 0.96f, 1f))
 
         context.drawText("DNA duplex", leftMargin, dnaLabelY, Color.WHITE)
         Renderers.render(dna, Vector2(moleculeX, dnaTileY), context)
-        context.drawText(dnaForwardText, summaryTextX, dnaLabelY, Color(0.84f, 0.88f, 0.96f, 1f))
-        context.drawText(dnaReverseText, summaryTextX, dnaLabelY - 46f, Color(0.84f, 0.88f, 0.96f, 1f))
 
         context.finish()
     }
