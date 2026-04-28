@@ -54,6 +54,19 @@ data class RenderContext(
         shapeRenderer.triangle(x1, y1, x2, y2, x3, y3)
     }
 
+    fun drawFilledArc(
+        x: Float,
+        y: Float,
+        radius: Float,
+        startDegrees: Float,
+        degrees: Float,
+        color: Color,
+    ) {
+        ensureShapeMode()
+        shapeRenderer.color = color
+        shapeRenderer.arc(x, y, radius, startDegrees, degrees)
+    }
+
     fun drawText(text: String, x: Float, y: Float, color: Color = Color.WHITE) {
         ensureBatchMode()
         font.color = color

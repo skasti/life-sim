@@ -36,6 +36,9 @@ class NucleotideRenderer(
         geometry.filledTriangles.forEach { triangle ->
             context.drawFilledTriangle(triangle.x1, triangle.y1, triangle.x2, triangle.y2, triangle.x3, triangle.y3, color)
         }
+        geometry.filledArcs.forEach { arc ->
+            context.drawFilledArc(arc.x, arc.y, arc.radius, arc.startDegrees, arc.degrees, color)
+        }
 
         context.drawCenteredText(value.symbol.toString(), position.x + tileSize * 0.5f, position.y + tileSize * 0.5f)
     }
@@ -66,6 +69,7 @@ class NucleotideRenderer(
         }
         val filledTriangles = mutableListOf<Triangle>()
         val filledRects = mutableListOf<Rect>()
+        val filledArcs = mutableListOf<Arc>()
 
         when (profile.family) {
             ConnectorFamily.ANGLED -> {
@@ -84,7 +88,7 @@ class NucleotideRenderer(
                     val roundedShape = roundedOnSide(position, orientation.pairingSide, inset)
                     filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
                     filledRects += roundedShape.rect
-                    filledTriangles += roundedShape.tip
+                    filledArcs += roundedShape.cap
                 } else {
                     filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
                     filledRects += socketFlankRects(position, orientation.pairingSide)
@@ -95,6 +99,7 @@ class NucleotideRenderer(
         return NucleotideGeometry(
             filledTriangles = filledTriangles,
             filledRects = filledRects,
+            filledArcs = filledArcs,
         )
     }
 
@@ -117,7 +122,14 @@ class NucleotideRenderer(
             xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
         }
 
-        return rectsInBounds && trianglesInBounds
+        val arcsInBounds = geometry.filledArcs.all { arc ->
+            arc.x - arc.radius >= minX &&
+                arc.x + arc.radius <= maxX &&
+                arc.y - arc.radius >= minY &&
+                arc.y + arc.radius <= maxY
+        }
+
+        return rectsInBounds && trianglesInBounds && arcsInBounds
     }
 
     private fun bodyWithoutPairingBand(position: Vector2, side: PairingSide): Rect = when (side) {
@@ -272,49 +284,47 @@ class NucleotideRenderer(
     private fun roundedOnSide(position: Vector2, side: PairingSide, inset: Float): RoundedShape {
         val x = position.x
         val y = position.y
+        val capRadius = inset * 0.4f
+        val capCenterOffset = inset * 0.5f
         return when (side) {
             PairingSide.LEFT -> RoundedShape(
-                rect = Rect(x + pairingBandSize - inset * 0.9f, y + tileSize * 0.33f, inset * 0.9f, tileSize * 0.34f),
-                tip = Triangle(
-                    x + pairingBandSize - inset,
+                rect = Rect(x + pairingBandSize - inset * 0.9f, y + tileSize * 0.33f, inset * 0.6f, tileSize * 0.34f),
+                cap = Arc(
+                    x + pairingBandSize - capCenterOffset,
                     y + tileSize * 0.5f,
-                    x + pairingBandSize - inset * 0.2f,
-                    y + tileSize * 0.72f,
-                    x + pairingBandSize - inset * 0.2f,
-                    y + tileSize * 0.28f,
+                    capRadius,
+                    90f,
+                    180f,
                 ),
             )
             PairingSide.RIGHT -> RoundedShape(
-                rect = Rect(x + tileSize - pairingBandSize, y + tileSize * 0.33f, inset * 0.9f, tileSize * 0.34f),
-                tip = Triangle(
-                    x + tileSize - pairingBandSize + inset,
+                rect = Rect(x + tileSize - pairingBandSize, y + tileSize * 0.33f, inset * 0.6f, tileSize * 0.34f),
+                cap = Arc(
+                    x + tileSize - pairingBandSize + capCenterOffset,
                     y + tileSize * 0.5f,
-                    x + tileSize - pairingBandSize + inset * 0.2f,
-                    y + tileSize * 0.72f,
-                    x + tileSize - pairingBandSize + inset * 0.2f,
-                    y + tileSize * 0.28f,
+                    capRadius,
+                    -90f,
+                    180f,
                 ),
             )
             PairingSide.TOP -> RoundedShape(
-                rect = Rect(x + tileSize * 0.33f, y + tileSize - pairingBandSize, tileSize * 0.34f, inset * 0.9f),
-                tip = Triangle(
+                rect = Rect(x + tileSize * 0.33f, y + tileSize - pairingBandSize, tileSize * 0.34f, inset * 0.6f),
+                cap = Arc(
                     x + tileSize * 0.5f,
-                    y + tileSize - pairingBandSize + inset,
-                    x + tileSize * 0.72f,
-                    y + tileSize - pairingBandSize + inset * 0.2f,
-                    x + tileSize * 0.28f,
-                    y + tileSize - pairingBandSize + inset * 0.2f,
+                    y + tileSize - pairingBandSize + capCenterOffset,
+                    capRadius,
+                    0f,
+                    180f,
                 ),
             )
             PairingSide.BOTTOM -> RoundedShape(
-                rect = Rect(x + tileSize * 0.33f, y + pairingBandSize - inset * 0.9f, tileSize * 0.34f, inset * 0.9f),
-                tip = Triangle(
+                rect = Rect(x + tileSize * 0.33f, y + pairingBandSize - inset * 0.6f, tileSize * 0.34f, inset * 0.6f),
+                cap = Arc(
                     x + tileSize * 0.5f,
-                    y + pairingBandSize - inset,
-                    x + tileSize * 0.72f,
-                    y + pairingBandSize - inset * 0.2f,
-                    x + tileSize * 0.28f,
-                    y + pairingBandSize - inset * 0.2f,
+                    y + pairingBandSize - capCenterOffset,
+                    capRadius,
+                    180f,
+                    180f,
                 ),
             )
         }
@@ -362,6 +372,7 @@ enum class PairingSide {
 internal data class NucleotideGeometry(
     val filledTriangles: List<Triangle>,
     val filledRects: List<Rect>,
+    val filledArcs: List<Arc>,
 )
 
 internal data class Rect(
@@ -382,7 +393,15 @@ internal data class Triangle(
 
 private data class RoundedShape(
     val rect: Rect,
-    val tip: Triangle,
+    val cap: Arc,
+)
+
+internal data class Arc(
+    val x: Float,
+    val y: Float,
+    val radius: Float,
+    val startDegrees: Float,
+    val degrees: Float,
 )
 
 data class SequenceRenderStyle(
