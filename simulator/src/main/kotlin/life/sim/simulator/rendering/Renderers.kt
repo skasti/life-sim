@@ -25,4 +25,8 @@ object Renderers {
             "No renderer registered for type ${value::class.qualifiedName}."
         }.render(value, position, context)
     }
+
+    fun init() {
+        renderers.forEach { it.value.init() }
+    }
 }

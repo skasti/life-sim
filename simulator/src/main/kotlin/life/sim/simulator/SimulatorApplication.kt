@@ -9,6 +9,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.utils.ScreenUtils
+import life.sim.simulator.rendering.DnaRenderer
+import life.sim.simulator.rendering.NucleotideRenderer
+import life.sim.simulator.rendering.NucleotideSequenceRenderer
+import life.sim.simulator.rendering.Renderers
 
 /**
  * Simulator shell that owns app lifecycle and delegates update/render work to the current scene.
@@ -36,6 +40,12 @@ class SimulatorApplication : ApplicationAdapter() {
         }
         shapeRenderer = ShapeRenderer()
         updateProjectionMatrices(Gdx.graphics.width, Gdx.graphics.height)
+
+        NucleotideRenderer()
+        NucleotideSequenceRenderer()
+        DnaRenderer()
+
+        Renderers.init()
     }
 
     override fun render() {

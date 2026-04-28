@@ -10,6 +10,15 @@ import life.sim.biology.primitives.SequenceDirection
 class NucleotideRenderer(
     val tileSize: Float = 34f,
 ) : Renderer<Nucleotide> {
+
+    init {
+        Renderers.register(Nucleotide::class, this)
+    }
+
+    override fun init() {
+        // Nothing to do here since this renderer has no dependencies on other renderers.
+    }
+
     override fun render(value: Nucleotide, position: Vector2, context: RenderContext) {
         context.drawFilledRect(position.x, position.y, tileSize, tileSize, nucleotideColor(value))
         context.drawCenteredText(value.symbol.toString(), position.x + tileSize * 0.5f, position.y + tileSize * 0.5f)
@@ -36,10 +45,19 @@ data class SequenceRenderStyle(
 )
 
 class NucleotideSequenceRenderer(
-    val nucleotideRenderer: NucleotideRenderer,
     val tileGap: Float = 10f,
+    val tileSize: Float = 34f,
 ) : Renderer<NucleotideSequence> {
+    private lateinit var nucleotideRenderer: Renderer<Nucleotide>
     private val nucleotidePosition = Vector2()
+
+    init {
+        Renderers.register(NucleotideSequence::class, this)
+    }
+
+    override fun init() {
+        nucleotideRenderer = Renderers.forType<Nucleotide>() ?: error("NucleotideSequenceRenderer requires a registered renderer for Nucleotide.")
+    }
 
     override fun render(value: NucleotideSequence, position: Vector2, context: RenderContext) {
         render(value, position, context, SequenceRenderStyle())
@@ -56,7 +74,7 @@ class NucleotideSequenceRenderer(
         if (style.showBackbone) {
             context.drawLine(
                 x = position.x - 8f,
-                y = position.y + nucleotideRenderer.tileSize * 0.5f,
+                y = position.y + tileSize * 0.5f,
                 width = totalWidth + 16f,
                 height = 3f,
                 color = BACKBONE_COLOR,
@@ -68,7 +86,7 @@ class NucleotideSequenceRenderer(
             nucleotidePosition.x = x
             nucleotidePosition.y = position.y
             nucleotideRenderer.render(nucleotide, nucleotidePosition, context)
-            x += nucleotideRenderer.tileSize + tileGap
+            x += tileSize + tileGap
         }
 
         if (style.showDirectionIndicator) {
@@ -81,7 +99,7 @@ class NucleotideSequenceRenderer(
             return 0f
         }
 
-        return value.size * nucleotideRenderer.tileSize + (value.size - 1) * tileGap
+        return value.size * tileSize + (value.size - 1) * tileGap
     }
 
     private fun drawDirectionIndicator(
@@ -91,7 +109,7 @@ class NucleotideSequenceRenderer(
         width: Float,
         context: RenderContext,
     ) {
-        val centerY = y + nucleotideRenderer.tileSize * 0.5f
+        val centerY = y + tileSize * 0.5f
         val arrowHeight = 8f
         val arrowWidth = 12f
 
@@ -128,15 +146,25 @@ class NucleotideSequenceRenderer(
 }
 
 class DnaRenderer(
-    private val sequenceRenderer: NucleotideSequenceRenderer,
+    val tileSize: Float = 34f,
+    val tileGap: Float = 10f,
     val strandGap: Float = 14f,
 ) : Renderer<Dna> {
+    private lateinit var sequenceRenderer: Renderer<NucleotideSequence>
     private val topStrandPosition = Vector2()
     private val bottomStrandPosition = Vector2()
 
+    init {
+        Renderers.register(Dna::class, this)
+    }
+
+    override fun init() {
+        sequenceRenderer = Renderers.forType<NucleotideSequence>() ?: error("DnaRenderer requires a registered renderer for NucleotideSequences.")
+    }
+
     override fun render(value: Dna, position: Vector2, context: RenderContext) {
         val topY = position.y
-        val bottomY = topY - sequenceRenderer.nucleotideRenderer.tileSize - strandGap
+        val bottomY = topY - tileSize - strandGap
 
         topStrandPosition.x = position.x
         topStrandPosition.y = topY
@@ -146,26 +174,24 @@ class DnaRenderer(
         sequenceRenderer.render(
             value.forward,
             topStrandPosition,
-            context,
-            style = SequenceRenderStyle(showBackbone = true, showDirectionIndicator = true),
+            context
         )
         sequenceRenderer.render(
             value.reverse,
             bottomStrandPosition,
-            context,
-            style = SequenceRenderStyle(showBackbone = true, showDirectionIndicator = true),
+            context
         )
 
-        var connectorX = position.x + sequenceRenderer.nucleotideRenderer.tileSize * 0.47f
+        var connectorX = position.x + tileSize * 0.47f
         repeat(value.size) {
             context.drawLine(
                 x = connectorX,
-                y = bottomY + sequenceRenderer.nucleotideRenderer.tileSize,
-                width = sequenceRenderer.nucleotideRenderer.tileSize * 0.08f,
+                y = bottomY + tileSize,
+                width = tileSize * 0.08f,
                 height = strandGap,
                 color = PAIR_CONNECTOR_COLOR,
             )
-            connectorX += sequenceRenderer.nucleotideRenderer.tileSize + sequenceRenderer.tileGap
+            connectorX += tileSize + tileGap
         }
     }
 

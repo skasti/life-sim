@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2
 
 interface Renderer<T : Any> {
     fun render(value: T, position: Vector2, context: RenderContext)
+    fun init()
 }
 
 data class RenderContext(

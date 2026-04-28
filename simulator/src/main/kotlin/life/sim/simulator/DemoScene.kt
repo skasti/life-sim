@@ -8,9 +8,6 @@ import com.badlogic.gdx.math.Vector2
 import life.sim.biology.molecules.Dna
 import life.sim.biology.primitives.Nucleotide
 import life.sim.biology.primitives.NucleotideSequence
-import life.sim.simulator.rendering.DnaRenderer
-import life.sim.simulator.rendering.NucleotideRenderer
-import life.sim.simulator.rendering.NucleotideSequenceRenderer
 import life.sim.simulator.rendering.RenderContext
 import life.sim.simulator.rendering.Renderers
 
@@ -63,16 +60,6 @@ data class DemoScene(
     }
 
     companion object {
-        init {
-            val nucleotideRenderer = NucleotideRenderer()
-            val sequenceRenderer = NucleotideSequenceRenderer(nucleotideRenderer)
-            val dnaRenderer = DnaRenderer(sequenceRenderer)
-
-            Renderers.register(Nucleotide::class, nucleotideRenderer)
-            Renderers.register(NucleotideSequence::class, sequenceRenderer)
-            Renderers.register(Dna::class, dnaRenderer)
-        }
-
         fun sample(): DemoScene = DemoScene(
             nucleotide = Nucleotide.G,
             sequence = NucleotideSequence.of(">AUGCGAUCGUAA>"),
