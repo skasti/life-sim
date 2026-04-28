@@ -8,6 +8,12 @@ import life.sim.simulator.rendering.RenderContext
 interface Scene {
     val objectManager: ObjectManager
 
+    /**
+     * One-time scene setup hook for object/resource initialization that may depend on other
+     * systems being constructed.
+     */
+    fun init() = Unit
+
     fun update(deltaSeconds: Float) {
         objectManager.update(deltaSeconds)
     }

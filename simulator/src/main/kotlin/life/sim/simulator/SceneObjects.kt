@@ -45,6 +45,8 @@ class ObjectManager {
 
     internal fun renderablesInOrder(): List<Renderable> =
         objects.toList().mapNotNull { it as? Renderable }
+
+    internal fun objectCount(): Int = objects.size
 }
 
 /**

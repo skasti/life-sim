@@ -17,18 +17,28 @@ data class DemoScene(
 ) : Scene {
     override val objectManager = ObjectManager()
 
-    private val nucleotideWrapper = SimWrapper(Vector2(), nucleotide)
-    private val sequenceWrapper = SimWrapper(Vector2(), sequence)
-    private val dnaWrapper = SimWrapper(Vector2(), dna)
+    private lateinit var nucleotideWrapper: SimWrapper
+    private lateinit var sequenceWrapper: SimWrapper
+    private lateinit var dnaWrapper: SimWrapper
+    private var initialized = false
 
     val sequenceText: String = sequence.toString()
     val dnaForwardText: String = dna.forward.toString()
     val dnaReverseText: String = dna.reverse.toString()
 
-    init {
+    override fun init() {
+        if (initialized) {
+            return
+        }
+
+        nucleotideWrapper = SimWrapper(Vector2(), nucleotide)
+        sequenceWrapper = SimWrapper(Vector2(), sequence)
+        dnaWrapper = SimWrapper(Vector2(), dna)
+
         objectManager.add(nucleotideWrapper)
         objectManager.add(sequenceWrapper)
         objectManager.add(dnaWrapper)
+        initialized = true
     }
 
     override fun render(
@@ -46,9 +56,11 @@ data class DemoScene(
         val sequenceTileY = sequenceLabelY - 26f
         val dnaTileY = dnaLabelY - 26f
 
-        nucleotideWrapper.position.set(moleculeX, nucleotideTileY)
-        sequenceWrapper.position.set(moleculeX, sequenceTileY)
-        dnaWrapper.position.set(moleculeX, dnaTileY)
+        if (initialized) {
+            nucleotideWrapper.position.set(moleculeX, nucleotideTileY)
+            sequenceWrapper.position.set(moleculeX, sequenceTileY)
+            dnaWrapper.position.set(moleculeX, dnaTileY)
+        }
 
         context.drawText("Life-Sim Rendering Demo (static scene)", leftMargin, titleY, Color.WHITE)
         context.drawText("Nucleotide", leftMargin, nucleotideLabelY, Color.WHITE)

@@ -23,6 +23,7 @@ The simulator now uses a simple `Scene` abstraction backed by simulator-side sce
 
 - `SimulatorApplication` owns the libGDX lifecycle and delegates update/render work
 - each scene exposes an `ObjectManager` that owns scene-object lifecycle
+- scenes use an explicit `init()` hook for setup that depends on systems created alongside the scene
 - `SimObject` is the common base concept for objects that exist in a scene
 - objects may optionally implement `Updateable`, `Renderable`, or both
 - `ObjectManager` keeps deterministic insertion order for update/render iteration
