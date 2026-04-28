@@ -32,6 +32,8 @@ data class DemoScene(
             SimWrapper(Vector2(MOLECULE_X, SEQUENCE_Y), sequence),
             SimWrapper(Vector2(MOLECULE_X, DNA_Y), dna),
         )
+
+        objectManager.processQueues()
         initialized = true
     }
 

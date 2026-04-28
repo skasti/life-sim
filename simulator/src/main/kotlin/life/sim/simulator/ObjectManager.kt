@@ -31,7 +31,14 @@ class ObjectManager {
 
     fun update(deltaSeconds: Float) {
         updatable.forEach { it.update(deltaSeconds) }
+        processQueues()
+    }
 
+    fun render(context: RenderContext) {
+        renderable.forEach { it.render(context) }
+    }
+
+    internal fun processQueues() {
         for (obj in removeQueue) {
             objects -= obj
             if (obj is Updateable) {
@@ -59,10 +66,7 @@ class ObjectManager {
         }
         addQueue.clear()
     }
-
-    fun render(context: RenderContext) {
-        renderable.forEach { it.render(context) }
-    }
-
+    internal fun updatablesList(): List<Updateable> = updatable.toList()
+    internal fun renderablesList(): List<Renderable> = renderable.toList()
     internal fun objectCount(): Int = objects.size
 }
