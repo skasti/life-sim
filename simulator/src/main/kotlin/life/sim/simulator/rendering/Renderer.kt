@@ -126,7 +126,7 @@ data class RenderContext(
 
         if (mode == DrawMode.BATCH) {
             batch.end()
-        } else if (shapeType != type) {
+        } else if (mode == DrawMode.SHAPE && shapeType != type) {
             shapeRenderer.end()
         }
 
