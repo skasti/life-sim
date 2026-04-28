@@ -181,15 +181,17 @@ class DnaRenderer(
             context
         )
 
-        var connectorX = position.x + tileSize * 0.47f
+        val connectorA = Vector2(position.x + tileSize * 0.47f, topY)
+        val connectorB = Vector2(position.x + tileSize * 0.47f, bottomY + tileSize)
         repeat(value.size) {
             context.drawLine(
-                a = Vector2(connectorX, topY),
-                b = Vector2(connectorX, bottomY + tileSize),
+                a = connectorA,
+                b = connectorB,
                 width = tileSize * 0.08f,
                 color = PAIR_CONNECTOR_COLOR,
             )
-            connectorX += tileSize + tileGap
+            connectorA.x += tileSize + tileGap
+            connectorB.x += tileSize + tileGap
         }
     }
 
