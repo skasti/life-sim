@@ -48,7 +48,6 @@ data class DemoScene(
         context.drawText("DNA duplex", LABEL_X, DNA_LABEL_Y, Color.WHITE)
 
         super.render(context)
-        context.finish()
     }
 
     companion object {

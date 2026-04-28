@@ -62,7 +62,9 @@ class SimulatorApplication : ApplicationAdapter() {
         ScreenUtils.clear(0.05f, 0.05f, 0.08f, 1f)
         renderContext.viewportWidth = Gdx.graphics.width.toFloat()
         renderContext.viewportHeight = Gdx.graphics.height.toFloat()
+
         currentScene.render(renderContext)
+
         drawFpsCounter(Gdx.graphics.height.toFloat())
     }
 
