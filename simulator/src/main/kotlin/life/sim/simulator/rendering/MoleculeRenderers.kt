@@ -10,10 +10,10 @@ import life.sim.biology.primitives.SequenceDirection
 class NucleotideRenderer(
     val tileSize: Float = 34f,
 ) : Renderer<Nucleotide> {
-    private val pairingBandSize = tileSize * 0.28f
-    private val angledInsetSize = pairingBandSize * 0.7f
-    private val roundedInsetSize = pairingBandSize * 0.58f
-    private val socketFlankRatio = 0.28f
+    private val pairingBandSize = tileSize * 0.5f
+    private val angledInsetSize = pairingBandSize * 1f
+    private val roundedInsetSize = pairingBandSize * 1f
+    private val socketFlankRatio = 1f
 
     init {
         Renderers.register(Nucleotide::class, this)
@@ -39,6 +39,15 @@ class NucleotideRenderer(
         geometry.filledArcs.forEach { arc ->
             context.drawFilledArc(arc.x, arc.y, arc.radius, arc.startDegrees, arc.degrees, color)
         }
+        geometry.arcs.forEach { arc ->
+            context.drawArc(arc.x, arc.y, arc.radius, arc.startDegrees, arc.degrees, color)
+        }
+        geometry.triangles.forEach { triangle ->
+            context.drawTriangle(triangle.x1, triangle.y1, triangle.x2, triangle.y2, triangle.x3, triangle.y3, color)
+        }
+        geometry.lines.forEach { line ->
+            context.drawLine(line.a, line.b, line.width, color)
+        }
 
         context.drawCenteredText(value.symbol.toString(), position.x + tileSize * 0.5f, position.y + tileSize * 0.5f)
     }
@@ -63,35 +72,31 @@ class NucleotideRenderer(
         orientation: NucleotideOrientation,
     ): NucleotideGeometry {
         val profile = connectorProfile(nucleotide)
-        val inset = when (profile.family) {
-            ConnectorFamily.ANGLED -> angledInsetSize
-            ConnectorFamily.ROUNDED -> roundedInsetSize
-        }
         val filledTriangles = mutableListOf<Triangle>()
         val filledRects = mutableListOf<Rect>()
         val filledArcs = mutableListOf<Arc>()
+        val arcs = mutableListOf<Arc>()
+        val triangles = mutableListOf<Triangle>()
+        val lines = mutableListOf<Line>()
 
         when (profile.family) {
             ConnectorFamily.ANGLED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
-                    filledTriangles += triangleOnSide(position, orientation.pairingSide, inset)
+                    filledRects += Rect(position.x, position.y, tileSize, tileSize)
+                    filledTriangles += triangleOnSide(position, orientation.pairingSide)
                 } else {
-                    filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
-                    filledRects += socketFlankRects(position, orientation.pairingSide)
-                    filledTriangles += angledSocketFlankTriangles(position, orientation.pairingSide)
+                    filledRects += Rect(position.x, position.y, tileSize, tileSize)
+                    filledTriangles += inverseTriangleOnSide(position, orientation.pairingSide)
                 }
             }
 
             ConnectorFamily.ROUNDED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    val roundedShape = roundedOnSide(position, orientation.pairingSide, inset)
-                    filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
-                    filledRects += roundedShape.rect
-                    filledArcs += roundedShape.cap
+                    filledRects += Rect(position.x, position.y, tileSize, tileSize)
+                    filledArcs += roundedOnSide(position, orientation.pairingSide)
                 } else {
-                    filledRects += bodyWithoutPairingBand(position, orientation.pairingSide)
-                    filledRects += socketFlankRects(position, orientation.pairingSide)
+                    filledRects += Rect(position.x, position.y, tileSize, tileSize)
+                    arcs += roundedSocketOnSide(position, orientation.pairingSide)
                 }
             }
         }
@@ -100,6 +105,9 @@ class NucleotideRenderer(
             filledTriangles = filledTriangles,
             filledRects = filledRects,
             filledArcs = filledArcs,
+            arcs = arcs,
+            triangles = triangles,
+            lines = lines,
         )
     }
 
@@ -132,200 +140,192 @@ class NucleotideRenderer(
         return rectsInBounds && trianglesInBounds && arcsInBounds
     }
 
-    private fun bodyWithoutPairingBand(position: Vector2, side: PairingSide): Rect = when (side) {
-        PairingSide.LEFT -> Rect(position.x + pairingBandSize, position.y, tileSize - pairingBandSize, tileSize)
-        PairingSide.RIGHT -> Rect(position.x, position.y, tileSize - pairingBandSize, tileSize)
-        PairingSide.TOP -> Rect(position.x, position.y, tileSize, tileSize - pairingBandSize)
-        PairingSide.BOTTOM -> Rect(position.x, position.y + pairingBandSize, tileSize, tileSize - pairingBandSize)
-    }
-
-    private fun socketFlankRects(position: Vector2, side: PairingSide): List<Rect> {
-        val x = position.x
-        val y = position.y
-        val flank = tileSize * socketFlankRatio
-        return when (side) {
-            PairingSide.TOP -> listOf(
-                Rect(x, y + tileSize - pairingBandSize, flank, pairingBandSize),
-                Rect(x + tileSize - flank, y + tileSize - pairingBandSize, flank, pairingBandSize),
-            )
-            PairingSide.BOTTOM -> listOf(
-                Rect(x, y, flank, pairingBandSize),
-                Rect(x + tileSize - flank, y, flank, pairingBandSize),
-            )
-            PairingSide.LEFT -> listOf(
-                Rect(x, y, pairingBandSize, flank),
-                Rect(x, y + tileSize - flank, pairingBandSize, flank),
-            )
-            PairingSide.RIGHT -> listOf(
-                Rect(x + tileSize - pairingBandSize, y, pairingBandSize, flank),
-                Rect(x + tileSize - pairingBandSize, y + tileSize - flank, pairingBandSize, flank),
-            )
-        }
-    }
-
-    private fun angledSocketFlankTriangles(position: Vector2, side: PairingSide): List<Triangle> {
+    private fun inverseTriangleOnSide(position: Vector2, side: PairingSide): List<Triangle> {
         val x = position.x
         val y = position.y
         return when (side) {
             PairingSide.TOP -> listOf(
                 Triangle(
-                    x + tileSize * 0.22f,
-                    y + tileSize - pairingBandSize,
+                    x,
+                    y + tileSize,
+                    x,
+                    y + tileSize + pairingBandSize,
                     x + tileSize * 0.5f,
-                    y + tileSize - pairingBandSize * 0.35f,
-                    x + tileSize * 0.22f,
                     y + tileSize,
                 ),
                 Triangle(
-                    x + tileSize * 0.78f,
-                    y + tileSize - pairingBandSize,
                     x + tileSize * 0.5f,
-                    y + tileSize - pairingBandSize * 0.35f,
-                    x + tileSize * 0.78f,
+                    y + tileSize,
+                    x + tileSize,
+                    y + tileSize + pairingBandSize,
+                    x + tileSize,
                     y + tileSize,
                 ),
             )
             PairingSide.BOTTOM -> listOf(
                 Triangle(
-                    x + tileSize * 0.22f,
-                    y + pairingBandSize,
-                    x + tileSize * 0.5f,
-                    y + pairingBandSize * 0.35f,
-                    x + tileSize * 0.22f,
+                    x,
                     y,
+                    x + tileSize * 0.5f,
+                    y,
+                    x,
+                    y - pairingBandSize,
                 ),
                 Triangle(
-                    x + tileSize * 0.78f,
-                    y + pairingBandSize,
                     x + tileSize * 0.5f,
-                    y + pairingBandSize * 0.35f,
-                    x + tileSize * 0.78f,
                     y,
+                    x + tileSize,
+                    y,
+                    x + tileSize,
+                    y - pairingBandSize,
                 ),
             )
             PairingSide.LEFT -> listOf(
                 Triangle(
-                    x + pairingBandSize,
-                    y + tileSize * 0.22f,
-                    x + pairingBandSize * 0.35f,
-                    y + tileSize * 0.5f,
                     x,
-                    y + tileSize * 0.22f,
+                    y,
+                    x,
+                    y - tileSize * 0.5f,
+                    x - pairingBandSize,
+                    y,
                 ),
                 Triangle(
-                    x + pairingBandSize,
-                    y + tileSize * 0.78f,
-                    x + pairingBandSize * 0.35f,
-                    y + tileSize * 0.5f,
                     x,
-                    y + tileSize * 0.78f,
+                    y - tileSize * 0.5f,
+                    x,
+                    y - tileSize,
+                    x - pairingBandSize,
+                    y - tileSize,
                 ),
             )
             PairingSide.RIGHT -> listOf(
                 Triangle(
-                    x + tileSize - pairingBandSize,
-                    y + tileSize * 0.22f,
-                    x + tileSize - pairingBandSize * 0.35f,
-                    y + tileSize * 0.5f,
                     x + tileSize,
-                    y + tileSize * 0.22f,
+                    y + tileSize,
+                    x + tileSize + pairingBandSize,
+                    y + tileSize,
+                    x + tileSize,
+                    y + tileSize * 0.5f,
                 ),
                 Triangle(
-                    x + tileSize - pairingBandSize,
-                    y + tileSize * 0.78f,
-                    x + tileSize - pairingBandSize * 0.35f,
-                    y + tileSize * 0.5f,
                     x + tileSize,
-                    y + tileSize * 0.78f,
+                    y + tileSize * 0.5f,
+                    x + tileSize + pairingBandSize,
+                    y,
+                    x + tileSize,
+                    y,
                 ),
             )
         }
     }
 
-    private fun triangleOnSide(position: Vector2, side: PairingSide, inset: Float): Triangle {
+    private fun triangleOnSide(position: Vector2, side: PairingSide): Triangle {
         val x = position.x
         val y = position.y
         return when (side) {
             PairingSide.LEFT -> Triangle(
-                x + pairingBandSize - inset,
+                x,
+                y,
+                x,
+                y + tileSize,
+                x - pairingBandSize,
                 y + tileSize * 0.5f,
-                x + pairingBandSize,
-                y + tileSize * 0.78f,
-                x + pairingBandSize,
-                y + tileSize * 0.22f,
             )
             PairingSide.RIGHT -> Triangle(
-                x + tileSize - pairingBandSize + inset,
+                x + tileSize,
+                y,
+                x + tileSize + pairingBandSize,
                 y + tileSize * 0.5f,
-                x + tileSize - pairingBandSize,
-                y + tileSize * 0.78f,
-                x + tileSize - pairingBandSize,
-                y + tileSize * 0.22f,
+                x + tileSize,
+                y + tileSize,
             )
             PairingSide.TOP -> Triangle(
+                x,
+                y + tileSize,
                 x + tileSize * 0.5f,
-                y + tileSize - pairingBandSize + inset,
-                x + tileSize * 0.78f,
-                y + tileSize - pairingBandSize,
-                x + tileSize * 0.22f,
-                y + tileSize - pairingBandSize,
+                y + tileSize + pairingBandSize,
+                x + tileSize,
+                y + tileSize,
             )
             PairingSide.BOTTOM -> Triangle(
+                x,
+                y,
+                x + tileSize,
+                y,
                 x + tileSize * 0.5f,
-                y + pairingBandSize - inset,
-                x + tileSize * 0.78f,
-                y + pairingBandSize,
-                x + tileSize * 0.22f,
-                y + pairingBandSize,
+                y - pairingBandSize,
             )
         }
     }
 
-    private fun roundedOnSide(position: Vector2, side: PairingSide, inset: Float): RoundedShape {
+    private fun roundedOnSide(position: Vector2, side: PairingSide): Arc {
         val x = position.x
         val y = position.y
-        val capRadius = inset * 0.4f
-        val capCenterOffset = inset * 0.5f
+        val capRadius = tileSize * 0.5f
         return when (side) {
-            PairingSide.LEFT -> RoundedShape(
-                rect = Rect(x + pairingBandSize - inset * 0.6f, y + tileSize * 0.33f, inset * 0.6f, tileSize * 0.34f),
-                cap = Arc(
-                    x + pairingBandSize - capCenterOffset,
+            PairingSide.LEFT -> Arc(
+                    x,
                     y + tileSize * 0.5f,
                     capRadius,
                     90f,
                     180f,
-                ),
-            )
-            PairingSide.RIGHT -> RoundedShape(
-                rect = Rect(x + tileSize - pairingBandSize, y + tileSize * 0.33f, inset * 0.6f, tileSize * 0.34f),
-                cap = Arc(
-                    x + tileSize - pairingBandSize + capCenterOffset,
+                )
+            PairingSide.RIGHT -> Arc(
+                    x + tileSize,
                     y + tileSize * 0.5f,
                     capRadius,
                     -90f,
                     180f,
-                ),
-            )
-            PairingSide.TOP -> RoundedShape(
-                rect = Rect(x + tileSize * 0.33f, y + tileSize - pairingBandSize, tileSize * 0.34f, inset * 0.6f),
-                cap = Arc(
+                )
+            PairingSide.TOP -> Arc(
                     x + tileSize * 0.5f,
-                    y + tileSize - pairingBandSize + capCenterOffset,
+                    y + tileSize,
                     capRadius,
                     0f,
                     180f,
-                ),
-            )
-            PairingSide.BOTTOM -> RoundedShape(
-                rect = Rect(x + tileSize * 0.33f, y + pairingBandSize - inset * 0.6f, tileSize * 0.34f, inset * 0.6f),
-                cap = Arc(
+                )
+            PairingSide.BOTTOM -> Arc(
                     x + tileSize * 0.5f,
-                    y + pairingBandSize - capCenterOffset,
+                    y,
                     capRadius,
+                    -180f,
                     180f,
-                    180f,
-                ),
+                )
+        }
+    }
+
+    private fun roundedSocketOnSide(position: Vector2, side: PairingSide): Arc {
+        val x = position.x
+        val y = position.y
+        val capRadius = tileSize * 0.5f
+        return when (side) {
+            PairingSide.LEFT -> Arc(
+                x - capRadius,
+                y + tileSize * 0.5f,
+                capRadius,
+                -90f,
+                180f,
+            )
+            PairingSide.RIGHT -> Arc(
+                x + tileSize + capRadius,
+                y + tileSize * 0.5f,
+                capRadius,
+                90f,
+                180f,
+            )
+            PairingSide.TOP -> Arc(
+                x + tileSize * 0.5f,
+                y + tileSize + capRadius,
+                capRadius,
+                -180f,
+                180f,
+            )
+            PairingSide.BOTTOM -> Arc(
+                x + tileSize * 0.5f,
+                y - capRadius,
+                capRadius,
+                0f,
+                180f,
             )
         }
     }
@@ -373,6 +373,9 @@ internal data class NucleotideGeometry(
     val filledTriangles: List<Triangle>,
     val filledRects: List<Rect>,
     val filledArcs: List<Arc>,
+    val arcs: List<Arc>,
+    val triangles: List<Triangle>,
+    val lines: List<Line>,
 )
 
 internal data class Rect(
@@ -391,9 +394,15 @@ internal data class Triangle(
     val y3: Float,
 )
 
+internal data class Line(
+    val a: Vector2,
+    val b: Vector2,
+    val width: Float,
+)
+
 private data class RoundedShape(
-    val rect: Rect,
     val cap: Arc,
+    val socket: Arc,
 )
 
 internal data class Arc(
@@ -407,7 +416,7 @@ internal data class Arc(
 data class SequenceRenderStyle(
     val showBackbone: Boolean = true,
     val showDirectionIndicator: Boolean = true,
-    val pairingSide: PairingSide = PairingSide.RIGHT,
+    val pairingSide: PairingSide = PairingSide.TOP,
 )
 
 class NucleotideSequenceRenderer(
@@ -439,9 +448,14 @@ class NucleotideSequenceRenderer(
         val totalWidth = sequenceWidth(value)
 
         if (style.showBackbone) {
+            val backBoneY = when (style.pairingSide) {
+                PairingSide.TOP -> position.y
+                PairingSide.BOTTOM -> position.y + tileSize
+                else -> position.y + tileSize * 0.5f
+            }
             context.drawLine(
-                Vector2(position.x - 8f, position.y + tileSize * 0.5f),
-                Vector2(position.x + totalWidth + 8f, position.y + tileSize * 0.5f),
+                Vector2(position.x - 8f, backBoneY),
+                Vector2(position.x + totalWidth + 8f, backBoneY),
                 width = 3f,
                 color = BACKBONE_COLOR,
             )
@@ -519,7 +533,7 @@ class NucleotideSequenceRenderer(
 class DnaRenderer(
     val tileSize: Float = 34f,
     val tileGap: Float = 10f,
-    val strandGap: Float = 14f,
+    val strandGap: Float = tileSize * 0.75f,
 ) : Renderer<Dna> {
     private lateinit var sequenceRenderer: NucleotideSequenceRenderer
     private val topStrandPosition = Vector2()
@@ -543,6 +557,19 @@ class DnaRenderer(
         bottomStrandPosition.x = position.x
         bottomStrandPosition.y = bottomY
 
+        val connectorA = Vector2(position.x + tileSize * 0.47f, topY + tileSize)
+        val connectorB = Vector2(position.x + tileSize * 0.47f, bottomY)
+        repeat(value.size) {
+            context.drawLine(
+                a = connectorA,
+                b = connectorB,
+                width = tileSize * 0.08f,
+                color = PAIR_CONNECTOR_COLOR,
+            )
+            connectorA.x += tileSize + tileGap
+            connectorB.x += tileSize + tileGap
+        }
+
         sequenceRenderer.render(
             value.forward,
             topStrandPosition,
@@ -555,19 +582,6 @@ class DnaRenderer(
             context,
             SequenceRenderStyle(pairingSide = PairingSide.TOP),
         )
-
-        val connectorA = Vector2(position.x + tileSize * 0.47f, topY)
-        val connectorB = Vector2(position.x + tileSize * 0.47f, bottomY + tileSize)
-        repeat(value.size) {
-            context.drawLine(
-                a = connectorA,
-                b = connectorB,
-                width = tileSize * 0.08f,
-                color = PAIR_CONNECTOR_COLOR,
-            )
-            connectorA.x += tileSize + tileGap
-            connectorB.x += tileSize + tileGap
-        }
     }
 
     companion object {

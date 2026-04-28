@@ -27,9 +27,10 @@ data class RenderContext(
 
     private val glyphLayout = GlyphLayout()
     private var mode = DrawMode.NONE
+    private var shapeType = ShapeRenderer.ShapeType.Point
 
     fun drawFilledRect(x: Float, y: Float, width: Float, height: Float, color: Color) {
-        ensureShapeMode()
+        ensureShapeMode(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = color
         shapeRenderer.rect(x, y, width, height)
     }
@@ -38,6 +39,20 @@ data class RenderContext(
         ensureShapeMode()
         shapeRenderer.color = color
         shapeRenderer.rectLine(a, b, width)
+    }
+
+    fun drawTriangle(
+        x1: Float,
+        y1: Float,
+        x2: Float,
+        y2: Float,
+        x3: Float,
+        y3: Float,
+        color: Color,
+    ) {
+        ensureShapeMode(ShapeRenderer.ShapeType.Line)
+        shapeRenderer.color = color
+        shapeRenderer.triangle(x1, y1, x2, y2, x3, y3)
     }
 
     fun drawFilledTriangle(
@@ -49,7 +64,7 @@ data class RenderContext(
         y3: Float,
         color: Color,
     ) {
-        ensureShapeMode()
+        ensureShapeMode(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = color
         shapeRenderer.triangle(x1, y1, x2, y2, x3, y3)
     }
@@ -62,7 +77,20 @@ data class RenderContext(
         degrees: Float,
         color: Color,
     ) {
-        ensureShapeMode()
+        ensureShapeMode(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = color
+        shapeRenderer.arc(x, y, radius, startDegrees, degrees)
+    }
+
+    fun drawArc(
+        x: Float,
+        y: Float,
+        radius: Float,
+        startDegrees: Float,
+        degrees: Float,
+        color: Color,
+    ) {
+        ensureShapeMode(ShapeRenderer.ShapeType.Line)
         shapeRenderer.color = color
         shapeRenderer.arc(x, y, radius, startDegrees, degrees)
     }
@@ -91,16 +119,19 @@ data class RenderContext(
         mode = DrawMode.NONE
     }
 
-    private fun ensureShapeMode() {
-        if (mode == DrawMode.SHAPE) {
+    private fun ensureShapeMode(type: ShapeRenderer.ShapeType = ShapeRenderer.ShapeType.Filled) {
+        if (mode == DrawMode.SHAPE && shapeType == type) {
             return
         }
 
         if (mode == DrawMode.BATCH) {
             batch.end()
+        } else if (shapeType != type) {
+            shapeRenderer.end()
         }
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.begin(type)
+        shapeType = type
         mode = DrawMode.SHAPE
     }
 
