@@ -6,26 +6,20 @@ import life.sim.simulator.rendering.RenderContext
  * Owns a deterministic ordered set of scene objects and coordinates update/render capabilities.
  */
 class ObjectManager {
-    private val objects = mutableListOf<SimObject>()
-    private val addQueue = mutableListOf<SimObject>()
-    private val removeQueue = mutableListOf<SimObject>()
+    private val objects = linkedSetOf<SimObject>()
+    private val addQueue = linkedSetOf<SimObject>()
+    private val removeQueue = linkedSetOf<SimObject>()
 
     private val updatable = mutableListOf<Updateable>()
     private val renderable = mutableListOf<Renderable>()
 
     fun add(vararg newObjects: SimObject) {
         for (obj in newObjects) {
-            if (addQueue.contains(obj))
-                continue
-
             addQueue += obj
         }
     }
 
     fun remove(obj: SimObject) {
-        if (removeQueue.contains(obj))
-            return
-
         removeQueue += obj
     }
 
@@ -40,28 +34,28 @@ class ObjectManager {
 
     internal fun processQueues() {
         for (obj in removeQueue) {
-            objects -= obj
-            if (obj is Updateable) {
-                updatable -= obj
-            }
+            addQueue -= obj
+            if (objects.remove(obj)) {
+                if (obj is Updateable) {
+                    updatable -= obj
+                }
 
-            if (obj is Renderable) {
-                renderable -= obj
+                if (obj is Renderable) {
+                    renderable -= obj
+                }
             }
         }
         removeQueue.clear()
 
         for (obj in addQueue) {
-            if (objects.contains(obj))
-                continue
+            if (objects.add(obj)) {
+                if (obj is Updateable) {
+                    updatable += obj
+                }
 
-            objects += obj
-            if (obj is Updateable && !updatable.contains(obj)) {
-                updatable += obj
-            }
-
-            if (obj is Renderable && !renderable.contains(obj)) {
-                renderable += obj
+                if (obj is Renderable) {
+                    renderable += obj
+                }
             }
         }
         addQueue.clear()

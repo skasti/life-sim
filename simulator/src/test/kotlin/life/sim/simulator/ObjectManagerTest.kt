@@ -88,6 +88,37 @@ class ObjectManagerTest {
         assertEquals(emptyList(), manager.renderablesList())
     }
 
+    @Test
+    fun `ObjectManager does not duplicate entries when adding the same object multiple times`() {
+        val manager = ObjectManager()
+        val tracked = UpdateAndRenderObject("tracked")
+
+        manager.add(tracked)
+        manager.add(tracked)
+        manager.add(tracked)
+
+        manager.processQueues()
+
+        assertEquals(listOf(tracked), manager.updatablesList())
+        assertEquals(listOf(tracked), manager.renderablesList())
+        assertEquals(1, manager.objectCount())
+    }
+
+    @Test
+    fun `ObjectManager remove cancels pending add for the same object in the same queue drain`() {
+        val manager = ObjectManager()
+        val tracked = UpdateAndRenderObject("tracked")
+
+        manager.add(tracked)
+        manager.remove(tracked)
+
+        manager.processQueues()
+
+        assertEquals(emptyList(), manager.updatablesList())
+        assertEquals(emptyList(), manager.renderablesList())
+        assertEquals(0, manager.objectCount())
+    }
+
     private object InertObject : SimObject
 
     private class UpdateOnlyObject(private val label: String) : SimObject, Updateable {
