@@ -39,6 +39,8 @@ class NucleotideSequenceRenderer(
     val nucleotideRenderer: NucleotideRenderer,
     val tileGap: Float = 10f,
 ) : Renderer<NucleotideSequence> {
+    private val nucleotidePosition = Vector2()
+
     override fun render(value: NucleotideSequence, position: Vector2, context: RenderContext) {
         render(value, position, context, SequenceRenderStyle())
     }
@@ -62,7 +64,6 @@ class NucleotideSequenceRenderer(
         }
 
         var x = position.x
-        val nucleotidePosition = Vector2(x, position.y)
         value.forEach { nucleotide ->
             nucleotidePosition.x = x
             nucleotidePosition.y = position.y
