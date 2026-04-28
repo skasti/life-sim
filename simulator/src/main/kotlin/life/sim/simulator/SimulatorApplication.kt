@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.utils.ScreenUtils
 
@@ -20,8 +21,17 @@ class SimulatorApplication : ApplicationAdapter() {
 
     override fun create() {
         batch = SpriteBatch()
-        font = BitmapFont().apply {
-            data.setScale(1.4f)
+        val generator = FreeTypeFontGenerator(Gdx.files.internal("fonts/DejaVuSansMono.ttf"))
+        font = try {
+            generator.generateFont(
+                FreeTypeFontGenerator.FreeTypeFontParameter().apply {
+                    size = 22
+                },
+            )
+        } finally {
+            generator.dispose()
+        }.apply {
+            setUseIntegerPositions(true)
         }
         shapeRenderer = ShapeRenderer()
         updateProjectionMatrices(Gdx.graphics.width, Gdx.graphics.height)

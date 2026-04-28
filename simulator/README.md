@@ -41,6 +41,9 @@ Rendering now uses type-specific renderers and includes both text labels and a m
 - `NucleotideSequenceRenderer` for sequence layout, backbones, and direction indicators
 - `DnaRenderer` for duplex layout and pair connectors built on the sequence renderer
 
+Text labels use a FreeType-generated font at its target size (no post-load bitmap upscaling),
+which keeps label glyphs sharper than scaling the default libGDX bitmap font.
+
 This remains intentionally a rendering/demo scene only; it is **not** yet a dynamic simulation.
 
 ## Entrypoint
