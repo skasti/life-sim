@@ -11,9 +11,6 @@ class NucleotideRenderer(
     val tileSize: Float = 34f,
 ) : Renderer<Nucleotide> {
     private val pairingBandSize = tileSize * 0.5f
-    private val angledInsetSize = pairingBandSize * 1f
-    private val roundedInsetSize = pairingBandSize * 1f
-    private val socketFlankRatio = 1f
 
     init {
         Renderers.register(Nucleotide::class, this)
@@ -398,11 +395,6 @@ internal data class Line(
     val a: Vector2,
     val b: Vector2,
     val width: Float,
-)
-
-private data class RoundedShape(
-    val cap: Arc,
-    val socket: Arc,
 )
 
 internal data class Arc(
