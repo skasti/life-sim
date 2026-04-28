@@ -3,15 +3,17 @@ package life.sim.simulator
 import life.sim.biology.primitives.Nucleotide
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 class DemoSceneTest {
     @Test
-    fun `sample scene includes nucleotide sequence and dna objects for rendering baseline`() {
+    fun `sample returns a scene with deterministic nucleotide sequence and dna fixtures`() {
         val scene = DemoScene.sample()
 
+        assertIs<Scene>(scene)
         assertEquals(Nucleotide.G, scene.nucleotide)
-        assertEquals(">AUGCGAUCGUAA>", scene.sequence.toString())
-        assertEquals(">ACGUACGUAC>", scene.dna.forward.toString())
-        assertEquals("<UGCAUGCAUG<", scene.dna.reverse.toString())
+        assertEquals(">AUGCGAUCGUAA>", scene.sequenceText)
+        assertEquals(">ACGUACGUAC>", scene.dnaForwardText)
+        assertEquals("<UGCAUGCAUG<", scene.dnaReverseText)
     }
 }

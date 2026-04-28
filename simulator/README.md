@@ -17,6 +17,16 @@ The module currently contains a **libGDX desktop demo scene**.
 It opens a window and renders a small, static, hand-authored baseline scene for manual
 visual verification of core biology rendering output.
 
+## Scene/state baseline
+
+The simulator now uses a simple `Scene` abstraction:
+
+- `SimulatorApplication` owns the libGDX lifecycle and delegates update/render work
+- `DemoScene` is the active scene implementation
+- each scene exposes `update()` and `render(...)`
+
+This keeps the simulator shell thin and leaves scene-specific behavior in scene objects.
+
 ## Demo scene contents
 
 On launch, the simulator renders all of the following together in a single static scene:
@@ -25,7 +35,13 @@ On launch, the simulator renders all of the following together in a single stati
 - one nucleotide sequence example
 - one DNA duplex example (forward and reverse strands)
 
-This is intentionally a rendering/demo scene only; it is **not** yet a dynamic simulation.
+Rendering includes both text labels and a minimal graphical treatment:
+
+- colored nucleotide tiles
+- sequence tile strip
+- duplex backbone lines plus simple pair connectors
+
+This remains intentionally a rendering/demo scene only; it is **not** yet a dynamic simulation.
 
 ## Entrypoint
 
@@ -37,9 +53,13 @@ The render-loop application class lives at:
 
 - `simulator/src/main/kotlin/life/sim/simulator/SimulatorApplication.kt`
 
-The hand-authored demo data lives at:
+The hand-authored scene implementation/data lives at:
 
 - `simulator/src/main/kotlin/life/sim/simulator/DemoScene.kt`
+
+The scene abstraction lives at:
+
+- `simulator/src/main/kotlin/life/sim/simulator/Scene.kt`
 
 ## Run locally
 
@@ -57,7 +77,7 @@ From the repository root:
 Expected result:
 
 - A desktop window titled **Life-Sim Simulator** opens.
-- The app renders a static scene showing nucleotide, sequence, and DNA text output.
+- The app renders a static scene showing nucleotide/sequence/DNA text plus simple graphics.
 - The scene can be used as a baseline for manual rendering verification during future simulator changes.
 
 ## Next steps

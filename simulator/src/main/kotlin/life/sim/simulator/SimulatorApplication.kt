@@ -1,44 +1,45 @@
 package life.sim.simulator
 
 import com.badlogic.gdx.ApplicationAdapter
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.utils.ScreenUtils
 
 /**
- * Static simulator demo scene that renders one nucleotide, one sequence, and one DNA object.
+ * Simulator shell that owns app lifecycle and delegates update/render work to the current scene.
  */
 class SimulatorApplication : ApplicationAdapter() {
     private lateinit var batch: SpriteBatch
     private lateinit var font: BitmapFont
-    private val demoScene = DemoScene.sample()
+    private lateinit var shapeRenderer: ShapeRenderer
+    private var currentScene: Scene = DemoScene.sample()
 
     override fun create() {
         batch = SpriteBatch()
         font = BitmapFont().apply {
             data.setScale(1.4f)
         }
+        shapeRenderer = ShapeRenderer()
     }
 
     override fun render() {
         ScreenUtils.clear(0.05f, 0.05f, 0.08f, 1f)
 
-        batch.begin()
-        font.draw(batch, "Life-Sim Rendering Demo (static scene)", 40f, 680f)
-        font.draw(batch, "Nucleotide", 40f, 600f)
-        font.draw(batch, demoScene.nucleotide.symbol.toString(), 300f, 600f)
-
-        font.draw(batch, "Nucleotide sequence", 40f, 500f)
-        font.draw(batch, demoScene.sequence.toString(), 300f, 500f)
-
-        font.draw(batch, "DNA duplex", 40f, 400f)
-        font.draw(batch, demoScene.dna.forward.toString(), 300f, 430f)
-        font.draw(batch, demoScene.dna.reverse.toString(), 300f, 390f)
-        batch.end()
+        currentScene.update(Gdx.graphics.deltaTime)
+        currentScene.render(
+            batch = batch,
+            font = font,
+            shapeRenderer = shapeRenderer,
+            viewportWidth = Gdx.graphics.width.toFloat(),
+            viewportHeight = Gdx.graphics.height.toFloat(),
+        )
     }
 
     override fun dispose() {
         batch.dispose()
         font.dispose()
+        shapeRenderer.dispose()
     }
 }
