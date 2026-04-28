@@ -12,7 +12,7 @@ class DesktopLauncherTest {
         assertEquals("Life-Sim Simulator", defaults.title)
         assertEquals(1280, defaults.width)
         assertEquals(720, defaults.height)
-        assertEquals(60, defaults.foregroundFps)
+        assertEquals(175, defaults.foregroundFps)
         assertTrue(defaults.vsyncEnabled)
     }
 }
