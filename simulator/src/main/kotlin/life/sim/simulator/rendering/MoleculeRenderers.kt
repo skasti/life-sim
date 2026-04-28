@@ -16,10 +16,17 @@ class NucleotideRenderer(
     }
 
     private fun nucleotideColor(nucleotide: Nucleotide): Color = when (nucleotide) {
-        Nucleotide.A -> Color(0.95f, 0.65f, 0.3f, 1f)
-        Nucleotide.U -> Color(0.36f, 0.78f, 0.95f, 1f)
-        Nucleotide.C -> Color(0.55f, 0.88f, 0.42f, 1f)
-        Nucleotide.G -> Color(0.9f, 0.42f, 0.76f, 1f)
+        Nucleotide.A -> ADENINE_COLOR
+        Nucleotide.U -> URACIL_COLOR
+        Nucleotide.C -> CYTOSINE_COLOR
+        Nucleotide.G -> GUANINE_COLOR
+    }
+
+    companion object {
+        private val ADENINE_COLOR = Color(0.95f, 0.65f, 0.3f, 1f)
+        private val URACIL_COLOR = Color(0.36f, 0.78f, 0.95f, 1f)
+        private val CYTOSINE_COLOR = Color(0.55f, 0.88f, 0.42f, 1f)
+        private val GUANINE_COLOR = Color(0.9f, 0.42f, 0.76f, 1f)
     }
 }
 
@@ -50,13 +57,16 @@ class NucleotideSequenceRenderer(
                 y = position.y + nucleotideRenderer.tileSize * 0.5f,
                 width = totalWidth + 16f,
                 height = 3f,
-                color = Color(0.2f, 0.6f, 0.95f, 1f),
+                color = BACKBONE_COLOR,
             )
         }
 
         var x = position.x
+        val nucleotidePosition = Vector2(x, position.y)
         value.forEach { nucleotide ->
-            nucleotideRenderer.render(nucleotide, Vector2(x, position.y), context)
+            nucleotidePosition.x = x
+            nucleotidePosition.y = position.y
+            nucleotideRenderer.render(nucleotide, nucleotidePosition, context)
             x += nucleotideRenderer.tileSize + tileGap
         }
 
@@ -83,7 +93,6 @@ class NucleotideSequenceRenderer(
         val centerY = y + nucleotideRenderer.tileSize * 0.5f
         val arrowHeight = 8f
         val arrowWidth = 12f
-        val color = Color(0.9f, 0.92f, 1f, 1f)
 
         if (direction == SequenceDirection.FORWARD) {
             val arrowX = x + width + 12f
@@ -94,7 +103,7 @@ class NucleotideSequenceRenderer(
                 centerY + arrowHeight,
                 arrowX - arrowWidth,
                 centerY - arrowHeight,
-                color,
+                DIRECTION_INDICATOR_COLOR,
             )
             return
         }
@@ -107,8 +116,13 @@ class NucleotideSequenceRenderer(
             centerY + arrowHeight,
             arrowX + arrowWidth,
             centerY - arrowHeight,
-            color,
+            DIRECTION_INDICATOR_COLOR,
         )
+    }
+
+    companion object {
+        private val BACKBONE_COLOR = Color(0.2f, 0.6f, 0.95f, 1f)
+        private val DIRECTION_INDICATOR_COLOR = Color(0.9f, 0.92f, 1f, 1f)
     }
 }
 
@@ -116,24 +130,31 @@ class DnaRenderer(
     private val sequenceRenderer: NucleotideSequenceRenderer,
     val strandGap: Float = 14f,
 ) : Renderer<Dna> {
+    private val topStrandPosition = Vector2()
+    private val bottomStrandPosition = Vector2()
+
     override fun render(value: Dna, position: Vector2, context: RenderContext) {
         val topY = position.y
         val bottomY = topY - sequenceRenderer.nucleotideRenderer.tileSize - strandGap
 
+        topStrandPosition.x = position.x
+        topStrandPosition.y = topY
+        bottomStrandPosition.x = position.x
+        bottomStrandPosition.y = bottomY
+
         sequenceRenderer.render(
             value.forward,
-            Vector2(position.x, topY),
+            topStrandPosition,
             context,
             style = SequenceRenderStyle(showBackbone = true, showDirectionIndicator = true),
         )
         sequenceRenderer.render(
             value.reverse,
-            Vector2(position.x, bottomY),
+            bottomStrandPosition,
             context,
             style = SequenceRenderStyle(showBackbone = true, showDirectionIndicator = true),
         )
 
-        val pairConnectorColor = Color(0.85f, 0.85f, 0.9f, 1f)
         var connectorX = position.x + sequenceRenderer.nucleotideRenderer.tileSize * 0.47f
         repeat(value.size) {
             context.drawLine(
@@ -141,9 +162,13 @@ class DnaRenderer(
                 y = bottomY + sequenceRenderer.nucleotideRenderer.tileSize,
                 width = sequenceRenderer.nucleotideRenderer.tileSize * 0.08f,
                 height = strandGap,
-                color = pairConnectorColor,
+                color = PAIR_CONNECTOR_COLOR,
             )
             connectorX += sequenceRenderer.nucleotideRenderer.tileSize + sequenceRenderer.tileGap
         }
+    }
+
+    companion object {
+        private val PAIR_CONNECTOR_COLOR = Color(0.85f, 0.85f, 0.9f, 1f)
     }
 }
