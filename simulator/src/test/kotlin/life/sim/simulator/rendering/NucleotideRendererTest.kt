@@ -51,4 +51,86 @@ class NucleotideRendererTest {
             }
         }
     }
+
+    @Test
+    fun `arcBounds uses swept extrema for a counterclockwise semicircle`() {
+        val bounds = renderer.arcBounds(
+            Arc(
+                x = 0f,
+                y = 0f,
+                radius = 10f,
+                startDegrees = 0f,
+                degrees = 180f,
+            ),
+        )
+
+        assertEquals(-10f, bounds.minX, 0.0001f)
+        assertEquals(10f, bounds.maxX, 0.0001f)
+        assertEquals(0f, bounds.minY, 0.0001f)
+        assertEquals(10f, bounds.maxY, 0.0001f)
+    }
+
+    @Test
+    fun `arcBounds uses swept extrema for a counterclockwise quadrant`() {
+        val bounds = renderer.arcBounds(
+            Arc(
+                x = 0f,
+                y = 0f,
+                radius = 10f,
+                startDegrees = 90f,
+                degrees = 90f,
+            ),
+        )
+
+        assertEquals(-10f, bounds.minX, 0.0001f)
+        assertEquals(0f, bounds.maxX, 0.0001f)
+        assertEquals(0f, bounds.minY, 0.0001f)
+        assertEquals(10f, bounds.maxY, 0.0001f)
+    }
+
+    @Test
+    fun `boundsWithinTile accepts outline arcs that only sweep inside the tile`() {
+        val origin = Vector2(0f, 0f)
+        val geometry = NucleotideGeometry(
+            filledTriangles = emptyList(),
+            filledRects = emptyList(),
+            filledArcs = emptyList(),
+            arcs = listOf(
+                Arc(
+                    x = origin.x - renderer.tileSize * 0.75f,
+                    y = origin.y,
+                    radius = 10f,
+                    startDegrees = -90f,
+                    degrees = 180f,
+                ),
+            ),
+            triangles = emptyList(),
+            lines = emptyList(),
+        )
+
+        assertTrue(renderer.boundsWithinTile(geometry, origin))
+    }
+
+    @Test
+    fun `boundsWithinTile accepts filled arcs that only sweep inside the tile`() {
+        val origin = Vector2(0f, 0f)
+        val geometry = NucleotideGeometry(
+            filledTriangles = emptyList(),
+            filledRects = emptyList(),
+            filledArcs = listOf(
+                Arc(
+                    x = origin.x,
+                    y = origin.y - renderer.tileSize * 0.75f,
+                    radius = 10f,
+                    startDegrees = 0f,
+                    degrees = 180f,
+                ),
+            ),
+            arcs = emptyList(),
+            triangles = emptyList(),
+            lines = emptyList(),
+        )
+
+        assertTrue(renderer.boundsWithinTile(geometry, origin))
+    }
 }

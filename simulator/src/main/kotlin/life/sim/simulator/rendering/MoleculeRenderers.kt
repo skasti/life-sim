@@ -6,6 +6,10 @@ import life.sim.biology.molecules.Dna
 import life.sim.biology.primitives.Nucleotide
 import life.sim.biology.primitives.NucleotideSequence
 import life.sim.biology.primitives.SequenceDirection
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 class NucleotideRenderer(
     val tileSize: Float = 34f,
@@ -146,10 +150,7 @@ class NucleotideRenderer(
         }
 
         val filledArcsInBounds = geometry.filledArcs.all { arc ->
-            arc.x - arc.radius >= minX &&
-                arc.x + arc.radius <= maxX &&
-                arc.y - arc.radius >= minY &&
-                arc.y + arc.radius <= maxY
+            arcBounds(arc, includeCenter = true).isWithin(minX, maxX, minY, maxY)
         }
 
         if (!filledArcsInBounds) {
@@ -157,10 +158,7 @@ class NucleotideRenderer(
         }
 
         val arcsInBounds = geometry.arcs.all { arc ->
-            arc.x - arc.radius >= minX &&
-                arc.x + arc.radius <= maxX &&
-                arc.y - arc.radius >= minY &&
-                arc.y + arc.radius <= maxY
+            arcBounds(arc).isWithin(minX, maxX, minY, maxY)
         }
 
         if (!arcsInBounds) {
@@ -174,6 +172,86 @@ class NucleotideRenderer(
         }
 
         return linesInBounds
+    }
+
+    internal fun arcBounds(arc: Arc, includeCenter: Boolean = false): ShapeBounds {
+        if (arc.radius <= 0f) {
+            return ShapeBounds(arc.x, arc.x, arc.y, arc.y)
+        }
+
+        if (abs(arc.degrees) >= FULL_ROTATION_DEGREES) {
+            return ShapeBounds(
+                minX = arc.x - arc.radius,
+                maxX = arc.x + arc.radius,
+                minY = arc.y - arc.radius,
+                maxY = arc.y + arc.radius,
+            )
+        }
+
+        val xValues = mutableListOf<Float>()
+        val yValues = mutableListOf<Float>()
+
+        fun addPointAtAngle(angle: Float) {
+            val radians = angle * PI / 180.0
+            xValues += (arc.x + arc.radius * cos(radians)).toFloat()
+            yValues += (arc.y + arc.radius * sin(radians)).toFloat()
+        }
+
+        addPointAtAngle(arc.startDegrees)
+        addPointAtAngle(arc.startDegrees + arc.degrees)
+
+        CARDINAL_ARC_ANGLES
+            .filter { angle -> angleInSweep(angle, arc.startDegrees, arc.degrees) }
+            .forEach(::addPointAtAngle)
+
+        if (includeCenter) {
+            xValues += arc.x
+            yValues += arc.y
+        }
+
+        return ShapeBounds(
+            minX = xValues.minOrNull() ?: arc.x,
+            maxX = xValues.maxOrNull() ?: arc.x,
+            minY = yValues.minOrNull() ?: arc.y,
+            maxY = yValues.maxOrNull() ?: arc.y,
+        )
+    }
+
+    private fun angleInSweep(angle: Float, startDegrees: Float, degrees: Float): Boolean {
+        if (abs(degrees) >= FULL_ROTATION_DEGREES - ANGLE_EPSILON) {
+            return true
+        }
+
+        if (abs(degrees) <= ANGLE_EPSILON) {
+            return abs(normalizeAngle(angle) - normalizeAngle(startDegrees)) <= ANGLE_EPSILON
+        }
+
+        return if (degrees > 0f) {
+            angleInPositiveSweep(angle, startDegrees, degrees)
+        } else {
+            angleInPositiveSweep(angle, startDegrees + degrees, -degrees)
+        }
+    }
+
+    private fun angleInPositiveSweep(angle: Float, startDegrees: Float, degrees: Float): Boolean {
+        val normalizedStart = normalizeAngle(startDegrees)
+        val normalizedEnd = normalizeAngle(startDegrees + degrees)
+        val normalizedAngle = normalizeAngle(angle)
+
+        return if (normalizedStart <= normalizedEnd) {
+            normalizedAngle >= normalizedStart - ANGLE_EPSILON && normalizedAngle <= normalizedEnd + ANGLE_EPSILON
+        } else {
+            normalizedAngle >= normalizedStart - ANGLE_EPSILON || normalizedAngle <= normalizedEnd + ANGLE_EPSILON
+        }
+    }
+
+    private fun normalizeAngle(angle: Float): Float {
+        val normalized = angle % FULL_ROTATION_DEGREES
+        return if (normalized < 0f) {
+            normalized + FULL_ROTATION_DEGREES
+        } else {
+            normalized
+        }
     }
 
     private fun inverseTriangleOnSide(position: Vector2, side: PairingSide): List<Triangle> {
@@ -367,6 +445,10 @@ class NucleotideRenderer(
     }
 
     companion object {
+        private const val FULL_ROTATION_DEGREES = 360f
+        private const val ANGLE_EPSILON = 0.0001f
+        private val CARDINAL_ARC_ANGLES = listOf(0f, 90f, 180f, 270f)
+
         private val ADENINE_COLOR = Color(0.95f, 0.65f, 0.3f, 1f)
         private val URACIL_COLOR = Color(0.36f, 0.78f, 0.95f, 1f)
         private val CYTOSINE_COLOR = Color(0.55f, 0.88f, 0.42f, 1f)
@@ -443,6 +525,19 @@ internal data class Arc(
     val startDegrees: Float,
     val degrees: Float,
 )
+
+internal data class ShapeBounds(
+    val minX: Float,
+    val maxX: Float,
+    val minY: Float,
+    val maxY: Float,
+) {
+    fun isWithin(minX: Float, maxX: Float, minY: Float, maxY: Float): Boolean =
+        this.minX >= minX &&
+            this.maxX <= maxX &&
+            this.minY >= minY &&
+            this.maxY <= maxY
+}
 
 data class SequenceRenderStyle(
     val showBackbone: Boolean = true,
