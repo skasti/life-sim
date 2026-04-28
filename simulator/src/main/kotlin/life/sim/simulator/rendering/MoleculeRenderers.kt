@@ -10,6 +10,8 @@ import life.sim.biology.primitives.SequenceDirection
 class NucleotideRenderer(
     val tileSize: Float = 34f,
 ) : Renderer<Nucleotide> {
+    private val connectorDepth = tileSize * 0.18f
+    private val connectorHalfHeight = tileSize * 0.2f
 
     init {
         Renderers.register(Nucleotide::class, this)
@@ -20,8 +22,95 @@ class NucleotideRenderer(
     }
 
     override fun render(value: Nucleotide, position: Vector2, context: RenderContext) {
-        context.drawFilledRect(position.x, position.y, tileSize, tileSize, nucleotideColor(value))
+        val profile = compatibilityProfile(value)
+        val color = nucleotideColor(value)
+        val bodyX = position.x + connectorDepth
+        val bodyWidth = tileSize - connectorDepth
+        val bodyCenterY = position.y + tileSize * 0.5f
+        val rightEdgeX = bodyX + bodyWidth
+
+        context.drawFilledRect(bodyX, position.y, bodyWidth, tileSize, color)
+
+        when (profile.rightConnector) {
+            ConnectorStyle.POINT -> context.drawFilledTriangle(
+                rightEdgeX + connectorDepth,
+                bodyCenterY,
+                rightEdgeX,
+                bodyCenterY + connectorHalfHeight,
+                rightEdgeX,
+                bodyCenterY - connectorHalfHeight,
+                color,
+            )
+
+            ConnectorStyle.DOUBLE -> {
+                val tipX = rightEdgeX + connectorDepth
+                context.drawFilledTriangle(
+                    tipX,
+                    position.y + tileSize * 0.72f,
+                    rightEdgeX,
+                    position.y + tileSize * 0.92f,
+                    rightEdgeX,
+                    position.y + tileSize * 0.52f,
+                    color,
+                )
+                context.drawFilledTriangle(
+                    tipX,
+                    position.y + tileSize * 0.28f,
+                    rightEdgeX,
+                    position.y + tileSize * 0.48f,
+                    rightEdgeX,
+                    position.y + tileSize * 0.08f,
+                    color,
+                )
+            }
+        }
+
+        drawSocketHint(profile.leftSocket, bodyX, position.y, context)
         context.drawCenteredText(value.symbol.toString(), position.x + tileSize * 0.5f, position.y + tileSize * 0.5f)
+    }
+
+    private fun drawSocketHint(style: ConnectorStyle, x: Float, y: Float, context: RenderContext) {
+        val hintColor = SOCKET_HINT_COLOR
+        val centerY = y + tileSize * 0.5f
+        when (style) {
+            ConnectorStyle.POINT -> context.drawFilledTriangle(
+                x + connectorDepth * 0.45f,
+                centerY,
+                x,
+                centerY + connectorHalfHeight * 0.85f,
+                x,
+                centerY - connectorHalfHeight * 0.85f,
+                hintColor,
+            )
+
+            ConnectorStyle.DOUBLE -> {
+                context.drawFilledTriangle(
+                    x + connectorDepth * 0.45f,
+                    y + tileSize * 0.7f,
+                    x,
+                    y + tileSize * 0.9f,
+                    x,
+                    y + tileSize * 0.5f,
+                    hintColor,
+                )
+                context.drawFilledTriangle(
+                    x + connectorDepth * 0.45f,
+                    y + tileSize * 0.3f,
+                    x,
+                    y + tileSize * 0.5f,
+                    x,
+                    y + tileSize * 0.1f,
+                    hintColor,
+                )
+            }
+        }
+    }
+
+    internal fun compatibilityProfile(nucleotide: Nucleotide): CompatibilityProfile = when (nucleotide) {
+        Nucleotide.A -> CompatibilityProfile(leftSocket = ConnectorStyle.POINT, rightConnector = ConnectorStyle.POINT)
+        Nucleotide.U -> CompatibilityProfile(leftSocket = ConnectorStyle.POINT, rightConnector = ConnectorStyle.POINT)
+        Nucleotide.C -> CompatibilityProfile(leftSocket = ConnectorStyle.DOUBLE, rightConnector = ConnectorStyle.DOUBLE)
+        Nucleotide.G -> CompatibilityProfile(leftSocket = ConnectorStyle.DOUBLE, rightConnector = ConnectorStyle.DOUBLE)
     }
 
     private fun nucleotideColor(nucleotide: Nucleotide): Color = when (nucleotide) {
@@ -36,7 +125,18 @@ class NucleotideRenderer(
         private val URACIL_COLOR = Color(0.36f, 0.78f, 0.95f, 1f)
         private val CYTOSINE_COLOR = Color(0.55f, 0.88f, 0.42f, 1f)
         private val GUANINE_COLOR = Color(0.9f, 0.42f, 0.76f, 1f)
+        private val SOCKET_HINT_COLOR = Color(0.08f, 0.1f, 0.16f, 0.35f)
     }
+}
+
+internal data class CompatibilityProfile(
+    val leftSocket: ConnectorStyle,
+    val rightConnector: ConnectorStyle,
+)
+
+internal enum class ConnectorStyle {
+    POINT,
+    DOUBLE,
 }
 
 data class SequenceRenderStyle(
