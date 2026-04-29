@@ -65,7 +65,7 @@ class NucleotideRendererTest {
             filledArcs = emptyList(),
             arcs = listOf(
                 Arc(
-                    x = origin.x - renderer.baseSize * 0.75f,
+                    x = origin.x - renderer.baseSize * 0.75f + 1.5f,
                     y = origin.y,
                     radius = 10f,
                     startDegrees = -90f,
@@ -143,7 +143,7 @@ class NucleotideRendererTest {
         if (!filledArcsInBounds) return false
 
         val arcsInBounds = geometry.arcs.all { arc ->
-            arc.bounds().isWithin(minX, maxX, minY, maxY)
+            arc.bounds(includeStroke = true).isWithin(minX, maxX, minY, maxY)
         }
 
         if (!arcsInBounds) return false

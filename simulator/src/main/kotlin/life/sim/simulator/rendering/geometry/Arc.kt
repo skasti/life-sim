@@ -19,17 +19,28 @@ internal data class Arc(
     val lineWidth: Float,
 )
 
-internal fun Arc.bounds(includeCenter: Boolean = false): ShapeBounds {
+internal fun Arc.bounds(includeCenter: Boolean = false, includeStroke: Boolean = false): ShapeBounds {
+    val strokePadding = if (includeStroke) {
+        this.lineWidth * 0.5f
+    } else {
+        0f
+    }
+
     if (this.radius <= 0f) {
-        return ShapeBounds(this.x, this.x, this.y, this.y)
+        return ShapeBounds(
+            minX = this.x - strokePadding,
+            maxX = this.x + strokePadding,
+            minY = this.y - strokePadding,
+            maxY = this.y + strokePadding,
+        )
     }
 
     if (abs(this.degrees) >= FULL_ROTATION_DEGREES) {
         return ShapeBounds(
-            minX = this.x - this.radius,
-            maxX = this.x + this.radius,
-            minY = this.y - this.radius,
-            maxY = this.y + this.radius,
+            minX = this.x - this.radius - strokePadding,
+            maxX = this.x + this.radius + strokePadding,
+            minY = this.y - this.radius - strokePadding,
+            maxY = this.y + this.radius + strokePadding,
         )
     }
 
@@ -55,10 +66,10 @@ internal fun Arc.bounds(includeCenter: Boolean = false): ShapeBounds {
     }
 
     return ShapeBounds(
-        minX = xValues.minOrNull() ?: this.x,
-        maxX = xValues.maxOrNull() ?: this.x,
-        minY = yValues.minOrNull() ?: this.y,
-        maxY = yValues.maxOrNull() ?: this.y,
+        minX = (xValues.minOrNull() ?: this.x) - strokePadding,
+        maxX = (xValues.maxOrNull() ?: this.x) + strokePadding,
+        minY = (yValues.minOrNull() ?: this.y) - strokePadding,
+        maxY = (yValues.maxOrNull() ?: this.y) + strokePadding,
     )
 }
 
