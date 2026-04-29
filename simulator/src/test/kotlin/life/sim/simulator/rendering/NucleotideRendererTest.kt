@@ -47,7 +47,7 @@ class NucleotideRendererTest {
         nucleotides.forEach { nucleotide ->
             pairingSides.forEach { pairingSide ->
                 val geometry = renderer.geometryFor(nucleotide, origin, NucleotideOrientation(pairingSide))
-                assertTrue(renderer.isWithinNucleotideGeometryTestWindow(geometry, origin), "Expected $nucleotide on $pairingSide to stay inside the geometry test window")
+                assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin), "Expected $nucleotide on $pairingSide to stay inside the geometry test window")
             }
         }
     }
@@ -97,7 +97,7 @@ class NucleotideRendererTest {
             filledArcs = emptyList(),
             arcs = listOf(
                 Arc(
-                    x = origin.x - renderer.tileSize * 0.75f,
+                    x = origin.x - renderer.baseSize * 0.75f,
                     y = origin.y,
                     radius = 10f,
                     startDegrees = -90f,
@@ -108,7 +108,7 @@ class NucleotideRendererTest {
             lines = emptyList(),
         )
 
-        assertTrue(renderer.isWithinNucleotideGeometryTestWindow(geometry, origin))
+        assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin))
     }
 
     @Test
@@ -120,7 +120,7 @@ class NucleotideRendererTest {
             filledArcs = listOf(
                 Arc(
                     x = origin.x,
-                    y = origin.y - renderer.tileSize * 0.75f,
+                    y = origin.y - renderer.baseSize * 0.75f,
                     radius = 10f,
                     startDegrees = 0f,
                     degrees = 180f,
@@ -131,6 +131,57 @@ class NucleotideRendererTest {
             lines = emptyList(),
         )
 
-        assertTrue(renderer.isWithinNucleotideGeometryTestWindow(geometry, origin))
+        assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin))
+    }
+
+
+    private fun isWithinNucleotideGeometryTestWindow(geometry: NucleotideGeometry, position: Vector2): Boolean {
+        val minX = position.x - renderer.baseSize * 0.75f
+        val maxX = position.x + renderer.baseSize * 1.75f
+        val minY = position.y - renderer.baseSize * 0.75f
+        val maxY = position.y + renderer.baseSize * 1.75f
+
+        val rectsInBounds = geometry.filledRects.all { rect ->
+            rect.x >= minX &&
+                rect.y >= minY &&
+                rect.x + rect.width <= maxX &&
+                rect.y + rect.height <= maxY
+        }
+
+        if (!rectsInBounds) return false
+
+        val filledTrianglesInBounds = geometry.filledTriangles.all { triangle ->
+            val xs = listOf(triangle.x1, triangle.x2, triangle.x3)
+            val ys = listOf(triangle.y1, triangle.y2, triangle.y3)
+            xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
+        }
+
+        if (!filledTrianglesInBounds) return false
+
+        val trianglesInBounds = geometry.triangles.all { triangle ->
+            val xs = listOf(triangle.x1, triangle.x2, triangle.x3)
+            val ys = listOf(triangle.y1, triangle.y2, triangle.y3)
+            xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
+        }
+
+        if (!trianglesInBounds) return false
+
+        val filledArcsInBounds = geometry.filledArcs.all { arc ->
+            renderer.arcBounds(arc, includeCenter = true).isWithin(minX, maxX, minY, maxY)
+        }
+
+        if (!filledArcsInBounds) return false
+
+        val arcsInBounds = geometry.arcs.all { arc ->
+            renderer.arcBounds(arc).isWithin(minX, maxX, minY, maxY)
+        }
+
+        if (!arcsInBounds) return false
+
+        return geometry.lines.all { line ->
+            listOf(line.a, line.b).all { point ->
+                point.x in minX..maxX && point.y in minY..maxY
+            }
+        }
     }
 }
