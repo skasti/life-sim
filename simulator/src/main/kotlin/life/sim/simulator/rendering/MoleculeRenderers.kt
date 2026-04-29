@@ -12,9 +12,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class NucleotideRenderer(
-    val tileSize: Float = 34f,
+    val baseSize: Float = 34f,
 ) : Renderer<Nucleotide> {
-    private val pairingBandSize = tileSize * 0.5f
+    private val pairingBandSize = baseSize * 0.5f
 
     init {
         Renderers.register(Nucleotide::class, this)
@@ -50,7 +50,7 @@ class NucleotideRenderer(
             context.drawLine(line.a, line.b, line.width, color)
         }
 
-        context.drawCenteredText(value.symbol.toString(), position.x + tileSize * 0.5f, position.y + tileSize * 0.5f)
+        context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
     }
 
     internal fun connectorProfile(nucleotide: Nucleotide): ConnectorProfile = when (nucleotide) {
@@ -83,20 +83,20 @@ class NucleotideRenderer(
         when (profile.family) {
             ConnectorFamily.ANGLED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    filledRects += Rect(position.x, position.y, tileSize, tileSize)
+                    filledRects += Rect(position.x, position.y, baseSize, baseSize)
                     filledTriangles += triangleOnSide(position, orientation.pairingSide)
                 } else {
-                    filledRects += Rect(position.x, position.y, tileSize, tileSize)
+                    filledRects += Rect(position.x, position.y, baseSize, baseSize)
                     filledTriangles += inverseTriangleOnSide(position, orientation.pairingSide)
                 }
             }
 
             ConnectorFamily.ROUNDED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    filledRects += Rect(position.x, position.y, tileSize, tileSize)
+                    filledRects += Rect(position.x, position.y, baseSize, baseSize)
                     filledArcs += roundedOnSide(position, orientation.pairingSide)
                 } else {
-                    filledRects += Rect(position.x, position.y, tileSize, tileSize)
+                    filledRects += Rect(position.x, position.y, baseSize, baseSize)
                     arcs += roundedSocketOnSide(position, orientation.pairingSide)
                 }
             }
@@ -110,68 +110,6 @@ class NucleotideRenderer(
             triangles = triangles,
             lines = lines,
         )
-    }
-
-    internal fun boundsWithinTile(geometry: NucleotideGeometry, position: Vector2): Boolean {
-        val minX = position.x - tileSize * 0.75f
-        val maxX = position.x + tileSize * 1.75f
-        val minY = position.y - tileSize * 0.75f
-        val maxY = position.y + tileSize * 1.75f
-
-        val rectsInBounds = geometry.filledRects.all { rect ->
-            rect.x >= minX &&
-                rect.y >= minY &&
-                rect.x + rect.width <= maxX &&
-                rect.y + rect.height <= maxY
-        }
-
-        if (!rectsInBounds) {
-            return false
-        }
-
-        val filledTrianglesInBounds = geometry.filledTriangles.all { triangle ->
-            val xs = listOf(triangle.x1, triangle.x2, triangle.x3)
-            val ys = listOf(triangle.y1, triangle.y2, triangle.y3)
-            xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
-        }
-
-        if (!filledTrianglesInBounds) {
-            return false
-        }
-
-        val trianglesInBounds = geometry.triangles.all { triangle ->
-            val xs = listOf(triangle.x1, triangle.x2, triangle.x3)
-            val ys = listOf(triangle.y1, triangle.y2, triangle.y3)
-            xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
-        }
-
-        if (!trianglesInBounds) {
-            return false
-        }
-
-        val filledArcsInBounds = geometry.filledArcs.all { arc ->
-            arcBounds(arc, includeCenter = true).isWithin(minX, maxX, minY, maxY)
-        }
-
-        if (!filledArcsInBounds) {
-            return false
-        }
-
-        val arcsInBounds = geometry.arcs.all { arc ->
-            arcBounds(arc).isWithin(minX, maxX, minY, maxY)
-        }
-
-        if (!arcsInBounds) {
-            return false
-        }
-
-        val linesInBounds = geometry.lines.all { line ->
-            listOf(line.a, line.b).all { point ->
-                point.x in minX..maxX && point.y in minY..maxY
-            }
-        }
-
-        return linesInBounds
     }
 
     internal fun arcBounds(arc: Arc, includeCenter: Boolean = false): ShapeBounds {
@@ -261,51 +199,51 @@ class NucleotideRenderer(
             PairingSide.TOP -> listOf(
                 Triangle(
                     x,
-                    y + tileSize,
+                    y + baseSize,
                     x,
-                    y + tileSize + pairingBandSize,
-                    x + tileSize * 0.5f,
-                    y + tileSize,
+                    y + baseSize + pairingBandSize,
+                    x + baseSize * 0.5f,
+                    y + baseSize,
                 ),
                 Triangle(
-                    x + tileSize * 0.5f,
-                    y + tileSize,
-                    x + tileSize,
-                    y + tileSize + pairingBandSize,
-                    x + tileSize,
-                    y + tileSize,
+                    x + baseSize * 0.5f,
+                    y + baseSize,
+                    x + baseSize,
+                    y + baseSize + pairingBandSize,
+                    x + baseSize,
+                    y + baseSize,
                 ),
             )
             PairingSide.BOTTOM -> listOf(
                 Triangle(
                     x,
                     y,
-                    x + tileSize * 0.5f,
+                    x + baseSize * 0.5f,
                     y,
                     x,
                     y - pairingBandSize,
                 ),
                 Triangle(
-                    x + tileSize * 0.5f,
+                    x + baseSize * 0.5f,
                     y,
-                    x + tileSize,
+                    x + baseSize,
                     y,
-                    x + tileSize,
+                    x + baseSize,
                     y - pairingBandSize,
                 ),
             )
             PairingSide.LEFT -> listOf(
                 Triangle(
                     x,
-                    y + tileSize,
+                    y + baseSize,
                     x,
-                    y + tileSize * 0.5f,
+                    y + baseSize * 0.5f,
                     x - pairingBandSize,
-                    y + tileSize,
+                    y + baseSize,
                 ),
                 Triangle(
                     x,
-                    y + tileSize * 0.5f,
+                    y + baseSize * 0.5f,
                     x,
                     y,
                     x - pairingBandSize,
@@ -314,19 +252,19 @@ class NucleotideRenderer(
             )
             PairingSide.RIGHT -> listOf(
                 Triangle(
-                    x + tileSize,
-                    y + tileSize,
-                    x + tileSize + pairingBandSize,
-                    y + tileSize,
-                    x + tileSize,
-                    y + tileSize * 0.5f,
+                    x + baseSize,
+                    y + baseSize,
+                    x + baseSize + pairingBandSize,
+                    y + baseSize,
+                    x + baseSize,
+                    y + baseSize * 0.5f,
                 ),
                 Triangle(
-                    x + tileSize,
-                    y + tileSize * 0.5f,
-                    x + tileSize + pairingBandSize,
+                    x + baseSize,
+                    y + baseSize * 0.5f,
+                    x + baseSize + pairingBandSize,
                     y,
-                    x + tileSize,
+                    x + baseSize,
                     y,
                 ),
             )
@@ -341,32 +279,32 @@ class NucleotideRenderer(
                 x,
                 y,
                 x,
-                y + tileSize,
+                y + baseSize,
                 x - pairingBandSize,
-                y + tileSize * 0.5f,
+                y + baseSize * 0.5f,
             )
             PairingSide.RIGHT -> Triangle(
-                x + tileSize,
+                x + baseSize,
                 y,
-                x + tileSize + pairingBandSize,
-                y + tileSize * 0.5f,
-                x + tileSize,
-                y + tileSize,
+                x + baseSize + pairingBandSize,
+                y + baseSize * 0.5f,
+                x + baseSize,
+                y + baseSize,
             )
             PairingSide.TOP -> Triangle(
                 x,
-                y + tileSize,
-                x + tileSize * 0.5f,
-                y + tileSize + pairingBandSize,
-                x + tileSize,
-                y + tileSize,
+                y + baseSize,
+                x + baseSize * 0.5f,
+                y + baseSize + pairingBandSize,
+                x + baseSize,
+                y + baseSize,
             )
             PairingSide.BOTTOM -> Triangle(
                 x,
                 y,
-                x + tileSize,
+                x + baseSize,
                 y,
-                x + tileSize * 0.5f,
+                x + baseSize * 0.5f,
                 y - pairingBandSize,
             )
         }
@@ -375,31 +313,31 @@ class NucleotideRenderer(
     private fun roundedOnSide(position: Vector2, side: PairingSide): Arc {
         val x = position.x
         val y = position.y
-        val capRadius = tileSize * 0.5f
+        val capRadius = baseSize * 0.5f
         return when (side) {
             PairingSide.LEFT -> Arc(
                     x,
-                    y + tileSize * 0.5f,
+                    y + baseSize * 0.5f,
                     capRadius,
                     90f,
                     180f,
                 )
             PairingSide.RIGHT -> Arc(
-                    x + tileSize,
-                    y + tileSize * 0.5f,
+                    x + baseSize,
+                    y + baseSize * 0.5f,
                     capRadius,
                     -90f,
                     180f,
                 )
             PairingSide.TOP -> Arc(
-                    x + tileSize * 0.5f,
-                    y + tileSize,
+                    x + baseSize * 0.5f,
+                    y + baseSize,
                     capRadius,
                     0f,
                     180f,
                 )
             PairingSide.BOTTOM -> Arc(
-                    x + tileSize * 0.5f,
+                    x + baseSize * 0.5f,
                     y,
                     capRadius,
                     -180f,
@@ -411,31 +349,31 @@ class NucleotideRenderer(
     private fun roundedSocketOnSide(position: Vector2, side: PairingSide): Arc {
         val x = position.x
         val y = position.y
-        val capRadius = tileSize * 0.5f
+        val capRadius = baseSize * 0.5f
         return when (side) {
             PairingSide.LEFT -> Arc(
                 x - capRadius,
-                y + tileSize * 0.5f,
+                y + baseSize * 0.5f,
                 capRadius,
                 -90f,
                 180f,
             )
             PairingSide.RIGHT -> Arc(
-                x + tileSize + capRadius,
-                y + tileSize * 0.5f,
+                x + baseSize + capRadius,
+                y + baseSize * 0.5f,
                 capRadius,
                 90f,
                 180f,
             )
             PairingSide.TOP -> Arc(
-                x + tileSize * 0.5f,
-                y + tileSize + capRadius,
+                x + baseSize * 0.5f,
+                y + baseSize + capRadius,
                 capRadius,
                 -180f,
                 180f,
             )
             PairingSide.BOTTOM -> Arc(
-                x + tileSize * 0.5f,
+                x + baseSize * 0.5f,
                 y - capRadius,
                 capRadius,
                 0f,
