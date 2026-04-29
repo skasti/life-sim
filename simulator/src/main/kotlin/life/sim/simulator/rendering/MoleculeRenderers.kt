@@ -485,7 +485,7 @@ data class SequenceRenderStyle(
 
 class NucleotideSequenceRenderer(
     val tileGap: Float = 10f,
-    val tileSize: Float = 34f,
+    val baseSize: Float = 34f,
 ) : Renderer<NucleotideSequence> {
     private lateinit var nucleotideRenderer: NucleotideRenderer
     private val nucleotidePosition = Vector2()
@@ -514,8 +514,8 @@ class NucleotideSequenceRenderer(
         if (style.showBackbone) {
             val backBoneY = when (style.pairingSide) {
                 PairingSide.TOP -> position.y
-                PairingSide.BOTTOM -> position.y + tileSize
-                else -> position.y + tileSize * 0.5f
+                PairingSide.BOTTOM -> position.y + baseSize
+                else -> position.y + baseSize * 0.5f
             }
             context.drawLine(
                 Vector2(position.x - 8f, backBoneY),
@@ -535,7 +535,7 @@ class NucleotideSequenceRenderer(
                 context,
                 NucleotideOrientation(pairingSide = style.pairingSide),
             )
-            x += tileSize + tileGap
+            x += baseSize + tileGap
         }
 
         if (style.showDirectionIndicator) {
@@ -548,7 +548,7 @@ class NucleotideSequenceRenderer(
             return 0f
         }
 
-        return value.size * tileSize + (value.size - 1) * tileGap
+        return value.size * baseSize + (value.size - 1) * tileGap
     }
 
     private fun drawDirectionIndicator(
@@ -558,7 +558,7 @@ class NucleotideSequenceRenderer(
         width: Float,
         context: RenderContext,
     ) {
-        val centerY = y + tileSize * 0.5f
+        val centerY = y + baseSize * 0.5f
         val arrowHeight = 8f
         val arrowWidth = 12f
 
@@ -595,9 +595,9 @@ class NucleotideSequenceRenderer(
 }
 
 class DnaRenderer(
-    val tileSize: Float = 34f,
+    val baseSize: Float = 34f,
     val tileGap: Float = 10f,
-    val strandGap: Float = tileSize * 0.75f,
+    val strandGap: Float = baseSize * 0.75f,
 ) : Renderer<Dna> {
     private lateinit var sequenceRenderer: NucleotideSequenceRenderer
     private val topStrandPosition = Vector2()
@@ -614,24 +614,24 @@ class DnaRenderer(
 
     override fun render(value: Dna, position: Vector2, context: RenderContext) {
         val topY = position.y
-        val bottomY = topY - tileSize - strandGap
+        val bottomY = topY - baseSize - strandGap
 
         topStrandPosition.x = position.x
         topStrandPosition.y = topY
         bottomStrandPosition.x = position.x
         bottomStrandPosition.y = bottomY
 
-        val connectorA = Vector2(position.x + tileSize * 0.47f, topY + tileSize)
-        val connectorB = Vector2(position.x + tileSize * 0.47f, bottomY)
+        val connectorA = Vector2(position.x + baseSize * 0.47f, topY + baseSize)
+        val connectorB = Vector2(position.x + baseSize * 0.47f, bottomY)
         repeat(value.size) {
             context.drawLine(
                 a = connectorA,
                 b = connectorB,
-                width = tileSize * 0.08f,
+                width = baseSize * 0.08f,
                 color = PAIR_CONNECTOR_COLOR,
             )
-            connectorA.x += tileSize + tileGap
-            connectorB.x += tileSize + tileGap
+            connectorA.x += baseSize + tileGap
+            connectorB.x += baseSize + tileGap
         }
 
         sequenceRenderer.render(

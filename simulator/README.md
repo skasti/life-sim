@@ -64,7 +64,7 @@ Nucleotide visualization is intentionally schematic (not biologically realistic)
 - complementary bases use opposite polarity inside the same family (protrusion vs indentation)
 - nucleotide geometry is orientation-aware so higher-level renderers can place pairing geometry on the duplex-facing side while keeping sequence-facing edges simple
 - connector meaning is carried by the silhouette itself (no separate socket-hint overlays)
-- all silhouette geometry stays within the nucleotide tile bounds (`tileSize`)
+- all silhouette geometry stays within a consistent bounding box based on the baseSize of the nucleotide.
 
 Text labels use a FreeType-generated font at its target size (no post-load bitmap upscaling),
 which keeps label glyphs sharper than scaling the default libGDX bitmap font.
