@@ -285,9 +285,6 @@ class NucleotideRenderer(
     }
 
     companion object {
-        internal const val FULL_ROTATION_DEGREES = 360f
-        internal const val ANGLE_EPSILON = 0.0001f
-        internal val CARDINAL_ARC_ANGLES = listOf(0f, 90f, 180f, 270f)
 
         private val ADENINE_COLOR = Color(0.95f, 0.65f, 0.3f, 1f)
         private val URACIL_COLOR = Color(0.36f, 0.78f, 0.95f, 1f)

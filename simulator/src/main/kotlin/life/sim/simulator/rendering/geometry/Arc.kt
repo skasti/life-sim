@@ -1,13 +1,14 @@
 package life.sim.simulator.rendering.geometry
 
-import life.sim.simulator.rendering.NucleotideRenderer.Companion.ANGLE_EPSILON
-import life.sim.simulator.rendering.NucleotideRenderer.Companion.CARDINAL_ARC_ANGLES
-import life.sim.simulator.rendering.NucleotideRenderer.Companion.FULL_ROTATION_DEGREES
 import life.sim.simulator.rendering.ShapeBounds
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
+
+private const val FULL_ROTATION_DEGREES = 360f
+private const val ANGLE_EPSILON = 0.0001f
+private val CARDINAL_ARC_ANGLES = listOf(0f, 90f, 180f, 270f)
 
 internal data class Arc(
     val x: Float,
