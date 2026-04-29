@@ -11,7 +11,7 @@ class DemoSceneTest {
         val scene = DemoScene.sample()
 
         assertIs<Scene>(scene)
-        assertEquals(Nucleotide.G, scene.nucleotide)
+        assertEquals(Nucleotide.A, scene.nucleotide)
         assertEquals(">AUGCGAUCGUAA>", scene.sequenceText)
         assertEquals(">ACGUACGUAC>", scene.dnaForwardText)
         assertEquals("<UGCAUGCAUG<", scene.dnaReverseText)

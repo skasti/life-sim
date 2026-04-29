@@ -51,9 +51,20 @@ On launch, the simulator renders all of the following together in a single stati
 
 Rendering now uses type-specific renderers and includes both text labels and a minimal graphical treatment:
 
-- `NucleotideRenderer` for nucleotide tiles with centered symbols
+- `NucleotideRenderer` for orientation-aware schematic nucleotide silhouettes with centered symbols
 - `NucleotideSequenceRenderer` for sequence layout, backbones, and direction indicators
 - `DnaRenderer` for duplex layout and pair connectors built on the sequence renderer
+
+Nucleotide visualization is intentionally schematic (not biologically realistic):
+
+- each nucleotide still has a type-specific color and centered base letter (`A`, `C`, `G`, `U`)
+- each nucleotide uses one of two shared connector families to suggest complement compatibility
+  - `A` / `U`: angled family
+  - `C` / `G`: rounded family
+- complementary bases use opposite polarity inside the same family (protrusion vs indentation)
+- nucleotide geometry is orientation-aware so higher-level renderers can place pairing geometry on the duplex-facing side while keeping sequence-facing edges simple
+- connector meaning is carried by the silhouette itself (no separate socket-hint overlays)
+- all silhouette geometry stays within a consistent bounding box based on the baseSize of the nucleotide.
 
 Text labels use a FreeType-generated font at its target size (no post-load bitmap upscaling),
 which keeps label glyphs sharper than scaling the default libGDX bitmap font.
