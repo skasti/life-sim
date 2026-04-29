@@ -17,6 +17,7 @@ Use the roadmap linked from the root `README.md` as strategic context.
    - Build small reusable mechanisms that can self-assemble into higher-order behavior.
    - Avoid introducing privileged high-level types unless explicitly required.
 5. Prefer future-proof abstractions over one-off specialization when it does not overcomplicate the current change.
+6. Prefer star imports over verbose explicit imports unless they create ambiguity or materially hurt readability.
 
 ## Architecture boundaries
 
