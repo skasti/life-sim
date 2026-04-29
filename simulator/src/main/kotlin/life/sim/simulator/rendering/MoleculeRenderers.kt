@@ -41,7 +41,7 @@ class NucleotideRenderer(
             context.drawFilledArc(arc.x, arc.y, arc.radius, arc.startDegrees, arc.degrees, color)
         }
         geometry.arcs.forEach { arc ->
-            context.drawArc(arc.x, arc.y, arc.radius, arc.startDegrees, arc.degrees, color)
+            context.drawArc(arc.x, arc.y, arc.radius, arc.startDegrees, arc.degrees, color, baseSize * 0.08f)
         }
         geometry.triangles.forEach { triangle ->
             context.drawTriangle(triangle.x1, triangle.y1, triangle.x2, triangle.y2, triangle.x3, triangle.y3, color)
@@ -349,35 +349,35 @@ class NucleotideRenderer(
     private fun roundedSocketOnSide(position: Vector2, side: PairingSide): Arc {
         val x = position.x
         val y = position.y
-        val capRadius = baseSize * 0.5f
+        val capRadius = baseSize * 0.7f
         return when (side) {
             PairingSide.LEFT -> Arc(
                 x - capRadius,
                 y + baseSize * 0.5f,
                 capRadius,
-                -90f,
-                180f,
+                -42f,
+                84f,
             )
             PairingSide.RIGHT -> Arc(
                 x + baseSize + capRadius,
                 y + baseSize * 0.5f,
                 capRadius,
-                90f,
-                180f,
+                138f,
+                84f,
             )
             PairingSide.TOP -> Arc(
                 x + baseSize * 0.5f,
                 y + baseSize + capRadius,
                 capRadius,
-                -180f,
-                180f,
+                -132f,
+                84f,
             )
             PairingSide.BOTTOM -> Arc(
                 x + baseSize * 0.5f,
                 y - capRadius,
                 capRadius,
-                0f,
-                180f,
+                48f,
+                84f,
             )
         }
     }
@@ -415,7 +415,7 @@ internal enum class ConnectorPolarity {
 }
 
 data class NucleotideOrientation(
-    val pairingSide: PairingSide = PairingSide.LEFT,
+    val pairingSide: PairingSide = PairingSide.RIGHT,
 )
 
 enum class PairingSide {
