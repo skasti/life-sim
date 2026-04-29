@@ -6,9 +6,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import life.sim.biology.primitives.Nucleotide
-import life.sim.simulator.rendering.geometry.Arc
-import life.sim.simulator.rendering.geometry.Geometry
-import life.sim.simulator.rendering.geometry.bounds
+import life.sim.simulator.rendering.geometry.*
 
 class NucleotideRendererTest {
     private val renderer = NucleotideRenderer()
@@ -137,7 +135,7 @@ class NucleotideRendererTest {
         if (!trianglesInBounds) return false
 
         val filledArcsInBounds = geometry.filledArcs.all { arc ->
-            arc.bounds(true).isWithin(minX, maxX, minY, maxY)
+            arc.bounds(includeCenter = true).isWithin(minX, maxX, minY, maxY)
         }
 
         if (!filledArcsInBounds) return false

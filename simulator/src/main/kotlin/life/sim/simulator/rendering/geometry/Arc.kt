@@ -16,7 +16,7 @@ internal data class Arc(
     val radius: Float,
     val startDegrees: Float,
     val degrees: Float,
-    val lineWidth: Float,
+    val lineWidth: Float = 0f,
 )
 
 internal fun Arc.bounds(includeCenter: Boolean = false, includeStroke: Boolean = false): ShapeBounds {
