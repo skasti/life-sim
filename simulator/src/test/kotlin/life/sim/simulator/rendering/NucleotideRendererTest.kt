@@ -39,7 +39,7 @@ class NucleotideRendererTest {
     }
 
     @Test
-    fun `geometryFor keeps every nucleotide shape inside tile bounds`() {
+    fun `geometryFor keeps every nucleotide shape inside the geometry test window`() {
         val origin = Vector2(10f, 20f)
         val nucleotides = listOf(Nucleotide.A, Nucleotide.U, Nucleotide.C, Nucleotide.G)
         val pairingSides = listOf(PairingSide.LEFT, PairingSide.RIGHT, PairingSide.TOP, PairingSide.BOTTOM)
@@ -47,7 +47,7 @@ class NucleotideRendererTest {
         nucleotides.forEach { nucleotide ->
             pairingSides.forEach { pairingSide ->
                 val geometry = renderer.geometryFor(nucleotide, origin, NucleotideOrientation(pairingSide))
-                assertTrue(renderer.boundsWithinTile(geometry, origin), "Expected $nucleotide on $pairingSide to stay inside tile bounds")
+                assertTrue(renderer.isWithinNucleotideGeometryTestWindow(geometry, origin), "Expected $nucleotide on $pairingSide to stay inside the geometry test window")
             }
         }
     }
@@ -89,7 +89,7 @@ class NucleotideRendererTest {
     }
 
     @Test
-    fun `boundsWithinTile accepts outline arcs that only sweep inside the tile`() {
+    fun `isWithinNucleotideGeometryTestWindow accepts outline arcs that only sweep inside the tile`() {
         val origin = Vector2(0f, 0f)
         val geometry = NucleotideGeometry(
             filledTriangles = emptyList(),
@@ -108,11 +108,11 @@ class NucleotideRendererTest {
             lines = emptyList(),
         )
 
-        assertTrue(renderer.boundsWithinTile(geometry, origin))
+        assertTrue(renderer.isWithinNucleotideGeometryTestWindow(geometry, origin))
     }
 
     @Test
-    fun `boundsWithinTile accepts filled arcs that only sweep inside the tile`() {
+    fun `isWithinNucleotideGeometryTestWindow accepts filled arcs that only sweep inside the tile`() {
         val origin = Vector2(0f, 0f)
         val geometry = NucleotideGeometry(
             filledTriangles = emptyList(),
@@ -131,6 +131,6 @@ class NucleotideRendererTest {
             lines = emptyList(),
         )
 
-        assertTrue(renderer.boundsWithinTile(geometry, origin))
+        assertTrue(renderer.isWithinNucleotideGeometryTestWindow(geometry, origin))
     }
 }

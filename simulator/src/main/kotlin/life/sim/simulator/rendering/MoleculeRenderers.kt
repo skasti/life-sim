@@ -112,7 +112,9 @@ class NucleotideRenderer(
         )
     }
 
-    internal fun boundsWithinTile(geometry: NucleotideGeometry, position: Vector2): Boolean {
+    internal fun isWithinNucleotideGeometryTestWindow(geometry: NucleotideGeometry, position: Vector2): Boolean {
+        // Geometry validation helper used by tests to catch glaring primitive-placement mistakes.
+        // This is not collision logic and does not represent runtime simulation bounds.
         val minX = position.x - tileSize * 0.75f
         val maxX = position.x + tileSize * 1.75f
         val minY = position.y - tileSize * 0.75f
