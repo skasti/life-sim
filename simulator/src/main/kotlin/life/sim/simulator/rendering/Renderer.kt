@@ -5,7 +5,11 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
+import kotlin.math.cbrt
+import kotlin.math.max
 
 interface Renderer<T : Any> {
     fun render(value: T, position: Vector2, context: RenderContext)
@@ -27,10 +31,10 @@ data class RenderContext(
 
     private val glyphLayout = GlyphLayout()
     private var mode = DrawMode.NONE
-    private var shapeType = ShapeRenderer.ShapeType.Point
+    private var shapeType = ShapeType.Point
 
     fun drawFilledRect(x: Float, y: Float, width: Float, height: Float, color: Color) {
-        ensureShapeMode(ShapeRenderer.ShapeType.Filled)
+        ensureShapeMode(ShapeType.Filled)
         shapeRenderer.color = color
         shapeRenderer.rect(x, y, width, height)
     }
@@ -50,7 +54,7 @@ data class RenderContext(
         y3: Float,
         color: Color,
     ) {
-        ensureShapeMode(ShapeRenderer.ShapeType.Line)
+        ensureShapeMode(ShapeType.Line)
         shapeRenderer.color = color
         shapeRenderer.triangle(x1, y1, x2, y2, x3, y3)
     }
@@ -64,7 +68,7 @@ data class RenderContext(
         y3: Float,
         color: Color,
     ) {
-        ensureShapeMode(ShapeRenderer.ShapeType.Filled)
+        ensureShapeMode(ShapeType.Filled)
         shapeRenderer.color = color
         shapeRenderer.triangle(x1, y1, x2, y2, x3, y3)
     }
@@ -77,7 +81,7 @@ data class RenderContext(
         degrees: Float,
         color: Color,
     ) {
-        ensureShapeMode(ShapeRenderer.ShapeType.Filled)
+        ensureShapeMode(ShapeType.Filled)
         shapeRenderer.color = color
         shapeRenderer.arc(x, y, radius, startDegrees, degrees)
     }
@@ -89,10 +93,33 @@ data class RenderContext(
         startDegrees: Float,
         degrees: Float,
         color: Color,
+        lineWidth: Float,
     ) {
-        ensureShapeMode(ShapeRenderer.ShapeType.Line)
+        ensureShapeMode(ShapeType.Filled)
         shapeRenderer.color = color
-        shapeRenderer.arc(x, y, radius, startDegrees, degrees)
+
+        val segments = max(1, (6 * cbrt(radius.toDouble()).toFloat() * (degrees / 360.0f)).toInt())
+        require(segments > 0) { "segments must be > 0." }
+        val theta = (2 * MathUtils.PI * (degrees / 360.0f)) / segments
+        val cos = MathUtils.cos(theta)
+        val sin = MathUtils.sin(theta)
+        var cx = radius * MathUtils.cos(startDegrees * MathUtils.degreesToRadians)
+        var cy = radius * MathUtils.sin(startDegrees * MathUtils.degreesToRadians)
+
+        val a = Vector2(x + cx, y + cy)
+        val b = Vector2(x + cx, y + cy)
+        repeat(segments) {
+            a.x = x + cx
+            a.y = y + cy
+
+            val temp = cx
+            cx = cos * cx - sin * cy
+            cy = sin * temp + cos * cy
+            b.x = x + cx
+            b.y = y + cy
+
+            shapeRenderer.rectLine(a, b, lineWidth)
+        }
     }
 
     fun drawText(text: String, x: Float, y: Float, color: Color = Color.WHITE) {
@@ -119,7 +146,7 @@ data class RenderContext(
         mode = DrawMode.NONE
     }
 
-    private fun ensureShapeMode(type: ShapeRenderer.ShapeType = ShapeRenderer.ShapeType.Filled) {
+    private fun ensureShapeMode(type: ShapeType = ShapeType.Filled) {
         if (mode == DrawMode.SHAPE && shapeType == type) {
             return
         }
