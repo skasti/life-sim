@@ -6,6 +6,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import life.sim.biology.primitives.Nucleotide
+import life.sim.simulator.rendering.geometry.*
 
 class NucleotideRendererTest {
     private val renderer = NucleotideRenderer()
@@ -52,56 +53,22 @@ class NucleotideRendererTest {
         }
     }
 
-    @Test
-    fun `arcBounds uses swept extrema for a counterclockwise semicircle`() {
-        val bounds = renderer.arcBounds(
-            Arc(
-                x = 0f,
-                y = 0f,
-                radius = 10f,
-                startDegrees = 0f,
-                degrees = 180f,
-            ),
-        )
-
-        assertEquals(-10f, bounds.minX, 0.0001f)
-        assertEquals(10f, bounds.maxX, 0.0001f)
-        assertEquals(0f, bounds.minY, 0.0001f)
-        assertEquals(10f, bounds.maxY, 0.0001f)
-    }
-
-    @Test
-    fun `arcBounds uses swept extrema for a counterclockwise quadrant`() {
-        val bounds = renderer.arcBounds(
-            Arc(
-                x = 0f,
-                y = 0f,
-                radius = 10f,
-                startDegrees = 90f,
-                degrees = 90f,
-            ),
-        )
-
-        assertEquals(-10f, bounds.minX, 0.0001f)
-        assertEquals(0f, bounds.maxX, 0.0001f)
-        assertEquals(0f, bounds.minY, 0.0001f)
-        assertEquals(10f, bounds.maxY, 0.0001f)
-    }
 
     @Test
     fun `isWithinNucleotideGeometryTestWindow accepts outline arcs that only sweep inside the tile`() {
         val origin = Vector2(0f, 0f)
-        val geometry = NucleotideGeometry(
+        val geometry = Geometry(
             filledTriangles = emptyList(),
             filledRects = emptyList(),
             filledArcs = emptyList(),
             arcs = listOf(
                 Arc(
-                    x = origin.x - renderer.baseSize * 0.75f,
+                    x = origin.x - renderer.baseSize * 0.75f + 1.5f,
                     y = origin.y,
                     radius = 10f,
                     startDegrees = -90f,
                     degrees = 180f,
+                    lineWidth = 3f,
                 ),
             ),
             triangles = emptyList(),
@@ -114,7 +81,7 @@ class NucleotideRendererTest {
     @Test
     fun `isWithinNucleotideGeometryTestWindow accepts filled arcs that only sweep inside the tile`() {
         val origin = Vector2(0f, 0f)
-        val geometry = NucleotideGeometry(
+        val geometry = Geometry(
             filledTriangles = emptyList(),
             filledRects = emptyList(),
             filledArcs = listOf(
@@ -124,6 +91,7 @@ class NucleotideRendererTest {
                     radius = 10f,
                     startDegrees = 0f,
                     degrees = 180f,
+                    lineWidth = 3f,
                 ),
             ),
             arcs = emptyList(),
@@ -135,7 +103,7 @@ class NucleotideRendererTest {
     }
 
 
-    private fun isWithinNucleotideGeometryTestWindow(geometry: NucleotideGeometry, position: Vector2): Boolean {
+    private fun isWithinNucleotideGeometryTestWindow(geometry: Geometry, position: Vector2): Boolean {
         val minX = position.x - renderer.baseSize * 0.75f
         val maxX = position.x + renderer.baseSize * 1.75f
         val minY = position.y - renderer.baseSize * 0.75f
@@ -167,13 +135,13 @@ class NucleotideRendererTest {
         if (!trianglesInBounds) return false
 
         val filledArcsInBounds = geometry.filledArcs.all { arc ->
-            renderer.arcBounds(arc, includeCenter = true).isWithin(minX, maxX, minY, maxY)
+            arc.bounds(includeCenter = true).isWithin(minX, maxX, minY, maxY)
         }
 
         if (!filledArcsInBounds) return false
 
         val arcsInBounds = geometry.arcs.all { arc ->
-            renderer.arcBounds(arc).isWithin(minX, maxX, minY, maxY)
+            arc.bounds(includeStroke = true).isWithin(minX, maxX, minY, maxY)
         }
 
         if (!arcsInBounds) return false

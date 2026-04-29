@@ -22,6 +22,7 @@ Help contributors produce focused, biologically grounded changes that align with
 3. If code behavior changes, update the relevant docs in the same change.
 4. Prefer simple composable building blocks over hardcoded high-level mechanisms.
 5. When reasonable, choose designs that support future roadmap evolution over narrow one-off specialization.
+6. Prefer star imports over verbose explicit imports unless they create ambiguity or materially hurt readability.
 
 ## Module boundaries
 
