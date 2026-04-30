@@ -73,6 +73,7 @@ class NucleotideRendererTest {
             ),
             triangles = emptyList(),
             lines = emptyList(),
+            polygons = emptyList(),
         )
 
         assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin))
@@ -97,6 +98,7 @@ class NucleotideRendererTest {
             arcs = emptyList(),
             triangles = emptyList(),
             lines = emptyList(),
+            polygons = emptyList(),
         )
 
         assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin))
@@ -146,10 +148,15 @@ class NucleotideRendererTest {
 
         if (!arcsInBounds) return false
 
-        return geometry.lines.all { line ->
+        val linesInBounds = geometry.lines.all { line ->
             listOf(line.a, line.b).all { point ->
                 point.x in minX..maxX && point.y in minY..maxY
             }
+        }
+        if (!linesInBounds) return false
+
+        return geometry.polygons.all { polygon ->
+            polygon.vertices.all { point -> point.x in minX..maxX && point.y in minY..maxY }
         }
     }
 }

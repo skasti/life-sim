@@ -53,6 +53,7 @@ class NucleotideRenderer(
         val arcs = mutableListOf<Arc>()
         val triangles = mutableListOf<Triangle>()
         val lines = mutableListOf<Line>()
+        val polygons = mutableListOf<Polygon>()
 
         when (profile.family) {
             ConnectorFamily.ANGLED -> {
@@ -71,7 +72,7 @@ class NucleotideRenderer(
                     filledArcs += roundedOnSide(position, orientation.pairingSide)
                 } else {
                     filledRects += Rect(position.x, position.y, baseSize, baseSize)
-                    arcs += roundedSocketOnSide(position, orientation.pairingSide)
+                    polygons += roundedSocketPolygonOnSide(position, orientation.pairingSide)
                 }
             }
         }
@@ -83,6 +84,7 @@ class NucleotideRenderer(
             arcs = arcs,
             triangles = triangles,
             lines = lines,
+            polygons = polygons,
         )
     }
 
@@ -244,43 +246,23 @@ class NucleotideRenderer(
         }
     }
 
-    private fun roundedSocketOnSide(position: Vector2, side: PairingSide): Arc {
+    private fun roundedSocketPolygonOnSide(position: Vector2, side: PairingSide): Polygon {
         val x = position.x
         val y = position.y
-        val capRadius = baseSize * 0.7f
+        val capRadius = baseSize * 0.35f
         return when (side) {
-            PairingSide.LEFT -> Arc(
-                x - capRadius,
-                y + baseSize * 0.5f,
-                capRadius,
-                -42f,
-                84f,
-                baseSize * 0.08f,
-            )
-            PairingSide.RIGHT -> Arc(
-                x + baseSize + capRadius,
-                y + baseSize * 0.5f,
-                capRadius,
-                138f,
-                84f,
-                baseSize * 0.08f,
-            )
-            PairingSide.TOP -> Arc(
-                x + baseSize * 0.5f,
-                y + baseSize + capRadius,
-                capRadius,
-                -132f,
-                84f,
-                baseSize * 0.08f,
-            )
-            PairingSide.BOTTOM -> Arc(
-                x + baseSize * 0.5f,
-                y - capRadius,
-                capRadius,
-                48f,
-                84f,
-                baseSize * 0.08f,
-            )
+            PairingSide.LEFT -> polygon.of(Vector2(x, y + baseSize), Vector2(x, y))
+                .add(arc(Vector2(x, y), Vector2(x - capRadius, y + baseSize * 0.5f), Vector2(x, y + baseSize), segments = 10))
+                .close()
+            PairingSide.RIGHT -> polygon.of(Vector2(x + baseSize, y), Vector2(x + baseSize, y + baseSize))
+                .add(arc(Vector2(x + baseSize, y + baseSize), Vector2(x + baseSize + capRadius, y + baseSize * 0.5f), Vector2(x + baseSize, y), segments = 10))
+                .close()
+            PairingSide.TOP -> polygon.of(Vector2(x, y + baseSize), Vector2(x + baseSize, y + baseSize))
+                .add(arc(Vector2(x + baseSize, y + baseSize), Vector2(x + baseSize * 0.5f, y + baseSize), Vector2(x, y + baseSize), segments = 10))
+                .close()
+            PairingSide.BOTTOM -> polygon.of(Vector2(x + baseSize, y), Vector2(x, y))
+                .add(arc(Vector2(x, y), Vector2(x + baseSize * 0.5f, y), Vector2(x + baseSize, y), segments = 10))
+                .close()
         }
     }
 

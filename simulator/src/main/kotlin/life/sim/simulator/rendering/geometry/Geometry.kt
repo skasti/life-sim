@@ -10,6 +10,7 @@ internal data class Geometry(
     val arcs: List<Arc>,
     val triangles: List<Triangle>,
     val lines: List<Line>,
+    val polygons: List<Polygon>,
 )
 
 internal fun Geometry.render(context: RenderContext, color: Color) {
@@ -30,6 +31,9 @@ internal fun Geometry.render(context: RenderContext, color: Color) {
     }
     this.lines.forEach { line ->
         context.drawLine(line.a, line.b, line.width, color)
+    }
+    this.polygons.forEach { polygon ->
+        context.drawPolygon(polygon.vertices, polygon.drawMode, color)
     }
 }
 

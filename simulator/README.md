@@ -52,6 +52,7 @@ On launch, the simulator renders all of the following together in a single stati
 Rendering now uses type-specific renderers and includes both text labels and a minimal graphical treatment:
 
 - `NucleotideRenderer` for orientation-aware schematic nucleotide silhouettes with centered symbols
+- `geometry` package for reusable simulator-side primitives (`Geometry`, `Arc`, `Polygon`, etc.)
 - `NucleotideSequenceRenderer` for sequence layout, backbones, and direction indicators
 - `DnaRenderer` for duplex layout and pair connectors built on the sequence renderer
 
@@ -117,3 +118,12 @@ Planned follow-up work includes:
 - scene/world object management
 - dynamic simulation/render integration
 - richer molecule/organism rendering and debug overlays
+
+
+### Geometry and polygon rendering
+
+Simulator rendering geometry is centralized in `rendering/geometry` so shapes, bounds rules, and construction helpers evolve together.
+`Geometry.render(...)` now supports polygon lists in addition to rects/triangles/arcs/lines, and `RenderContext` can draw filled or wireframe polygons from raw vertex data.
+
+For complex connectors, use `polygon.of(...).add(...).close()` and `arc(start, center, end, segments)` to approximate curved edges as vertices.
+This keeps awkward silhouettes composable and prepares the pipeline for later startup-time sprite generation.

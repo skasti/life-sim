@@ -1,13 +1,16 @@
 package life.sim.simulator.rendering
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
+import life.sim.simulator.rendering.geometry.PolygonDrawMode
 import kotlin.math.cbrt
 import kotlin.math.max
 
@@ -22,6 +25,7 @@ data class RenderContext(
     val shapeRenderer: ShapeRenderer,
     var viewportWidth: Float,
     var viewportHeight: Float,
+    val immediateModeRenderer: ImmediateModeRenderer20 = ImmediateModeRenderer20(false, true, 0),
 ) {
     private enum class DrawMode {
         NONE,
@@ -120,6 +124,19 @@ data class RenderContext(
 
             shapeRenderer.rectLine(a, b, lineWidth)
         }
+    }
+
+
+    internal fun drawPolygon(vertices: List<Vector2>, drawMode: PolygonDrawMode, color: Color) {
+        if (vertices.size < 3) return
+        finish()
+        val glMode = if (drawMode == PolygonDrawMode.FILLED) GL20.GL_TRIANGLE_FAN else GL20.GL_LINE_STRIP
+        immediateModeRenderer.begin(shapeRenderer.projectionMatrix, glMode)
+        vertices.forEach { vertex ->
+            immediateModeRenderer.color(color.r, color.g, color.b, color.a)
+            immediateModeRenderer.vertex(vertex.x, vertex.y, 0f)
+        }
+        immediateModeRenderer.end()
     }
 
     fun drawText(text: String, x: Float, y: Float, color: Color = Color.WHITE) {
