@@ -25,7 +25,7 @@ data class RenderContext(
     val shapeRenderer: ShapeRenderer,
     var viewportWidth: Float,
     var viewportHeight: Float,
-    val immediateModeRenderer: ImmediateModeRenderer20 = ImmediateModeRenderer20(false, true, 0),
+    val immediateModeRenderer: ImmediateModeRenderer20,
 ) {
     private enum class DrawMode {
         NONE,

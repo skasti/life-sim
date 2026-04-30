@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
+import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.utils.ScreenUtils
 import life.sim.simulator.rendering.DnaRenderer
@@ -22,6 +23,7 @@ class SimulatorApplication : ApplicationAdapter() {
     private lateinit var batch: SpriteBatch
     private lateinit var font: BitmapFont
     private lateinit var shapeRenderer: ShapeRenderer
+    private lateinit var immediateModeRenderer: ImmediateModeRenderer20
     private lateinit var renderContext: RenderContext
     private val camera = OrthographicCamera()
     private lateinit var currentScene: Scene
@@ -41,6 +43,7 @@ class SimulatorApplication : ApplicationAdapter() {
             setUseIntegerPositions(true)
         }
         shapeRenderer = ShapeRenderer()
+        immediateModeRenderer = ImmediateModeRenderer20(false, true, 0)
         updateProjectionMatrices(Gdx.graphics.width, Gdx.graphics.height)
         initializeRenderers()
         renderContext = RenderContext(
@@ -49,6 +52,7 @@ class SimulatorApplication : ApplicationAdapter() {
             shapeRenderer = shapeRenderer,
             viewportWidth = Gdx.graphics.width.toFloat(),
             viewportHeight = Gdx.graphics.height.toFloat(),
+            immediateModeRenderer = immediateModeRenderer,
         )
         currentScene = DemoScene.sample()
         currentScene.init()
@@ -76,6 +80,7 @@ class SimulatorApplication : ApplicationAdapter() {
         batch.dispose()
         font.dispose()
         shapeRenderer.dispose()
+        immediateModeRenderer.dispose()
     }
 
     private fun updateProjectionMatrices(width: Int, height: Int) {
