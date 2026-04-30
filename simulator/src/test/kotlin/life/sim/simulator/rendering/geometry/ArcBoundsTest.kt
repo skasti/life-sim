@@ -1,5 +1,7 @@
 package life.sim.simulator.rendering.geometry
 
+import com.badlogic.gdx.graphics.Color
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -12,6 +14,7 @@ class ArcBoundsTest {
             radius = 10f,
             startDegrees = 0f,
             degrees = 180f,
+            color = Color.WHITE,
             lineWidth = 3f,
         ).bounds()
 
@@ -29,6 +32,7 @@ class ArcBoundsTest {
             radius = 10f,
             startDegrees = 0f,
             degrees = 180f,
+            color = Color.WHITE,
             lineWidth = 4f,
         ).bounds(includeStroke = true)
 
@@ -46,6 +50,7 @@ class ArcBoundsTest {
             radius = 10f,
             startDegrees = 90f,
             degrees = 90f,
+            color = Color.WHITE,
             lineWidth = 3f,
         ).bounds()
 
@@ -55,4 +60,3 @@ class ArcBoundsTest {
         assertEquals(10f, bounds.maxY, 0.0001f)
     }
 }
-

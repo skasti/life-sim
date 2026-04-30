@@ -1,5 +1,6 @@
 package life.sim.simulator.rendering
 
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector2
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -58,22 +59,15 @@ class NucleotideRendererTest {
     fun `isWithinNucleotideGeometryTestWindow accepts outline arcs that only sweep inside the tile`() {
         val origin = Vector2(0f, 0f)
         val geometry = Geometry(
-            filledTriangles = emptyList(),
-            filledRects = emptyList(),
-            filledArcs = emptyList(),
-            arcs = listOf(
-                Arc(
-                    x = origin.x - renderer.baseSize * 0.75f + 1.5f,
-                    y = origin.y,
-                    radius = 10f,
-                    startDegrees = -90f,
-                    degrees = 180f,
-                    lineWidth = 3f,
-                ),
+            Arc(
+                x = origin.x - renderer.baseSize * 0.75f + 1.5f,
+                y = origin.y,
+                radius = 10f,
+                startDegrees = -90f,
+                degrees = 180f,
+                color = Color.WHITE,
+                lineWidth = 3f,
             ),
-            triangles = emptyList(),
-            lines = emptyList(),
-            polygons = emptyList(),
         )
 
         assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin))
@@ -83,22 +77,15 @@ class NucleotideRendererTest {
     fun `isWithinNucleotideGeometryTestWindow accepts filled arcs that only sweep inside the tile`() {
         val origin = Vector2(0f, 0f)
         val geometry = Geometry(
-            filledTriangles = emptyList(),
-            filledRects = emptyList(),
-            filledArcs = listOf(
-                Arc(
-                    x = origin.x,
-                    y = origin.y - renderer.baseSize * 0.75f,
-                    radius = 10f,
-                    startDegrees = 0f,
-                    degrees = 180f,
-                    lineWidth = 3f,
-                ),
+            Arc(
+                x = origin.x,
+                y = origin.y - renderer.baseSize * 0.75f,
+                radius = 10f,
+                startDegrees = 0f,
+                degrees = 180f,
+                color = Color.WHITE,
+                lineWidth = 0f,
             ),
-            arcs = emptyList(),
-            triangles = emptyList(),
-            lines = emptyList(),
-            polygons = emptyList(),
         )
 
         assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin))
@@ -116,9 +103,9 @@ class NucleotideRendererTest {
 
         listOf(PairingSide.LEFT, PairingSide.RIGHT, PairingSide.TOP, PairingSide.BOTTOM).forEach { pairingSide ->
             val geometry = renderer.geometryFor(Nucleotide.G, origin, NucleotideOrientation(pairingSide))
-            val polygon = geometry.polygons.single()
+            val polygon = geometry.elements.filterIsInstance<Polygon>().single()
 
-            assertEquals(emptyList(), geometry.filledRects)
+            assertTrue(geometry.elements.none { it is Arc || it is Line })
             assertTrue(baseCorners.all(polygon.vertices::contains), "Expected the rounded indentation polygon to keep the rectangular body corners")
             assertTrue(polygon.vertices.first() == polygon.vertices.last(), "Expected the rounded indentation polygon to be closed")
             assertTrue(polygonArea(polygon.vertices) > renderer.baseSize * renderer.baseSize, "Expected the rounded indentation polygon to cover more area than the base square")
@@ -166,52 +153,16 @@ class NucleotideRendererTest {
         val minY = position.y - renderer.baseSize * 0.75f
         val maxY = position.y + renderer.baseSize * 1.75f
 
-        val rectsInBounds = geometry.filledRects.all { rect ->
-            rect.x >= minX &&
-                rect.y >= minY &&
-                rect.x + rect.width <= maxX &&
-                rect.y + rect.height <= maxY
-        }
-
-        if (!rectsInBounds) return false
-
-        val filledTrianglesInBounds = geometry.filledTriangles.all { triangle ->
-            val xs = listOf(triangle.x1, triangle.x2, triangle.x3)
-            val ys = listOf(triangle.y1, triangle.y2, triangle.y3)
-            xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
-        }
-
-        if (!filledTrianglesInBounds) return false
-
-        val trianglesInBounds = geometry.triangles.all { triangle ->
-            val xs = listOf(triangle.x1, triangle.x2, triangle.x3)
-            val ys = listOf(triangle.y1, triangle.y2, triangle.y3)
-            xs.all { it in minX..maxX } && ys.all { it in minY..maxY }
-        }
-
-        if (!trianglesInBounds) return false
-
-        val filledArcsInBounds = geometry.filledArcs.all { arc ->
-            arc.bounds(includeCenter = true).isWithin(minX, maxX, minY, maxY)
-        }
-
-        if (!filledArcsInBounds) return false
-
-        val arcsInBounds = geometry.arcs.all { arc ->
-            arc.bounds(includeStroke = true).isWithin(minX, maxX, minY, maxY)
-        }
-
-        if (!arcsInBounds) return false
-
-        val linesInBounds = geometry.lines.all { line ->
-            listOf(line.a, line.b).all { point ->
-                point.x in minX..maxX && point.y in minY..maxY
+        return geometry.elements.all { element ->
+            when (element) {
+                is Polygon -> element.vertices.all { point -> point.x in minX..maxX && point.y in minY..maxY }
+                is Arc -> {
+                    val bounds = if (element.lineWidth <= 0f) element.bounds(includeCenter = true) else element.bounds(includeStroke = true)
+                    bounds.isWithin(minX, maxX, minY, maxY)
+                }
+                is Line -> listOf(element.a, element.b).all { point -> point.x in minX..maxX && point.y in minY..maxY }
+                else -> true
             }
-        }
-        if (!linesInBounds) return false
-
-        return geometry.polygons.all { polygon ->
-            polygon.vertices.all { point -> point.x in minX..maxX && point.y in minY..maxY }
         }
     }
 
