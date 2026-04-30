@@ -20,6 +20,31 @@ internal data class Polygon(
     companion object {
         fun of(vararg vertices: Vector2, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): PolygonBuilder =
             PolygonBuilder(vertices = vertices.toList().map(Vector2::cpy).toMutableList(), drawMode = drawMode)
+
+        fun rect(x: Float, y: Float, width: Float, height: Float, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon =
+            of(
+                Vector2(x, y),
+                Vector2(x + width, y),
+                Vector2(x + width, y + height),
+                Vector2(x, y + height),
+                drawMode = drawMode,
+            ).close()
+
+        fun triangle(a: Vector2, b: Vector2, c: Vector2, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon =
+            of(a, b, c, drawMode = drawMode).close()
+
+        fun circle(center: Vector2, radius: Float, segments: Int = 24, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon {
+            require(segments >= 3) { "segments must be >= 3." }
+            val points = (0 until segments).map { i ->
+                val angle = (Math.PI * 2.0 * i.toDouble()) / segments.toDouble()
+                Vector2(
+                    (center.x + radius * kotlin.math.cos(angle)).toFloat(),
+                    (center.y + radius * kotlin.math.sin(angle)).toFloat(),
+                )
+            }
+            return PolygonBuilder(vertices = points.toMutableList(), drawMode = drawMode).close()
+        }
+
     }
 }
 
