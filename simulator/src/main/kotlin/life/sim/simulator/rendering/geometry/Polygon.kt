@@ -35,6 +35,7 @@ internal data class Polygon(
 
         fun circle(center: Vector2, radius: Float, segments: Int = 24, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon {
             require(segments >= 3) { "segments must be >= 3." }
+            require(radius > 0f) { "radius must be > 0." }
             val points = (0 until segments).map { i ->
                 val angle = (Math.PI * 2.0 * i.toDouble()) / segments.toDouble()
                 Vector2(

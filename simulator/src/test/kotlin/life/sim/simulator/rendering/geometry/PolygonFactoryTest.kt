@@ -3,6 +3,7 @@ package life.sim.simulator.rendering.geometry
 import com.badlogic.gdx.math.Vector2
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class PolygonFactoryTest {
@@ -24,11 +25,19 @@ class PolygonFactoryTest {
     }
 
     @Test
-    fun `circle creates closed approximation with requested segments`() {
-        val polygon = Polygon.circle(Vector2(0f, 0f), radius = 5f, segments = 12)
+    fun `circle creates closed approximation with requested segments around provided center`() {
+        val center = Vector2(3f, -4f)
+        val polygon = Polygon.circle(center, radius = 5f, segments = 12)
 
         assertEquals(13, polygon.vertices.size)
         assertEquals(polygon.vertices.first(), polygon.vertices.last())
-        assertTrue(polygon.vertices.dropLast(1).all { point -> kotlin.math.abs(point.len() - 5f) < 0.0001f })
+        assertTrue(polygon.vertices.dropLast(1).all { point -> kotlin.math.abs(point.dst(center) - 5f) < 0.0001f })
+    }
+
+    @Test
+    fun `circle rejects non-positive radius`() {
+        assertFailsWith<IllegalArgumentException> {
+            Polygon.circle(Vector2(0f, 0f), radius = 0f, segments = 12)
+        }
     }
 }
