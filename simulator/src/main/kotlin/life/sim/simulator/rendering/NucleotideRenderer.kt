@@ -71,7 +71,6 @@ class NucleotideRenderer(
                     filledRects += Rect(position.x, position.y, baseSize, baseSize)
                     filledArcs += roundedOnSide(position, orientation.pairingSide)
                 } else {
-                    filledRects += Rect(position.x, position.y, baseSize, baseSize)
                     polygons += roundedSocketPolygonOnSide(position, orientation.pairingSide)
                 }
             }
@@ -110,6 +109,7 @@ class NucleotideRenderer(
                     y + baseSize,
                 ),
             )
+
             PairingSide.BOTTOM -> listOf(
                 Triangle(
                     x,
@@ -128,6 +128,7 @@ class NucleotideRenderer(
                     y - pairingBandSize,
                 ),
             )
+
             PairingSide.LEFT -> listOf(
                 Triangle(
                     x,
@@ -146,6 +147,7 @@ class NucleotideRenderer(
                     y,
                 ),
             )
+
             PairingSide.RIGHT -> listOf(
                 Triangle(
                     x + baseSize,
@@ -179,6 +181,7 @@ class NucleotideRenderer(
                 x - pairingBandSize,
                 y + baseSize * 0.5f,
             )
+
             PairingSide.RIGHT -> Triangle(
                 x + baseSize,
                 y,
@@ -187,6 +190,7 @@ class NucleotideRenderer(
                 x + baseSize,
                 y + baseSize,
             )
+
             PairingSide.TOP -> Triangle(
                 x,
                 y + baseSize,
@@ -195,6 +199,7 @@ class NucleotideRenderer(
                 x + baseSize,
                 y + baseSize,
             )
+
             PairingSide.BOTTOM -> Triangle(
                 x,
                 y,
@@ -219,6 +224,7 @@ class NucleotideRenderer(
                 180f,
                 baseSize * 0.08f,
             )
+
             PairingSide.RIGHT -> Arc(
                 x + baseSize,
                 y + baseSize * 0.5f,
@@ -227,6 +233,7 @@ class NucleotideRenderer(
                 180f,
                 baseSize * 0.08f,
             )
+
             PairingSide.TOP -> Arc(
                 x + baseSize * 0.5f,
                 y + baseSize,
@@ -235,6 +242,7 @@ class NucleotideRenderer(
                 180f,
                 baseSize * 0.08f,
             )
+
             PairingSide.BOTTOM -> Arc(
                 x + baseSize * 0.5f,
                 y,
@@ -249,19 +257,81 @@ class NucleotideRenderer(
     private fun roundedSocketPolygonOnSide(position: Vector2, side: PairingSide): Polygon {
         val x = position.x
         val y = position.y
-        val capRadius = baseSize * 0.35f
         return when (side) {
-            PairingSide.LEFT -> polygon.of(Vector2(x, y + baseSize), Vector2(x, y))
-                .add(arc(Vector2(x, y), Vector2(x - capRadius, y + baseSize * 0.5f), Vector2(x, y + baseSize), segments = 10))
+            PairingSide.LEFT -> Polygon.of(
+                Vector2(x + baseSize, y + baseSize),
+                Vector2(x, y + baseSize),
+                Vector2(x - pairingBandSize, y + baseSize),
+            )
+                .add(
+                    arc(
+                        Vector2(x - pairingBandSize, y + baseSize),
+                        Vector2(x - pairingBandSize, y + baseSize * 0.5f),
+                        Vector2(x - pairingBandSize, y),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.CLOCKWISE,
+                    ),
+                )
+                .add(
+                    Vector2(x, y),
+                    Vector2(x + baseSize, y),
+                )
                 .close()
-            PairingSide.RIGHT -> polygon.of(Vector2(x + baseSize, y), Vector2(x + baseSize, y + baseSize))
-                .add(arc(Vector2(x + baseSize, y + baseSize), Vector2(x + baseSize + capRadius, y + baseSize * 0.5f), Vector2(x + baseSize, y), segments = 10))
+
+            PairingSide.RIGHT -> Polygon.of(
+                Vector2(x, y + baseSize),
+                Vector2(x + baseSize, y + baseSize),
+                Vector2(x + baseSize + pairingBandSize, y + baseSize),
+            )
+                .add(
+                    arc(
+                        Vector2(x + baseSize + pairingBandSize, y + baseSize),
+                        Vector2(x + baseSize + pairingBandSize, y + baseSize * 0.5f),
+                        Vector2(x + baseSize + pairingBandSize, y),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.COUNTERCLOCKWISE,
+                    ),
+                )
+                .add(
+                    Vector2(x + baseSize, y),
+                    Vector2(x, y),
+                )
                 .close()
-            PairingSide.TOP -> polygon.of(Vector2(x, y + baseSize), Vector2(x + baseSize, y + baseSize))
-                .add(arc(Vector2(x + baseSize, y + baseSize), Vector2(x + baseSize * 0.5f, y + baseSize), Vector2(x, y + baseSize), segments = 10))
+
+            PairingSide.TOP -> Polygon.of(
+                Vector2(x, y),
+                Vector2(x + baseSize, y),
+                Vector2(x + baseSize, y + baseSize),
+                Vector2(x + baseSize, y + baseSize + pairingBandSize),
+            )
+                .add(
+                    arc(
+                        Vector2(x + baseSize, y + baseSize + pairingBandSize),
+                        Vector2(x + baseSize * 0.5f, y + baseSize + pairingBandSize),
+                        Vector2(x, y + baseSize + pairingBandSize),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.CLOCKWISE,
+                    ),
+                )
+                .add(Vector2(x, y + baseSize))
                 .close()
-            PairingSide.BOTTOM -> polygon.of(Vector2(x + baseSize, y), Vector2(x, y))
-                .add(arc(Vector2(x, y), Vector2(x + baseSize * 0.5f, y), Vector2(x + baseSize, y), segments = 10))
+
+            PairingSide.BOTTOM -> Polygon.of(
+                Vector2(x + baseSize, y + baseSize),
+                Vector2(x, y + baseSize),
+                Vector2(x, y),
+                Vector2(x, y - pairingBandSize),
+            )
+                .add(
+                    arc(
+                        Vector2(x, y - pairingBandSize),
+                        Vector2(x + baseSize * 0.5f, y - pairingBandSize),
+                        Vector2(x + baseSize, y - pairingBandSize),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.CLOCKWISE,
+                    ),
+                )
+                .add(Vector2(x + baseSize, y))
                 .close()
         }
     }

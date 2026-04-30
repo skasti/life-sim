@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
-import life.sim.simulator.rendering.geometry.PolygonDrawMode
+import life.sim.simulator.rendering.geometry.*
 import kotlin.math.cbrt
 import kotlin.math.max
 
@@ -130,9 +130,22 @@ data class RenderContext(
     internal fun drawPolygon(vertices: List<Vector2>, drawMode: PolygonDrawMode, color: Color) {
         if (vertices.size < 3) return
         finish()
-        val glMode = if (drawMode == PolygonDrawMode.FILLED) GL20.GL_TRIANGLE_FAN else GL20.GL_LINE_STRIP
+        val renderVertices = if (drawMode == PolygonDrawMode.FILLED) {
+            triangulatePolygon(vertices).flatMap { triangle ->
+                listOf(
+                    Vector2(triangle.x1, triangle.y1),
+                    Vector2(triangle.x2, triangle.y2),
+                    Vector2(triangle.x3, triangle.y3),
+                )
+            }
+        } else {
+            vertices
+        }
+        if (renderVertices.isEmpty()) return
+
+        val glMode = if (drawMode == PolygonDrawMode.FILLED) GL20.GL_TRIANGLES else GL20.GL_LINE_STRIP
         immediateModeRenderer.begin(shapeRenderer.projectionMatrix, glMode)
-        vertices.forEach { vertex ->
+        renderVertices.forEach { vertex ->
             immediateModeRenderer.color(color.r, color.g, color.b, color.a)
             immediateModeRenderer.vertex(vertex.x, vertex.y, 0f)
         }

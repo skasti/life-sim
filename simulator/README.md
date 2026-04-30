@@ -125,5 +125,7 @@ Planned follow-up work includes:
 Simulator rendering geometry is centralized in `rendering/geometry` so shapes, bounds rules, and construction helpers evolve together.
 `Geometry.render(...)` now supports polygon lists in addition to rects/triangles/arcs/lines, and `RenderContext` can draw filled or wireframe polygons from raw vertex data.
 
-For complex connectors, use `polygon.of(...).add(...).close()` and `arc(start, center, end, segments)` to approximate curved edges as vertices.
+For complex connectors, use `Polygon.of(...).add(...).close()` and `arc(start, center, end, segments, sweepDirection)` to approximate curved edges as vertices.
+Filled polygons are triangulated from that outline data before rendering, so curved and concave silhouettes do not need to be authored as triangle fans by hand.
+Set `sweepDirection` explicitly when `start` and `end` sit opposite each other on a diameter, because those points alone do not determine which side of the circle should be traced.
 This keeps awkward silhouettes composable and prepares the pipeline for later startup-time sprite generation.
