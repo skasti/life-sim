@@ -73,6 +73,7 @@ class NucleotideRendererTest {
             ),
             triangles = emptyList(),
             lines = emptyList(),
+            polygons = emptyList(),
         )
 
         assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin))
@@ -97,9 +98,65 @@ class NucleotideRendererTest {
             arcs = emptyList(),
             triangles = emptyList(),
             lines = emptyList(),
+            polygons = emptyList(),
         )
 
         assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin))
+    }
+
+    @Test
+    fun `geometryFor renders rounded indentations as a single polygon with an outward concave socket`() {
+        val origin = Vector2(10f, 20f)
+        val baseCorners = listOf(
+            Vector2(origin.x, origin.y),
+            Vector2(origin.x + renderer.baseSize, origin.y),
+            Vector2(origin.x, origin.y + renderer.baseSize),
+            Vector2(origin.x + renderer.baseSize, origin.y + renderer.baseSize),
+        )
+
+        listOf(PairingSide.LEFT, PairingSide.RIGHT, PairingSide.TOP, PairingSide.BOTTOM).forEach { pairingSide ->
+            val geometry = renderer.geometryFor(Nucleotide.G, origin, NucleotideOrientation(pairingSide))
+            val polygon = geometry.polygons.single()
+
+            assertEquals(emptyList(), geometry.filledRects)
+            assertTrue(baseCorners.all(polygon.vertices::contains), "Expected the rounded indentation polygon to keep the rectangular body corners")
+            assertTrue(polygon.vertices.first() == polygon.vertices.last(), "Expected the rounded indentation polygon to be closed")
+            assertTrue(polygonArea(polygon.vertices) > renderer.baseSize * renderer.baseSize, "Expected the rounded indentation polygon to cover more area than the base square")
+
+            when (pairingSide) {
+                PairingSide.LEFT -> {
+                    assertTrue(polygon.vertices.any { it.x < origin.x }, "Expected the left rounded socket to extend beyond the left edge")
+                    assertTrue(
+                        polygon.vertices.any { approximatelyEqual(it.x, origin.x) && approximatelyEqual(it.y, origin.y + renderer.baseSize * 0.5f) },
+                        "Expected the left rounded socket to curve back inward to the left body edge",
+                    )
+                }
+
+                PairingSide.RIGHT -> {
+                    assertTrue(polygon.vertices.any { it.x > origin.x + renderer.baseSize }, "Expected the right rounded socket to extend beyond the right edge")
+                    assertTrue(
+                        polygon.vertices.any { approximatelyEqual(it.x, origin.x + renderer.baseSize) && approximatelyEqual(it.y, origin.y + renderer.baseSize * 0.5f) },
+                        "Expected the right rounded socket to curve back inward to the right body edge",
+                    )
+                }
+
+                PairingSide.TOP -> {
+                    assertTrue(polygon.vertices.any { it.y > origin.y + renderer.baseSize }, "Expected the top rounded socket to extend beyond the top edge")
+                    assertTrue(
+                        polygon.vertices.any { approximatelyEqual(it.x, origin.x + renderer.baseSize * 0.5f) && approximatelyEqual(it.y, origin.y + renderer.baseSize) },
+                        "Expected the top rounded socket to curve back inward to the top body edge",
+                    )
+                }
+
+                PairingSide.BOTTOM -> {
+                    assertTrue(polygon.vertices.any { it.y < origin.y }, "Expected the bottom rounded socket to extend beyond the bottom edge")
+                    assertTrue(
+                        polygon.vertices.any { approximatelyEqual(it.x, origin.x + renderer.baseSize * 0.5f) && approximatelyEqual(it.y, origin.y) },
+                        "Expected the bottom rounded socket to curve back inward to the bottom body edge",
+                    )
+                }
+            }
+        }
     }
 
 
@@ -146,10 +203,29 @@ class NucleotideRendererTest {
 
         if (!arcsInBounds) return false
 
-        return geometry.lines.all { line ->
+        val linesInBounds = geometry.lines.all { line ->
             listOf(line.a, line.b).all { point ->
                 point.x in minX..maxX && point.y in minY..maxY
             }
         }
+        if (!linesInBounds) return false
+
+        return geometry.polygons.all { polygon ->
+            polygon.vertices.all { point -> point.x in minX..maxX && point.y in minY..maxY }
+        }
     }
+
+    private fun polygonArea(vertices: List<Vector2>): Float {
+        val outline = polygonOutline(vertices)
+        var doubledArea = 0f
+        for (index in outline.indices) {
+            val current = outline[index]
+            val next = outline[(index + 1) % outline.size]
+            doubledArea += current.x * next.y - next.x * current.y
+        }
+        return kotlin.math.abs(doubledArea) * 0.5f
+    }
+
+    private fun approximatelyEqual(a: Float, b: Float, tolerance: Float = 0.0001f): Boolean =
+        kotlin.math.abs(a - b) <= tolerance
 }
