@@ -79,23 +79,63 @@ class NucleotideRenderer(
         val y = position.y
         return when (side) {
             PairingSide.TOP -> listOf(
-                Polygon.triangle(Vector2(x, y + baseSize), Vector2(x, y + baseSize + pairingBandSize), Vector2(x + baseSize * 0.5f, y + baseSize), color = color),
-                Polygon.triangle(Vector2(x + baseSize * 0.5f, y + baseSize), Vector2(x + baseSize, y + baseSize + pairingBandSize), Vector2(x + baseSize, y + baseSize), color = color),
+                Polygon.triangle(
+                    Vector2(x, y + baseSize),
+                    Vector2(x, y + baseSize + pairingBandSize),
+                    Vector2(x + baseSize * 0.5f, y + baseSize),
+                    color = color
+                ),
+                Polygon.triangle(
+                    Vector2(x + baseSize * 0.5f, y + baseSize),
+                    Vector2(x + baseSize, y + baseSize + pairingBandSize),
+                    Vector2(x + baseSize, y + baseSize),
+                    color = color
+                ),
             )
 
             PairingSide.BOTTOM -> listOf(
-                Polygon.triangle(Vector2(x, y), Vector2(x + baseSize * 0.5f, y), Vector2(x, y - pairingBandSize), color = color),
-                Polygon.triangle(Vector2(x + baseSize * 0.5f, y), Vector2(x + baseSize, y), Vector2(x + baseSize, y - pairingBandSize), color = color),
+                Polygon.triangle(
+                    Vector2(x, y),
+                    Vector2(x + baseSize * 0.5f, y),
+                    Vector2(x, y - pairingBandSize),
+                    color = color
+                ),
+                Polygon.triangle(
+                    Vector2(x + baseSize * 0.5f, y),
+                    Vector2(x + baseSize, y),
+                    Vector2(x + baseSize, y - pairingBandSize),
+                    color = color
+                ),
             )
 
             PairingSide.LEFT -> listOf(
-                Polygon.triangle(Vector2(x, y + baseSize), Vector2(x, y + baseSize * 0.5f), Vector2(x - pairingBandSize, y + baseSize), color = color),
-                Polygon.triangle(Vector2(x, y + baseSize * 0.5f), Vector2(x, y), Vector2(x - pairingBandSize, y), color = color),
+                Polygon.triangle(
+                    Vector2(x, y + baseSize),
+                    Vector2(x, y + baseSize * 0.5f),
+                    Vector2(x - pairingBandSize, y + baseSize),
+                    color = color
+                ),
+                Polygon.triangle(
+                    Vector2(x, y + baseSize * 0.5f),
+                    Vector2(x, y),
+                    Vector2(x - pairingBandSize, y),
+                    color = color
+                ),
             )
 
             PairingSide.RIGHT -> listOf(
-                Polygon.triangle(Vector2(x + baseSize, y + baseSize), Vector2(x + baseSize + pairingBandSize, y + baseSize), Vector2(x + baseSize, y + baseSize * 0.5f), color = color),
-                Polygon.triangle(Vector2(x + baseSize, y + baseSize * 0.5f), Vector2(x + baseSize + pairingBandSize, y), Vector2(x + baseSize, y), color = color),
+                Polygon.triangle(
+                    Vector2(x + baseSize, y + baseSize),
+                    Vector2(x + baseSize + pairingBandSize, y + baseSize),
+                    Vector2(x + baseSize, y + baseSize * 0.5f),
+                    color = color
+                ),
+                Polygon.triangle(
+                    Vector2(x + baseSize, y + baseSize * 0.5f),
+                    Vector2(x + baseSize + pairingBandSize, y),
+                    Vector2(x + baseSize, y),
+                    color = color
+                ),
             )
         }
     }
@@ -104,13 +144,33 @@ class NucleotideRenderer(
         val x = position.x
         val y = position.y
         return when (side) {
-            PairingSide.LEFT -> Polygon.triangle(Vector2(x, y), Vector2(x, y + baseSize), Vector2(x - pairingBandSize, y + baseSize * 0.5f), color = color)
+            PairingSide.LEFT -> Polygon.triangle(
+                Vector2(x, y),
+                Vector2(x, y + baseSize),
+                Vector2(x - pairingBandSize, y + baseSize * 0.5f),
+                color = color
+            )
 
-            PairingSide.RIGHT -> Polygon.triangle(Vector2(x + baseSize, y), Vector2(x + baseSize + pairingBandSize, y + baseSize * 0.5f), Vector2(x + baseSize, y + baseSize), color = color)
+            PairingSide.RIGHT -> Polygon.triangle(
+                Vector2(x + baseSize, y),
+                Vector2(x + baseSize + pairingBandSize, y + baseSize * 0.5f),
+                Vector2(x + baseSize, y + baseSize),
+                color = color
+            )
 
-            PairingSide.TOP -> Polygon.triangle(Vector2(x, y + baseSize), Vector2(x + baseSize * 0.5f, y + baseSize + pairingBandSize), Vector2(x + baseSize, y + baseSize), color = color)
+            PairingSide.TOP -> Polygon.triangle(
+                Vector2(x, y + baseSize),
+                Vector2(x + baseSize * 0.5f, y + baseSize + pairingBandSize),
+                Vector2(x + baseSize, y + baseSize),
+                color = color
+            )
 
-            PairingSide.BOTTOM -> Polygon.triangle(Vector2(x, y), Vector2(x + baseSize, y), Vector2(x + baseSize * 0.5f, y - pairingBandSize), color = color)
+            PairingSide.BOTTOM -> Polygon.triangle(
+                Vector2(x, y),
+                Vector2(x + baseSize, y),
+                Vector2(x + baseSize * 0.5f, y - pairingBandSize),
+                color = color
+            )
         }
     }
 
@@ -126,7 +186,6 @@ class NucleotideRenderer(
                 90f,
                 180f,
                 color,
-                baseSize * 0.08f,
             )
 
             PairingSide.RIGHT -> Arc(
@@ -136,7 +195,6 @@ class NucleotideRenderer(
                 -90f,
                 180f,
                 color,
-                baseSize * 0.08f,
             )
 
             PairingSide.TOP -> Arc(
@@ -146,7 +204,6 @@ class NucleotideRenderer(
                 0f,
                 180f,
                 color,
-                baseSize * 0.08f,
             )
 
             PairingSide.BOTTOM -> Arc(
@@ -156,7 +213,6 @@ class NucleotideRenderer(
                 -180f,
                 180f,
                 color,
-                baseSize * 0.08f,
             )
         }
     }
@@ -173,9 +229,9 @@ class NucleotideRenderer(
             )
                 .add(
                     arc(
-                        Vector2(x - pairingBandSize, y + baseSize),
-                        Vector2(x - pairingBandSize, y + baseSize * 0.5f),
-                        Vector2(x - pairingBandSize, y),
+                        start = Vector2(x - pairingBandSize, y + baseSize),
+                        center = Vector2(x - pairingBandSize, y + baseSize * 0.5f),
+                        end = Vector2(x - pairingBandSize, y),
                         segments = 10,
                         sweepDirection = ArcSweepDirection.CLOCKWISE,
                     ),
@@ -194,9 +250,9 @@ class NucleotideRenderer(
             )
                 .add(
                     arc(
-                        Vector2(x + baseSize + pairingBandSize, y + baseSize),
-                        Vector2(x + baseSize + pairingBandSize, y + baseSize * 0.5f),
-                        Vector2(x + baseSize + pairingBandSize, y),
+                        start = Vector2(x + baseSize + pairingBandSize, y + baseSize),
+                        center = Vector2(x + baseSize + pairingBandSize, y + baseSize * 0.5f),
+                        end = Vector2(x + baseSize + pairingBandSize, y),
                         segments = 10,
                         sweepDirection = ArcSweepDirection.COUNTERCLOCKWISE,
                     ),
@@ -216,9 +272,9 @@ class NucleotideRenderer(
             )
                 .add(
                     arc(
-                        Vector2(x + baseSize, y + baseSize + pairingBandSize),
-                        Vector2(x + baseSize * 0.5f, y + baseSize + pairingBandSize),
-                        Vector2(x, y + baseSize + pairingBandSize),
+                        start =Vector2(x + baseSize, y + baseSize + pairingBandSize),
+                        center = Vector2(x + baseSize * 0.5f, y + baseSize + pairingBandSize),
+                        end = Vector2(x, y + baseSize + pairingBandSize),
                         segments = 10,
                         sweepDirection = ArcSweepDirection.CLOCKWISE,
                     ),
@@ -226,21 +282,22 @@ class NucleotideRenderer(
                 .add(Vector2(x, y + baseSize))
                 .close()
 
-            PairingSide.BOTTOM -> Polygon.of(
-                Vector2(x + baseSize, y + baseSize),
-                Vector2(x, y + baseSize),
-                Vector2(x, y),
-                Vector2(x, y - pairingBandSize),
-                color = color,
-            )
+            PairingSide.BOTTOM -> Polygon
+                .of(
+                    Vector2(x + baseSize, y + baseSize),
+                    Vector2(x, y + baseSize),
+                    Vector2(x, y),
+                    Vector2(x, y - pairingBandSize),
+                    color = color
+                )
                 .add(
                     arc(
-                        Vector2(x, y - pairingBandSize),
-                        Vector2(x + baseSize * 0.5f, y - pairingBandSize),
-                        Vector2(x + baseSize, y - pairingBandSize),
+                        start = Vector2(x, y - pairingBandSize),
+                        center = Vector2(x + baseSize * 0.5f, y - pairingBandSize),
+                        end = Vector2(x + baseSize, y - pairingBandSize),
                         segments = 10,
                         sweepDirection = ArcSweepDirection.CLOCKWISE,
-                    ),
+                    )
                 )
                 .add(Vector2(x + baseSize, y))
                 .close()
