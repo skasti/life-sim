@@ -23,7 +23,7 @@ class NucleotideRenderer(
     }
 
     fun render(value: Nucleotide, position: Vector2, context: RenderContext, orientation: NucleotideOrientation) {
-        geometryFor(value, position, orientation).render(context, nucleotideColor(value))
+        geometryFor(value, position, orientation, nucleotideColor(value)).render(context)
         context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
     }
 
@@ -45,173 +45,76 @@ class NucleotideRenderer(
         nucleotide: Nucleotide,
         position: Vector2,
         orientation: NucleotideOrientation,
+        color: Color = nucleotideColor(nucleotide),
     ): Geometry {
         val profile = connectorProfile(nucleotide)
-        val filledTriangles = mutableListOf<Triangle>()
-        val filledRects = mutableListOf<Rect>()
-        val filledArcs = mutableListOf<Arc>()
-        val arcs = mutableListOf<Arc>()
-        val triangles = mutableListOf<Triangle>()
-        val lines = mutableListOf<Line>()
-        val polygons = mutableListOf<Polygon>()
+        val elements = mutableListOf<GeometryElement>()
 
         when (profile.family) {
             ConnectorFamily.ANGLED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    filledRects += Rect(position.x, position.y, baseSize, baseSize)
-                    filledTriangles += triangleOnSide(position, orientation.pairingSide)
+                    elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color)
+                    elements += triangleOnSide(position, orientation.pairingSide, color)
                 } else {
-                    filledRects += Rect(position.x, position.y, baseSize, baseSize)
-                    filledTriangles += inverseTriangleOnSide(position, orientation.pairingSide)
+                    elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color)
+                    elements += inverseTriangleOnSide(position, orientation.pairingSide, color)
                 }
             }
 
             ConnectorFamily.ROUNDED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    filledRects += Rect(position.x, position.y, baseSize, baseSize)
-                    filledArcs += roundedOnSide(position, orientation.pairingSide)
+                    elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color)
+                    elements += roundedOnSide(position, orientation.pairingSide, color)
                 } else {
-                    polygons += roundedSocketPolygonOnSide(position, orientation.pairingSide)
+                    elements += roundedSocketPolygonOnSide(position, orientation.pairingSide, color)
                 }
             }
         }
 
-        return Geometry(
-            filledTriangles = filledTriangles,
-            filledRects = filledRects,
-            filledArcs = filledArcs,
-            arcs = arcs,
-            triangles = triangles,
-            lines = lines,
-            polygons = polygons,
-        )
+        return Geometry(elements)
     }
 
-    private fun inverseTriangleOnSide(position: Vector2, side: PairingSide): List<Triangle> {
+    private fun inverseTriangleOnSide(position: Vector2, side: PairingSide, color: Color): List<Polygon> {
         val x = position.x
         val y = position.y
         return when (side) {
             PairingSide.TOP -> listOf(
-                Triangle(
-                    x,
-                    y + baseSize,
-                    x,
-                    y + baseSize + pairingBandSize,
-                    x + baseSize * 0.5f,
-                    y + baseSize,
-                ),
-                Triangle(
-                    x + baseSize * 0.5f,
-                    y + baseSize,
-                    x + baseSize,
-                    y + baseSize + pairingBandSize,
-                    x + baseSize,
-                    y + baseSize,
-                ),
+                Polygon.triangle(Vector2(x, y + baseSize), Vector2(x, y + baseSize + pairingBandSize), Vector2(x + baseSize * 0.5f, y + baseSize), color = color),
+                Polygon.triangle(Vector2(x + baseSize * 0.5f, y + baseSize), Vector2(x + baseSize, y + baseSize + pairingBandSize), Vector2(x + baseSize, y + baseSize), color = color),
             )
 
             PairingSide.BOTTOM -> listOf(
-                Triangle(
-                    x,
-                    y,
-                    x + baseSize * 0.5f,
-                    y,
-                    x,
-                    y - pairingBandSize,
-                ),
-                Triangle(
-                    x + baseSize * 0.5f,
-                    y,
-                    x + baseSize,
-                    y,
-                    x + baseSize,
-                    y - pairingBandSize,
-                ),
+                Polygon.triangle(Vector2(x, y), Vector2(x + baseSize * 0.5f, y), Vector2(x, y - pairingBandSize), color = color),
+                Polygon.triangle(Vector2(x + baseSize * 0.5f, y), Vector2(x + baseSize, y), Vector2(x + baseSize, y - pairingBandSize), color = color),
             )
 
             PairingSide.LEFT -> listOf(
-                Triangle(
-                    x,
-                    y + baseSize,
-                    x,
-                    y + baseSize * 0.5f,
-                    x - pairingBandSize,
-                    y + baseSize,
-                ),
-                Triangle(
-                    x,
-                    y + baseSize * 0.5f,
-                    x,
-                    y,
-                    x - pairingBandSize,
-                    y,
-                ),
+                Polygon.triangle(Vector2(x, y + baseSize), Vector2(x, y + baseSize * 0.5f), Vector2(x - pairingBandSize, y + baseSize), color = color),
+                Polygon.triangle(Vector2(x, y + baseSize * 0.5f), Vector2(x, y), Vector2(x - pairingBandSize, y), color = color),
             )
 
             PairingSide.RIGHT -> listOf(
-                Triangle(
-                    x + baseSize,
-                    y + baseSize,
-                    x + baseSize + pairingBandSize,
-                    y + baseSize,
-                    x + baseSize,
-                    y + baseSize * 0.5f,
-                ),
-                Triangle(
-                    x + baseSize,
-                    y + baseSize * 0.5f,
-                    x + baseSize + pairingBandSize,
-                    y,
-                    x + baseSize,
-                    y,
-                ),
+                Polygon.triangle(Vector2(x + baseSize, y + baseSize), Vector2(x + baseSize + pairingBandSize, y + baseSize), Vector2(x + baseSize, y + baseSize * 0.5f), color = color),
+                Polygon.triangle(Vector2(x + baseSize, y + baseSize * 0.5f), Vector2(x + baseSize + pairingBandSize, y), Vector2(x + baseSize, y), color = color),
             )
         }
     }
 
-    private fun triangleOnSide(position: Vector2, side: PairingSide): Triangle {
+    private fun triangleOnSide(position: Vector2, side: PairingSide, color: Color): Polygon {
         val x = position.x
         val y = position.y
         return when (side) {
-            PairingSide.LEFT -> Triangle(
-                x,
-                y,
-                x,
-                y + baseSize,
-                x - pairingBandSize,
-                y + baseSize * 0.5f,
-            )
+            PairingSide.LEFT -> Polygon.triangle(Vector2(x, y), Vector2(x, y + baseSize), Vector2(x - pairingBandSize, y + baseSize * 0.5f), color = color)
 
-            PairingSide.RIGHT -> Triangle(
-                x + baseSize,
-                y,
-                x + baseSize + pairingBandSize,
-                y + baseSize * 0.5f,
-                x + baseSize,
-                y + baseSize,
-            )
+            PairingSide.RIGHT -> Polygon.triangle(Vector2(x + baseSize, y), Vector2(x + baseSize + pairingBandSize, y + baseSize * 0.5f), Vector2(x + baseSize, y + baseSize), color = color)
 
-            PairingSide.TOP -> Triangle(
-                x,
-                y + baseSize,
-                x + baseSize * 0.5f,
-                y + baseSize + pairingBandSize,
-                x + baseSize,
-                y + baseSize,
-            )
+            PairingSide.TOP -> Polygon.triangle(Vector2(x, y + baseSize), Vector2(x + baseSize * 0.5f, y + baseSize + pairingBandSize), Vector2(x + baseSize, y + baseSize), color = color)
 
-            PairingSide.BOTTOM -> Triangle(
-                x,
-                y,
-                x + baseSize,
-                y,
-                x + baseSize * 0.5f,
-                y - pairingBandSize,
-            )
+            PairingSide.BOTTOM -> Polygon.triangle(Vector2(x, y), Vector2(x + baseSize, y), Vector2(x + baseSize * 0.5f, y - pairingBandSize), color = color)
         }
     }
 
-    private fun roundedOnSide(position: Vector2, side: PairingSide): Arc {
+    private fun roundedOnSide(position: Vector2, side: PairingSide, color: Color): Arc {
         val x = position.x
         val y = position.y
         val capRadius = baseSize * 0.5f
@@ -222,6 +125,7 @@ class NucleotideRenderer(
                 capRadius,
                 90f,
                 180f,
+                color,
                 baseSize * 0.08f,
             )
 
@@ -231,6 +135,7 @@ class NucleotideRenderer(
                 capRadius,
                 -90f,
                 180f,
+                color,
                 baseSize * 0.08f,
             )
 
@@ -240,6 +145,7 @@ class NucleotideRenderer(
                 capRadius,
                 0f,
                 180f,
+                color,
                 baseSize * 0.08f,
             )
 
@@ -249,12 +155,13 @@ class NucleotideRenderer(
                 capRadius,
                 -180f,
                 180f,
+                color,
                 baseSize * 0.08f,
             )
         }
     }
 
-    private fun roundedSocketPolygonOnSide(position: Vector2, side: PairingSide): Polygon {
+    private fun roundedSocketPolygonOnSide(position: Vector2, side: PairingSide, color: Color): Polygon {
         val x = position.x
         val y = position.y
         return when (side) {
@@ -262,6 +169,7 @@ class NucleotideRenderer(
                 Vector2(x + baseSize, y + baseSize),
                 Vector2(x, y + baseSize),
                 Vector2(x - pairingBandSize, y + baseSize),
+                color = color,
             )
                 .add(
                     arc(
@@ -282,6 +190,7 @@ class NucleotideRenderer(
                 Vector2(x, y + baseSize),
                 Vector2(x + baseSize, y + baseSize),
                 Vector2(x + baseSize + pairingBandSize, y + baseSize),
+                color = color,
             )
                 .add(
                     arc(
@@ -303,6 +212,7 @@ class NucleotideRenderer(
                 Vector2(x + baseSize, y),
                 Vector2(x + baseSize, y + baseSize),
                 Vector2(x + baseSize, y + baseSize + pairingBandSize),
+                color = color,
             )
                 .add(
                     arc(
@@ -321,6 +231,7 @@ class NucleotideRenderer(
                 Vector2(x, y + baseSize),
                 Vector2(x, y),
                 Vector2(x, y - pairingBandSize),
+                color = color,
             )
                 .add(
                     arc(
@@ -375,4 +286,3 @@ enum class PairingSide {
     TOP,
     BOTTOM,
 }
-
