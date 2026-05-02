@@ -123,9 +123,15 @@ Planned follow-up work includes:
 ### Geometry and polygon rendering
 
 Simulator rendering geometry is centralized in `rendering/geometry` so shapes, bounds rules, and construction helpers evolve together.
-`Geometry.render(...)` now supports polygon lists in addition to rects/triangles/arcs/lines, and `RenderContext` can draw filled or wireframe polygons from raw vertex data.
+`Geometry` is now an ordered list of `GeometryElement`s, and `Geometry.render(context)` draws those elements in list order (front-to-back layering is caller-controlled).
+Each element owns its style (for example `color` and arc `lineWidth`) and calls the corresponding `RenderContext` draw method.
 
-For complex connectors, use `Polygon.of(...).add(...).close()` and `arc(start, center, end, segments, sweepDirection)` to approximate curved edges as vertices.
+Use shape helpers for common cases:
+- `Polygon.rect(...)` / `Polygon.triangle(...)` for filled polygons with explicit color.
+- `Arc(..., lineWidth = 0f)` for filled arcs; positive `lineWidth` renders stroked arcs.
+- `Line(...)` for explicit line segments.
+
+For complex connectors, use `Polygon.of(color = ...).add(...).close()` and `arc(start, center, end, segments, sweepDirection)` to approximate curved edges as vertices.
 Filled polygons are triangulated from that outline data before rendering, so curved and concave silhouettes do not need to be authored as triangle fans by hand.
 Set `sweepDirection` explicitly when `start` and `end` sit opposite each other on a diameter, because those points alone do not determine which side of the circle should be traced.
 This keeps awkward silhouettes composable and prepares the pipeline for later startup-time sprite generation.
