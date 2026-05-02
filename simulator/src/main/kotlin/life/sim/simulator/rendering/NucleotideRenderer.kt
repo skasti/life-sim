@@ -53,20 +53,20 @@ class NucleotideRenderer(
         when (profile.family) {
             ConnectorFamily.ANGLED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color)
-                    elements += triangleOnSide(position, orientation.pairingSide, color)
+                    elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color.cpy())
+                    elements += triangleOnSide(position, orientation.pairingSide, color.cpy())
                 } else {
-                    elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color)
-                    elements += inverseTriangleOnSide(position, orientation.pairingSide, color)
+                    elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color.cpy())
+                    elements += inverseTriangleOnSide(position, orientation.pairingSide, color.cpy())
                 }
             }
 
             ConnectorFamily.ROUNDED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
-                    elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color)
-                    elements += roundedOnSide(position, orientation.pairingSide, color)
+                    elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color.cpy())
+                    elements += roundedOnSide(position, orientation.pairingSide, color.cpy())
                 } else {
-                    elements += roundedSocketPolygonOnSide(position, orientation.pairingSide, color)
+                    elements += roundedSocketPolygonOnSide(position, orientation.pairingSide, color.cpy())
                 }
             }
         }

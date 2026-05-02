@@ -21,6 +21,9 @@ internal data class Arc(
     val color: Color,
     val lineWidth: Float = 0f,
 ) : GeometryElement {
+    init {
+        require(lineWidth >= 0f) { "lineWidth must be >= 0." }
+    }
     override fun render(context: RenderContext) {
         if (lineWidth <= 0f) {
             context.drawFilledArc(x, y, radius, startDegrees, degrees, color)
