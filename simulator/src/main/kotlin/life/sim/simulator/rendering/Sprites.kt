@@ -102,17 +102,19 @@ class Sprites {
         val safeHeight = height.coerceAtLeast(1)
 
         val frameBuffer = FrameBuffer(Pixmap.Format.RGBA8888, safeWidth, safeHeight, false)
-        frameBuffer.begin()
-        Gdx.gl.glViewport(0, 0, safeWidth, safeHeight)
-        Gdx.gl.glClearColor(0f, 0f, 0f, 0f)
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        render()
-        Gdx.gl.glFlush()
-
         val pixels = Pixmap(safeWidth, safeHeight, Pixmap.Format.RGBA8888)
-        Gdx.gl.glReadPixels(0, 0, safeWidth, safeHeight, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, pixels.pixels)
-        frameBuffer.end()
-        frameBuffer.dispose()
+        try {
+            frameBuffer.begin()
+            Gdx.gl.glViewport(0, 0, safeWidth, safeHeight)
+            Gdx.gl.glClearColor(0f, 0f, 0f, 0f)
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+            render()
+            Gdx.gl.glFlush()
+            Gdx.gl.glReadPixels(0, 0, safeWidth, safeHeight, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, pixels.pixels)
+        } finally {
+            frameBuffer.end()
+            frameBuffer.dispose()
+        }
 
         val texture = Texture(pixels)
         pixels.dispose()

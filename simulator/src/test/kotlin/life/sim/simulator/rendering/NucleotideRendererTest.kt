@@ -185,6 +185,14 @@ class NucleotideRendererTest {
 
 
     @Test
+    fun `spriteKey includes base size to avoid collisions across differently sized renderers`() {
+        val small = NucleotideRenderer(baseSize = 34f)
+        val large = NucleotideRenderer(baseSize = 68f)
+
+        assertNotEquals(small.spriteKey(Nucleotide.A), large.spriteKey(Nucleotide.A))
+    }
+
+    @Test
     fun `renderToSpriteCached uses tile origin padding and center rotation origin`() {
         val renderer = NucleotideRenderer(baseSize = 40f)
         val baseSize = renderer.baseSize

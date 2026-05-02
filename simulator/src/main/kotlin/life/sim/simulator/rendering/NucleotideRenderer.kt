@@ -30,14 +30,14 @@ class NucleotideRenderer(
         context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
     }
 
-    override fun spriteKey(value: Nucleotide): SpriteKey = SpriteKey("Nucleotide_${value.symbol}")
+    override fun spriteKey(value: Nucleotide): SpriteKey = SpriteKey("Nucleotide_${value.symbol}_${baseSize}")
 
     override fun renderToSprite(value: Nucleotide, context: RenderContext): TextureRegion =
         renderToSpriteCached(value, context).region
 
     private fun renderToSpriteCached(value: Nucleotide, context: RenderContext): CachedSprite {
         val key = spriteKey(value)
-        val spriteSize = (baseSize + 2f * pairingBandSize).toInt()
+        val spriteSize = kotlin.math.ceil(baseSize + 2f * pairingBandSize).toInt()
         val tileOrigin = pairingBandSize
         val rotationOrigin = pairingBandSize + baseSize * 0.5f
         context.finish()
@@ -52,12 +52,15 @@ class NucleotideRenderer(
         ) {
             val previousProjection = context.shapeRenderer.projectionMatrix.cpy()
             val previousBatchProjection = context.batch.projectionMatrix.cpy()
-            context.shapeRenderer.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
-            context.batch.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
-            renderUncached(value, Vector2(tileOrigin, tileOrigin), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
-            context.finish()
-            context.shapeRenderer.projectionMatrix.set(previousProjection)
-            context.batch.projectionMatrix.set(previousBatchProjection)
+            try {
+                context.shapeRenderer.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
+                context.batch.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
+                renderUncached(value, Vector2(tileOrigin, tileOrigin), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
+                context.finish()
+            } finally {
+                context.shapeRenderer.projectionMatrix.set(previousProjection)
+                context.batch.projectionMatrix.set(previousBatchProjection)
+            }
         }
     }
 
