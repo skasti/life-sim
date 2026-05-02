@@ -185,11 +185,11 @@ class NucleotideRendererTest {
 
 
     @Test
-    fun `spriteKey includes base size to avoid collisions across differently sized renderers`() {
-        val small = NucleotideRenderer(baseSize = 34f)
-        val large = NucleotideRenderer(baseSize = 68f)
-
-        assertNotEquals(small.spriteKey(Nucleotide.A), large.spriteKey(Nucleotide.A))
+    fun `spriteKey uses canonical nucleotide identity`() {
+        assertEquals(SpriteKey("Nucleotide_A"), renderer.spriteKey(Nucleotide.A))
+        assertEquals(SpriteKey("Nucleotide_U"), renderer.spriteKey(Nucleotide.U))
+        assertEquals(SpriteKey("Nucleotide_C"), renderer.spriteKey(Nucleotide.C))
+        assertEquals(SpriteKey("Nucleotide_G"), renderer.spriteKey(Nucleotide.G))
     }
 
     @Test

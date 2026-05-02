@@ -116,8 +116,11 @@ class Sprites {
             frameBuffer.dispose()
         }
 
-        val texture = Texture(pixels)
-        pixels.dispose()
+        val texture = try {
+            Texture(pixels)
+        } finally {
+            pixels.dispose()
+        }
         texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear)
         val region = TextureRegion(texture).apply { flip(false, true) }
         return putRegion(

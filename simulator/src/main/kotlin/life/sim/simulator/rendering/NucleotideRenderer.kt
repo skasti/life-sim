@@ -7,7 +7,7 @@ import life.sim.biology.primitives.Nucleotide
 import life.sim.simulator.rendering.geometry.*
 
 class NucleotideRenderer(
-    val baseSize: Float = 34f,
+    val baseSize: Float = RenderingVisualSpec.NUCLEOTIDE_BASE_SIZE,
 ) : Renderer<Nucleotide> {
     private val pairingBandSize = baseSize * 0.5f
 
@@ -30,7 +30,7 @@ class NucleotideRenderer(
         context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
     }
 
-    override fun spriteKey(value: Nucleotide): SpriteKey = SpriteKey("Nucleotide_${value.symbol}_${baseSize}")
+    override fun spriteKey(value: Nucleotide): SpriteKey = SpriteKey("Nucleotide_${value.symbol}")
 
     override fun renderToSprite(value: Nucleotide, context: RenderContext): TextureRegion =
         renderToSpriteCached(value, context).region
