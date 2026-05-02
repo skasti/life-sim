@@ -55,8 +55,11 @@ class NucleotideRenderer(
             try {
                 context.shapeRenderer.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
                 context.batch.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
-                renderUncached(value, Vector2(tileOrigin, tileOrigin), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
-                context.finish()
+                try {
+                    renderUncached(value, Vector2(tileOrigin, tileOrigin), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
+                } finally {
+                    context.finish()
+                }
             } finally {
                 context.shapeRenderer.projectionMatrix.set(previousProjection)
                 context.batch.projectionMatrix.set(previousBatchProjection)

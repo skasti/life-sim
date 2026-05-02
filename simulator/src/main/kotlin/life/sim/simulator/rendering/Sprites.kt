@@ -50,20 +50,29 @@ class Sprites {
     }
 
     fun putPixmap(key: SpriteKey, pixmap: Pixmap): CachedSprite {
-        val texture = Texture(pixmap)
+        val texture = try {
+            Texture(pixmap)
+        } finally {
+            pixmap.dispose()
+        }
+
         val region = TextureRegion(texture)
-        pixmap.dispose()
-        return putRegion(
-            key,
-            region,
-            region.regionWidth.toFloat(),
-            region.regionHeight.toFloat(),
-            tileOriginX = 0f,
-            tileOriginY = 0f,
-            rotationOriginX = 0f,
-            rotationOriginY = 0f,
-            ownsTexture = true,
-        )
+        return try {
+            putRegion(
+                key,
+                region,
+                region.regionWidth.toFloat(),
+                region.regionHeight.toFloat(),
+                tileOriginX = 0f,
+                tileOriginY = 0f,
+                rotationOriginX = 0f,
+                rotationOriginY = 0f,
+                ownsTexture = true,
+            )
+        } catch (error: Throwable) {
+            texture.dispose()
+            throw error
+        }
     }
 
     fun putRegion(
