@@ -91,6 +91,42 @@ class NucleotideRendererTest {
         assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin))
     }
 
+
+    @Test
+    fun `geometryFor renders rounded protrusions as polygon geometry that extends beyond the base tile`() {
+        val origin = Vector2(10f, 20f)
+
+        listOf(PairingSide.LEFT, PairingSide.RIGHT, PairingSide.TOP, PairingSide.BOTTOM).forEach { pairingSide ->
+            val geometry = renderer.geometryFor(Nucleotide.C, origin, NucleotideOrientation(pairingSide))
+
+            assertTrue(geometry.elements.none { it is Arc }, "Expected rounded protrusion for C to avoid arc primitives")
+
+            val vertices = geometry.elements.filterIsInstance<Polygon>().flatMap { it.vertices }
+
+            when (pairingSide) {
+                PairingSide.LEFT -> assertTrue(
+                    vertices.any { it.x < origin.x },
+                    "Expected left rounded protrusion to extend beyond the left edge",
+                )
+
+                PairingSide.RIGHT -> assertTrue(
+                    vertices.any { it.x > origin.x + renderer.baseSize },
+                    "Expected right rounded protrusion to extend beyond the right edge",
+                )
+
+                PairingSide.TOP -> assertTrue(
+                    vertices.any { it.y > origin.y + renderer.baseSize },
+                    "Expected top rounded protrusion to extend beyond the top edge",
+                )
+
+                PairingSide.BOTTOM -> assertTrue(
+                    vertices.any { it.y < origin.y },
+                    "Expected bottom rounded protrusion to extend beyond the bottom edge",
+                )
+            }
+        }
+    }
+
     @Test
     fun `geometryFor renders rounded indentations as a single polygon with an outward concave socket`() {
         val origin = Vector2(10f, 20f)

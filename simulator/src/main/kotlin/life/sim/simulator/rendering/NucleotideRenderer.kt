@@ -111,7 +111,7 @@ class NucleotideRenderer(
             ConnectorFamily.ROUNDED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
                     elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color.cpy())
-                    elements += roundedOnSide(position, orientation.pairingSide, color.cpy())
+                    elements += roundedProtrusionPolygonOnSide(position, orientation.pairingSide, color.cpy())
                 } else {
                     elements += roundedSocketPolygonOnSide(position, orientation.pairingSide, color.cpy())
                 }
@@ -221,50 +221,77 @@ class NucleotideRenderer(
         }
     }
 
-    private fun roundedOnSide(position: Vector2, side: PairingSide, color: Color): Arc {
+    private fun roundedProtrusionPolygonOnSide(position: Vector2, side: PairingSide, color: Color): Polygon {
         val x = position.x
         val y = position.y
-        val capRadius = baseSize * 0.5f
         return when (side) {
-            PairingSide.LEFT -> Arc(
-                x,
-                y + baseSize * 0.5f,
-                capRadius,
-                90f,
-                180f,
-                color,
-                lineWidth = 0f,
+            PairingSide.LEFT -> Polygon.of(
+                Vector2(x + baseSize, y),
+                Vector2(x + baseSize, y + baseSize),
+                Vector2(x, y + baseSize),
+                color = color,
             )
+                .add(
+                    arc(
+                        start = Vector2(x, y + baseSize),
+                        center = Vector2(x, y + baseSize * 0.5f),
+                        end = Vector2(x, y),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.COUNTERCLOCKWISE,
+                    ),
+                )
+                .close()
 
-            PairingSide.RIGHT -> Arc(
-                x + baseSize,
-                y + baseSize * 0.5f,
-                capRadius,
-                -90f,
-                180f,
-                color,
-                lineWidth = 0f,
+            PairingSide.RIGHT -> Polygon.of(
+                Vector2(x, y),
+                Vector2(x + baseSize, y),
+                Vector2(x + baseSize, y + baseSize),
+                color = color,
             )
+                .add(
+                    arc(
+                        start = Vector2(x + baseSize, y + baseSize),
+                        center = Vector2(x + baseSize, y + baseSize * 0.5f),
+                        end = Vector2(x + baseSize, y),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.CLOCKWISE,
+                    ),
+                )
+                .close()
 
-            PairingSide.TOP -> Arc(
-                x + baseSize * 0.5f,
-                y + baseSize,
-                capRadius,
-                0f,
-                180f,
-                color,
-                lineWidth = 0f,
+            PairingSide.TOP -> Polygon.of(
+                Vector2(x, y),
+                Vector2(x + baseSize, y),
+                Vector2(x + baseSize, y + baseSize),
+                color = color,
             )
+                .add(
+                    arc(
+                        start = Vector2(x + baseSize, y + baseSize),
+                        center = Vector2(x + baseSize * 0.5f, y + baseSize),
+                        end = Vector2(x, y + baseSize),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.COUNTERCLOCKWISE,
+                    ),
+                )
+                .close()
 
-            PairingSide.BOTTOM -> Arc(
-                x + baseSize * 0.5f,
-                y,
-                capRadius,
-                -180f,
-                180f,
-                color,
-                lineWidth = 0f,
+            PairingSide.BOTTOM -> Polygon.of(
+                Vector2(x + baseSize, y + baseSize),
+                Vector2(x, y + baseSize),
+                Vector2(x, y),
+                color = color,
             )
+                .add(
+                    arc(
+                        start = Vector2(x, y),
+                        center = Vector2(x + baseSize * 0.5f, y),
+                        end = Vector2(x + baseSize, y),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.COUNTERCLOCKWISE,
+                    ),
+                )
+                .close()
         }
     }
 
