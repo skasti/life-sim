@@ -25,17 +25,30 @@ class NucleotideRenderer(
 
     fun render(value: Nucleotide, position: Vector2, context: RenderContext, orientation: NucleotideOrientation) {
         val key = requireNotNull(spriteKey(value))
-        context.sprites.getOrCreate(key) { requireNotNull(renderToSprite(value, context)) }
-        context.drawSprite(key, position, baseSize, baseSize, orientation.pairingSide.rotationDegrees)
+        context.sprites.getOrCreate(key) { renderToSpriteCached(value, context) }
+        context.drawSprite(key, position, orientation.pairingSide.rotationDegrees)
         context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
     }
 
     override fun spriteKey(value: Nucleotide): SpriteKey = SpriteKey("Nucleotide_${value.symbol}")
 
-    override fun renderToSprite(value: Nucleotide, context: RenderContext): TextureRegion {
+    override fun renderToSprite(value: Nucleotide, context: RenderContext): TextureRegion =
+        renderToSpriteCached(value, context).region
+
+    private fun renderToSpriteCached(value: Nucleotide, context: RenderContext): CachedSprite {
         val key = spriteKey(value)
-        return context.sprites.renderToSprite(key, baseSize.toInt(), baseSize.toInt()) {
-            renderUncached(value, Vector2(0f, 0f), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
+        val spriteSize = (baseSize + 2f * pairingBandSize).toInt()
+        val anchor = pairingBandSize
+        context.finish()
+        return context.sprites.renderToSprite(key, spriteSize, spriteSize, anchor, anchor) {
+            val previousProjection = context.shapeRenderer.projectionMatrix.cpy()
+            val previousBatchProjection = context.batch.projectionMatrix.cpy()
+            context.shapeRenderer.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
+            context.batch.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
+            renderUncached(value, Vector2(anchor, anchor), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
+            context.finish()
+            context.shapeRenderer.projectionMatrix.set(previousProjection)
+            context.batch.projectionMatrix.set(previousBatchProjection)
         }
     }
 

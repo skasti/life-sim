@@ -176,12 +176,10 @@ data class RenderContext(
     fun drawSprite(
         key: SpriteKey,
         position: Vector2,
-        width: Float,
-        height: Float,
         rotationDegrees: Float = 0f,
     ) {
         ensureBatchMode()
-        sprites.draw(key, batch, position, width, height, rotationDegrees)
+        sprites.draw(key, batch, position, rotationDegrees)
     }
 
     fun finish() {
