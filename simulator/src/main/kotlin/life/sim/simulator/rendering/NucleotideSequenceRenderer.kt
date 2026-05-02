@@ -15,7 +15,7 @@ data class SequenceRenderStyle(
 
 class NucleotideSequenceRenderer(
     val tileGap: Float = 10f,
-    val baseSize: Float = 34f,
+    val baseSize: Float = RenderingVisualSpec.NUCLEOTIDE_BASE_SIZE,
 ) : Renderer<NucleotideSequence> {
     private lateinit var nucleotideRenderer: NucleotideRenderer
     private val nucleotidePosition = Vector2()

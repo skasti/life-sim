@@ -6,7 +6,7 @@ import life.sim.biology.molecules.Dna
 import life.sim.biology.primitives.NucleotideSequence
 
 class DnaRenderer(
-    val baseSize: Float = 34f,
+    val baseSize: Float = RenderingVisualSpec.NUCLEOTIDE_BASE_SIZE,
     val tileGap: Float = 10f,
     val strandGap: Float = baseSize * 0.75f,
 ) : Renderer<Dna> {

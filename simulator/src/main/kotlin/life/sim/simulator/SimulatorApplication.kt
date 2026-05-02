@@ -14,6 +14,7 @@ import life.sim.simulator.rendering.DnaRenderer
 import life.sim.simulator.rendering.NucleotideRenderer
 import life.sim.simulator.rendering.NucleotideSequenceRenderer
 import life.sim.simulator.rendering.RenderContext
+import life.sim.simulator.rendering.Sprites
 import life.sim.simulator.rendering.Renderers
 
 /**
@@ -53,6 +54,7 @@ class SimulatorApplication : ApplicationAdapter() {
             viewportWidth = Gdx.graphics.width.toFloat(),
             viewportHeight = Gdx.graphics.height.toFloat(),
             immediateModeRenderer = immediateModeRenderer,
+            sprites = Sprites(),
         )
         currentScene = DemoScene.sample()
         currentScene.init()
@@ -81,6 +83,7 @@ class SimulatorApplication : ApplicationAdapter() {
         font.dispose()
         shapeRenderer.dispose()
         immediateModeRenderer.dispose()
+        renderContext.sprites.dispose()
     }
 
     private fun updateProjectionMatrices(width: Int, height: Int) {

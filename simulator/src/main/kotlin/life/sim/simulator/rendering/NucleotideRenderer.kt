@@ -1,12 +1,13 @@
 package life.sim.simulator.rendering
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.primitives.Nucleotide
 import life.sim.simulator.rendering.geometry.*
 
 class NucleotideRenderer(
-    val baseSize: Float = 34f,
+    val baseSize: Float = RenderingVisualSpec.NUCLEOTIDE_BASE_SIZE,
 ) : Renderer<Nucleotide> {
     private val pairingBandSize = baseSize * 0.5f
 
@@ -23,8 +24,60 @@ class NucleotideRenderer(
     }
 
     fun render(value: Nucleotide, position: Vector2, context: RenderContext, orientation: NucleotideOrientation) {
-        geometryFor(value, position, orientation, nucleotideColor(value)).render(context)
+        val key = requireNotNull(spriteKey(value))
+        context.sprites.getOrCreate(key) { renderToSpriteCached(value, context) }
+        context.drawSprite(key, position, orientation.pairingSide.rotationDegrees)
         context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
+    }
+
+    override fun spriteKey(value: Nucleotide): SpriteKey = SpriteKey("Nucleotide_${value.symbol}")
+
+    override fun renderToSprite(value: Nucleotide, context: RenderContext): TextureRegion =
+        renderToSpriteCached(value, context).region
+
+    private fun renderToSpriteCached(value: Nucleotide, context: RenderContext): CachedSprite {
+        val key = spriteKey(value)
+        val spriteSize = kotlin.math.ceil(baseSize + 2f * pairingBandSize).toInt()
+        val tileOrigin = pairingBandSize
+        val rotationOrigin = pairingBandSize + baseSize * 0.5f
+        context.finish()
+        return context.sprites.renderToSprite(
+            key,
+            spriteSize,
+            spriteSize,
+            tileOriginX = tileOrigin,
+            tileOriginY = tileOrigin,
+            rotationOriginX = rotationOrigin,
+            rotationOriginY = rotationOrigin,
+        ) {
+            val previousProjection = context.shapeRenderer.projectionMatrix.cpy()
+            val previousBatchProjection = context.batch.projectionMatrix.cpy()
+            try {
+                context.shapeRenderer.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
+                context.batch.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
+                try {
+                    renderUncached(value, Vector2(tileOrigin, tileOrigin), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
+                } finally {
+                    context.finish()
+                }
+            } finally {
+                context.shapeRenderer.projectionMatrix.set(previousProjection)
+                context.batch.projectionMatrix.set(previousBatchProjection)
+            }
+        }
+    }
+
+    private fun renderUncached(
+        value: Nucleotide,
+        position: Vector2,
+        context: RenderContext,
+        orientation: NucleotideOrientation,
+        drawLabel: Boolean = true,
+    ) {
+        geometryFor(value, position, orientation, nucleotideColor(value)).render(context)
+        if (drawLabel) {
+            context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
+        }
     }
 
     internal fun connectorProfile(nucleotide: Nucleotide): ConnectorProfile = when (nucleotide) {
@@ -64,7 +117,7 @@ class NucleotideRenderer(
             ConnectorFamily.ROUNDED -> {
                 if (profile.polarity == ConnectorPolarity.PROTRUSION) {
                     elements += Polygon.rect(position.x, position.y, baseSize, baseSize, color = color.cpy())
-                    elements += roundedOnSide(position, orientation.pairingSide, color.cpy())
+                    elements += roundedProtrusionPolygonOnSide(position, orientation.pairingSide, color.cpy())
                 } else {
                     elements += roundedSocketPolygonOnSide(position, orientation.pairingSide, color.cpy())
                 }
@@ -174,50 +227,77 @@ class NucleotideRenderer(
         }
     }
 
-    private fun roundedOnSide(position: Vector2, side: PairingSide, color: Color): Arc {
+    private fun roundedProtrusionPolygonOnSide(position: Vector2, side: PairingSide, color: Color): Polygon {
         val x = position.x
         val y = position.y
-        val capRadius = baseSize * 0.5f
         return when (side) {
-            PairingSide.LEFT -> Arc(
-                x,
-                y + baseSize * 0.5f,
-                capRadius,
-                90f,
-                180f,
-                color,
-                lineWidth = 0f,
+            PairingSide.LEFT -> Polygon.of(
+                Vector2(x + baseSize, y),
+                Vector2(x + baseSize, y + baseSize),
+                Vector2(x, y + baseSize),
+                color = color,
             )
+                .add(
+                    arc(
+                        start = Vector2(x, y + baseSize),
+                        center = Vector2(x, y + baseSize * 0.5f),
+                        end = Vector2(x, y),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.COUNTERCLOCKWISE,
+                    ),
+                )
+                .close()
 
-            PairingSide.RIGHT -> Arc(
-                x + baseSize,
-                y + baseSize * 0.5f,
-                capRadius,
-                -90f,
-                180f,
-                color,
-                lineWidth = 0f,
+            PairingSide.RIGHT -> Polygon.of(
+                Vector2(x, y),
+                Vector2(x + baseSize, y),
+                Vector2(x + baseSize, y + baseSize),
+                color = color,
             )
+                .add(
+                    arc(
+                        start = Vector2(x + baseSize, y + baseSize),
+                        center = Vector2(x + baseSize, y + baseSize * 0.5f),
+                        end = Vector2(x + baseSize, y),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.CLOCKWISE,
+                    ),
+                )
+                .close()
 
-            PairingSide.TOP -> Arc(
-                x + baseSize * 0.5f,
-                y + baseSize,
-                capRadius,
-                0f,
-                180f,
-                color,
-                lineWidth = 0f,
+            PairingSide.TOP -> Polygon.of(
+                Vector2(x, y),
+                Vector2(x + baseSize, y),
+                Vector2(x + baseSize, y + baseSize),
+                color = color,
             )
+                .add(
+                    arc(
+                        start = Vector2(x + baseSize, y + baseSize),
+                        center = Vector2(x + baseSize * 0.5f, y + baseSize),
+                        end = Vector2(x, y + baseSize),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.COUNTERCLOCKWISE,
+                    ),
+                )
+                .close()
 
-            PairingSide.BOTTOM -> Arc(
-                x + baseSize * 0.5f,
-                y,
-                capRadius,
-                -180f,
-                180f,
-                color,
-                lineWidth = 0f,
+            PairingSide.BOTTOM -> Polygon.of(
+                Vector2(x + baseSize, y + baseSize),
+                Vector2(x, y + baseSize),
+                Vector2(x, y),
+                color = color,
             )
+                .add(
+                    arc(
+                        start = Vector2(x, y),
+                        center = Vector2(x + baseSize * 0.5f, y),
+                        end = Vector2(x + baseSize, y),
+                        segments = 10,
+                        sweepDirection = ArcSweepDirection.COUNTERCLOCKWISE,
+                    ),
+                )
+                .close()
         }
     }
 
@@ -307,6 +387,14 @@ class NucleotideRenderer(
                 .close()
         }
     }
+
+    private val PairingSide.rotationDegrees: Float
+        get() = when (this) {
+            PairingSide.RIGHT -> 0f
+            PairingSide.TOP -> 90f
+            PairingSide.LEFT -> 180f
+            PairingSide.BOTTOM -> 270f
+        }
 
     companion object {
 
