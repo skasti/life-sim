@@ -140,5 +140,5 @@ This keeps awkward silhouettes composable and prepares the pipeline for later st
 
 Simulator rendering now includes a small sprite cache keyed by `SpriteKey` (`String`-backed) so renderers can reuse generated textures across instances.
 `Renderer<T>` exposes optional sprite hooks (`spriteKey`, `renderToSprite`) with safe defaults, and `NucleotideRenderer` uses this as the first cached path.
-Nucleotide sprite keys encode only canonical base identity (`Nucleotide_A`, `Nucleotide_U`, `Nucleotide_C`, `Nucleotide_G`), while `PairingSide` is handled at draw time through rotation.
+Nucleotide sprite keys encode only canonical base identity (`Nucleotide_A`, `Nucleotide_U`, `Nucleotide_C`, `Nucleotide_G`). The cached sprite is generated from the normal nucleotide geometry rendered once to an off-screen target in canonical RIGHT orientation, while `PairingSide` is handled at draw time through rotation.
 

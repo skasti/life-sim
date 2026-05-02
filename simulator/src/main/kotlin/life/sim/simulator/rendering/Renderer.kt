@@ -173,6 +173,17 @@ data class RenderContext(
         font.draw(batch, glyphLayout, x, y)
     }
 
+    fun drawSprite(
+        key: SpriteKey,
+        position: Vector2,
+        width: Float,
+        height: Float,
+        rotationDegrees: Float = 0f,
+    ) {
+        ensureBatchMode()
+        sprites.draw(key, batch, position, width, height, rotationDegrees)
+    }
+
     fun finish() {
         when (mode) {
             DrawMode.SHAPE -> shapeRenderer.end()

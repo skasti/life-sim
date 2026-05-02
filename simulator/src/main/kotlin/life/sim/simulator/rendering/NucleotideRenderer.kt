@@ -1,7 +1,6 @@
 package life.sim.simulator.rendering
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.primitives.Nucleotide
@@ -27,28 +26,30 @@ class NucleotideRenderer(
     fun render(value: Nucleotide, position: Vector2, context: RenderContext, orientation: NucleotideOrientation) {
         val key = requireNotNull(spriteKey(value))
         context.sprites.getOrCreate(key) { requireNotNull(renderToSprite(value, context)) }
-        context.finish()
-        context.batch.begin()
-        context.sprites.draw(
-            key = key,
-            batch = context.batch,
-            position = position,
-            width = baseSize,
-            height = baseSize,
-            rotationDegrees = orientation.pairingSide.rotationDegrees,
-        )
-        context.batch.end()
+        context.drawSprite(key, position, baseSize, baseSize, orientation.pairingSide.rotationDegrees)
         context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
     }
 
     override fun spriteKey(value: Nucleotide): SpriteKey = SpriteKey("Nucleotide_${value.symbol}")
 
     override fun renderToSprite(value: Nucleotide, context: RenderContext): TextureRegion {
-        val color = nucleotideColor(value)
-        val pixmap = Pixmap(baseSize.toInt().coerceAtLeast(1), baseSize.toInt().coerceAtLeast(1), Pixmap.Format.RGBA8888)
-        pixmap.setColor(color)
-        pixmap.fillRectangle(0, 0, pixmap.width, pixmap.height)
-        return context.sprites.putPixmap(spriteKey(value), pixmap)
+        val key = spriteKey(value)
+        return context.sprites.renderToSprite(key, baseSize.toInt(), baseSize.toInt()) {
+            renderUncached(value, Vector2(0f, 0f), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
+        }
+    }
+
+    private fun renderUncached(
+        value: Nucleotide,
+        position: Vector2,
+        context: RenderContext,
+        orientation: NucleotideOrientation,
+        drawLabel: Boolean = true,
+    ) {
+        geometryFor(value, position, orientation, nucleotideColor(value)).render(context)
+        if (drawLabel) {
+            context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
+        }
     }
 
     internal fun connectorProfile(nucleotide: Nucleotide): ConnectorProfile = when (nucleotide) {
