@@ -161,7 +161,7 @@ class NucleotideRendererTest {
                     bounds.isWithin(minX, maxX, minY, maxY)
                 }
                 is Line -> listOf(element.a, element.b).all { point -> point.x in minX..maxX && point.y in minY..maxY }
-                else -> true
+                else -> error("Unhandled geometry element type in nucleotide bounds test: ${element::class.qualifiedName}")
             }
         }
     }
