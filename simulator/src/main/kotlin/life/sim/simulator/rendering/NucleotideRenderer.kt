@@ -186,6 +186,7 @@ class NucleotideRenderer(
                 90f,
                 180f,
                 color,
+                lineWidth = 0f,
             )
 
             PairingSide.RIGHT -> Arc(
@@ -195,6 +196,7 @@ class NucleotideRenderer(
                 -90f,
                 180f,
                 color,
+                lineWidth = 0f,
             )
 
             PairingSide.TOP -> Arc(
@@ -204,6 +206,7 @@ class NucleotideRenderer(
                 0f,
                 180f,
                 color,
+                lineWidth = 0f,
             )
 
             PairingSide.BOTTOM -> Arc(
@@ -213,6 +216,7 @@ class NucleotideRenderer(
                 -180f,
                 180f,
                 color,
+                lineWidth = 0f,
             )
         }
     }
