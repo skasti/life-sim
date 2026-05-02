@@ -1,7 +1,9 @@
 package life.sim.simulator.rendering.geometry
 
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.EarClippingTriangulator
 import com.badlogic.gdx.math.Vector2
+import life.sim.simulator.rendering.RenderContext
 
 internal enum class PolygonDrawMode {
     FILLED,
@@ -15,25 +17,31 @@ internal enum class ArcSweepDirection {
 
 internal data class Polygon(
     val vertices: List<Vector2>,
+    val color: Color,
     val drawMode: PolygonDrawMode,
-) {
-    companion object {
-        fun of(vararg vertices: Vector2, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): PolygonBuilder =
-            PolygonBuilder(vertices = vertices.toList().map(Vector2::cpy).toMutableList(), drawMode = drawMode)
+) : GeometryElement {
+    override fun render(context: RenderContext) {
+        context.drawPolygon(vertices, drawMode, color)
+    }
 
-        fun rect(x: Float, y: Float, width: Float, height: Float, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon =
+    companion object {
+        fun of(vararg vertices: Vector2, color: Color, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): PolygonBuilder =
+            PolygonBuilder(vertices = vertices.toList().map(Vector2::cpy).toMutableList(), color = color, drawMode = drawMode)
+
+        fun rect(x: Float, y: Float, width: Float, height: Float, color: Color, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon =
             of(
                 Vector2(x, y),
                 Vector2(x + width, y),
                 Vector2(x + width, y + height),
                 Vector2(x, y + height),
+                color = color,
                 drawMode = drawMode,
             ).close()
 
-        fun triangle(a: Vector2, b: Vector2, c: Vector2, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon =
-            of(a, b, c, drawMode = drawMode).close()
+        fun triangle(a: Vector2, b: Vector2, c: Vector2, color: Color, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon =
+            of(a, b, c, color = color, drawMode = drawMode).close()
 
-        fun circle(center: Vector2, radius: Float, segments: Int = 24, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon {
+        fun circle(center: Vector2, radius: Float, color: Color, segments: Int = 24, drawMode: PolygonDrawMode = PolygonDrawMode.FILLED): Polygon {
             require(segments >= 3) { "segments must be >= 3." }
             require(radius > 0f) { "radius must be > 0." }
             val points = (0 until segments).map { i ->
@@ -43,7 +51,7 @@ internal data class Polygon(
                     (center.y + radius * kotlin.math.sin(angle)).toFloat(),
                 )
             }
-            return PolygonBuilder(vertices = points.toMutableList(), drawMode = drawMode).close()
+            return PolygonBuilder(vertices = points.toMutableList(), color = color, drawMode = drawMode).close()
         }
 
     }
@@ -51,6 +59,7 @@ internal data class Polygon(
 
 internal class PolygonBuilder internal constructor(
     private val vertices: MutableList<Vector2>,
+    private val color: Color,
     private val drawMode: PolygonDrawMode,
 ) {
     fun add(vararg points: Vector2): PolygonBuilder {
@@ -68,20 +77,10 @@ internal class PolygonBuilder internal constructor(
         if (closedVertices.size > 2 && closedVertices.first() != closedVertices.last()) {
             closedVertices += closedVertices.first().cpy()
         }
-        return Polygon(vertices = closedVertices, drawMode = drawMode)
+        return Polygon(vertices = closedVertices, color = color, drawMode = drawMode)
     }
 }
 
-/**
- * Generates an arc from `start` to `end` around `center`.
- *
- * The radius is taken from the distance between `start` and `center`, and the returned list contains
- * `segments + 1` evenly spaced points including the generated start and final arc point.
- *
- * `sweepDirection` controls which side of the circle is traced when `start` and `end` alone are ambiguous,
- * such as opposite points on the same diameter. The final point coincides with `end` only when `end` lies on
- * that same circle.
- */
 internal fun arc(
     start: Vector2,
     center: Vector2,
@@ -148,4 +147,3 @@ internal fun polygonOutline(vertices: List<Vector2>): List<Vector2> =
     } else {
         vertices
     }
-

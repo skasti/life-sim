@@ -1,5 +1,7 @@
 package life.sim.simulator.rendering.geometry
 
+import com.badlogic.gdx.graphics.Color
+import life.sim.simulator.rendering.RenderContext
 import life.sim.simulator.rendering.ShapeBounds
 import kotlin.math.PI
 import kotlin.math.abs
@@ -16,8 +18,20 @@ internal data class Arc(
     val radius: Float,
     val startDegrees: Float,
     val degrees: Float,
+    val color: Color,
     val lineWidth: Float = 0f,
-)
+) : GeometryElement {
+    init {
+        require(lineWidth >= 0f) { "lineWidth must be >= 0." }
+    }
+    override fun render(context: RenderContext) {
+        if (lineWidth <= 0f) {
+            context.drawFilledArc(x, y, radius, startDegrees, degrees, color)
+        } else {
+            context.drawArc(x, y, radius, startDegrees, degrees, color, lineWidth)
+        }
+    }
+}
 
 internal fun Arc.bounds(includeCenter: Boolean = false, includeStroke: Boolean = false): ShapeBounds {
     val strokePadding = if (includeStroke) {
@@ -109,4 +123,3 @@ private fun normalizeAngle(angle: Float): Float {
         normalized
     }
 }
-
