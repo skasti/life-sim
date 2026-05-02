@@ -135,3 +135,10 @@ For complex connectors, use `Polygon.of(color = ...).add(...).close()` and `arc(
 Filled polygons are triangulated from that outline data before rendering, so curved and concave silhouettes do not need to be authored as triangle fans by hand.
 Set `sweepDirection` explicitly when `start` and `end` sit opposite each other on a diameter, because those points alone do not determine which side of the circle should be traced.
 This keeps awkward silhouettes composable and prepares the pipeline for later startup-time sprite generation.
+
+### Sprite cache baseline
+
+Simulator rendering now includes a small sprite cache keyed by `SpriteKey` (`String`-backed) so renderers can reuse generated textures across instances.
+`Renderer<T>` exposes optional sprite hooks (`spriteKey`, `renderToSprite`) with safe defaults, and `NucleotideRenderer` uses this as the first cached path.
+Nucleotide sprite keys encode only canonical base identity (`Nucleotide_A`, `Nucleotide_U`, `Nucleotide_C`, `Nucleotide_G`), while `PairingSide` is handled at draw time through rotation.
+

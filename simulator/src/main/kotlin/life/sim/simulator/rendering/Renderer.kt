@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
@@ -17,6 +18,10 @@ import kotlin.math.max
 interface Renderer<T : Any> {
     fun render(value: T, position: Vector2, context: RenderContext)
     fun init()
+
+    fun spriteKey(value: T): SpriteKey? = null
+
+    fun renderToSprite(value: T, context: RenderContext): TextureRegion? = null
 }
 
 data class RenderContext(
@@ -26,6 +31,7 @@ data class RenderContext(
     var viewportWidth: Float,
     var viewportHeight: Float,
     val immediateModeRenderer: ImmediateModeRenderer20,
+    val sprites: Sprites,
 ) {
     private enum class DrawMode {
         NONE,

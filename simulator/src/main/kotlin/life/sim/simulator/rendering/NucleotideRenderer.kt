@@ -1,6 +1,8 @@
 package life.sim.simulator.rendering
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.primitives.Nucleotide
 import life.sim.simulator.rendering.geometry.*
@@ -23,8 +25,30 @@ class NucleotideRenderer(
     }
 
     fun render(value: Nucleotide, position: Vector2, context: RenderContext, orientation: NucleotideOrientation) {
-        geometryFor(value, position, orientation, nucleotideColor(value)).render(context)
+        val key = requireNotNull(spriteKey(value))
+        context.sprites.getOrCreate(key) { requireNotNull(renderToSprite(value, context)) }
+        context.finish()
+        context.batch.begin()
+        context.sprites.draw(
+            key = key,
+            batch = context.batch,
+            position = position,
+            width = baseSize,
+            height = baseSize,
+            rotationDegrees = orientation.pairingSide.rotationDegrees,
+        )
+        context.batch.end()
         context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
+    }
+
+    override fun spriteKey(value: Nucleotide): SpriteKey = SpriteKey("Nucleotide_${value.symbol}")
+
+    override fun renderToSprite(value: Nucleotide, context: RenderContext): TextureRegion {
+        val color = nucleotideColor(value)
+        val pixmap = Pixmap(baseSize.toInt().coerceAtLeast(1), baseSize.toInt().coerceAtLeast(1), Pixmap.Format.RGBA8888)
+        pixmap.setColor(color)
+        pixmap.fillRectangle(0, 0, pixmap.width, pixmap.height)
+        return context.sprites.putPixmap(spriteKey(value), pixmap)
     }
 
     internal fun connectorProfile(nucleotide: Nucleotide): ConnectorProfile = when (nucleotide) {
@@ -307,6 +331,14 @@ class NucleotideRenderer(
                 .close()
         }
     }
+
+    private val PairingSide.rotationDegrees: Float
+        get() = when (this) {
+            PairingSide.RIGHT -> 0f
+            PairingSide.TOP -> 90f
+            PairingSide.LEFT -> 180f
+            PairingSide.BOTTOM -> 270f
+        }
 
     companion object {
 
