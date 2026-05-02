@@ -13,8 +13,10 @@ data class CachedSprite(
     val region: TextureRegion,
     val width: Float,
     val height: Float,
-    val anchorX: Float,
-    val anchorY: Float,
+    val tileOriginX: Float,
+    val tileOriginY: Float,
+    val rotationOriginX: Float,
+    val rotationOriginY: Float,
 )
 
 class Sprites {
@@ -31,14 +33,14 @@ class Sprites {
         rotationDegrees: Float = 0f,
     ) {
         val sprite = requireNotNull(sprites[key]) { "Sprite not found for key: $key" }
-        val x = position.x - sprite.anchorX
-        val y = position.y - sprite.anchorY
+        val x = position.x - sprite.tileOriginX
+        val y = position.y - sprite.tileOriginY
         batch.draw(
             sprite.region,
             x,
             y,
-            sprite.anchorX,
-            sprite.anchorY,
+            sprite.rotationOriginX,
+            sprite.rotationOriginY,
             sprite.width,
             sprite.height,
             1f,
@@ -51,7 +53,17 @@ class Sprites {
         val texture = Texture(pixmap)
         val region = TextureRegion(texture)
         pixmap.dispose()
-        return putRegion(key, region, region.regionWidth.toFloat(), region.regionHeight.toFloat(), 0f, 0f, ownsTexture = true)
+        return putRegion(
+            key,
+            region,
+            region.regionWidth.toFloat(),
+            region.regionHeight.toFloat(),
+            tileOriginX = 0f,
+            tileOriginY = 0f,
+            rotationOriginX = 0f,
+            rotationOriginY = 0f,
+            ownsTexture = true,
+        )
     }
 
     fun putRegion(
@@ -59,11 +71,13 @@ class Sprites {
         region: TextureRegion,
         width: Float,
         height: Float,
-        anchorX: Float,
-        anchorY: Float,
+        tileOriginX: Float,
+        tileOriginY: Float,
+        rotationOriginX: Float,
+        rotationOriginY: Float,
         ownsTexture: Boolean = false,
     ): CachedSprite {
-        val sprite = CachedSprite(region, width, height, anchorX, anchorY)
+        val sprite = CachedSprite(region, width, height, tileOriginX, tileOriginY, rotationOriginX, rotationOriginY)
         val previous = sprites.put(key, sprite)
         if (previous != null) {
             maybeDisposeOwned(previous.region.texture)
@@ -78,8 +92,10 @@ class Sprites {
         key: SpriteKey,
         width: Int,
         height: Int,
-        anchorX: Float,
-        anchorY: Float,
+        tileOriginX: Float,
+        tileOriginY: Float,
+        rotationOriginX: Float,
+        rotationOriginY: Float,
         render: () -> Unit,
     ): CachedSprite {
         val safeWidth = width.coerceAtLeast(1)
@@ -102,7 +118,17 @@ class Sprites {
         pixels.dispose()
         texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear)
         val region = TextureRegion(texture).apply { flip(false, true) }
-        return putRegion(key, region, safeWidth.toFloat(), safeHeight.toFloat(), anchorX, anchorY, ownsTexture = true)
+        return putRegion(
+            key,
+            region,
+            safeWidth.toFloat(),
+            safeHeight.toFloat(),
+            tileOriginX,
+            tileOriginY,
+            rotationOriginX,
+            rotationOriginY,
+            ownsTexture = true,
+        )
     }
 
     fun dispose() {

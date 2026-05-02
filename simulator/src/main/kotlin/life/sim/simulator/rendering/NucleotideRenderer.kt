@@ -38,14 +38,23 @@ class NucleotideRenderer(
     private fun renderToSpriteCached(value: Nucleotide, context: RenderContext): CachedSprite {
         val key = spriteKey(value)
         val spriteSize = (baseSize + 2f * pairingBandSize).toInt()
-        val anchor = pairingBandSize
+        val tileOrigin = pairingBandSize
+        val rotationOrigin = pairingBandSize + baseSize * 0.5f
         context.finish()
-        return context.sprites.renderToSprite(key, spriteSize, spriteSize, anchor, anchor) {
+        return context.sprites.renderToSprite(
+            key,
+            spriteSize,
+            spriteSize,
+            tileOriginX = tileOrigin,
+            tileOriginY = tileOrigin,
+            rotationOriginX = rotationOrigin,
+            rotationOriginY = rotationOrigin,
+        ) {
             val previousProjection = context.shapeRenderer.projectionMatrix.cpy()
             val previousBatchProjection = context.batch.projectionMatrix.cpy()
             context.shapeRenderer.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
             context.batch.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
-            renderUncached(value, Vector2(anchor, anchor), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
+            renderUncached(value, Vector2(tileOrigin, tileOrigin), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
             context.finish()
             context.shapeRenderer.projectionMatrix.set(previousProjection)
             context.batch.projectionMatrix.set(previousBatchProjection)

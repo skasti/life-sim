@@ -13,11 +13,11 @@ class SpritesTest {
 
         val first = sprites.getOrCreate(SpriteKey("k")) {
             generated += 1
-            CachedSprite(TextureRegion(), 1f, 1f, 0f, 0f)
+            CachedSprite(TextureRegion(), 1f, 1f, 0f, 0f, 0f, 0f)
         }
         val second = sprites.getOrCreate(SpriteKey("k")) {
             generated += 1
-            CachedSprite(TextureRegion(), 1f, 1f, 0f, 0f)
+            CachedSprite(TextureRegion(), 1f, 1f, 0f, 0f, 0f, 0f)
         }
 
         assertSame(first, second)
@@ -30,10 +30,10 @@ class SpritesTest {
         val first = TextureRegion()
         val second = TextureRegion()
 
-        sprites.putRegion(SpriteKey("k"), first, 1f, 1f, 0f, 0f)
-        val stored = sprites.putRegion(SpriteKey("k"), second, 1f, 1f, 0f, 0f)
+        sprites.putRegion(SpriteKey("k"), first, 1f, 1f, 0f, 0f, 0f, 0f)
+        val stored = sprites.putRegion(SpriteKey("k"), second, 1f, 1f, 0f, 0f, 0f, 0f)
 
         assertSame(second, stored.region)
-        assertSame(second, sprites.getOrCreate(SpriteKey("k")) { CachedSprite(TextureRegion(), 1f, 1f, 0f, 0f) }.region)
+        assertSame(second, sprites.getOrCreate(SpriteKey("k")) { CachedSprite(TextureRegion(), 1f, 1f, 0f, 0f, 0f, 0f) }.region)
     }
 }
