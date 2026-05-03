@@ -19,7 +19,7 @@ class SimWrapperTest {
         val content = WrappedType("demo")
         Renderers.register(WrappedType::class, WrappedTypeRenderer)
 
-        val wrapper = SimWrapper(position, rotation, content)
+        val wrapper = SimWrapper(content, position, rotation)
 
         assertSame(position, wrapper.position)
         assertEquals(rotation, wrapper.rotation)
@@ -29,14 +29,14 @@ class SimWrapperTest {
     @Test
     fun `SimWrapper constructor fails when no renderer is registered for content type`() {
         assertFailsWith<IllegalArgumentException> {
-            SimWrapper(Vector2(0f, 0f), 0f, NoRendererType)
+            SimWrapper(NoRendererType, Vector2(0f, 0f), 0f)
         }
     }
 
     @Test
     fun `SimWrapper update rotates when SPACE is pressed`() {
         Renderers.register(WrappedType::class, WrappedTypeRenderer)
-        val wrapper = SimWrapper(Vector2(0f, 0f), 10f, WrappedType("demo"))
+        val wrapper = SimWrapper(WrappedType("demo"), Vector2(0f, 0f), 10f)
 
         wrapper.update(deltaSeconds = 0.5f, input = dummyInput(pressedKeys = setOf(Input.Keys.SPACE)))
 
@@ -46,7 +46,7 @@ class SimWrapperTest {
     @Test
     fun `SimWrapper update resets rotation when R is just pressed`() {
         Renderers.register(WrappedType::class, WrappedTypeRenderer)
-        val wrapper = SimWrapper(Vector2(0f, 0f), 33f, WrappedType("demo"))
+        val wrapper = SimWrapper(WrappedType("demo"), Vector2(0f, 0f), 33f)
 
         wrapper.update(deltaSeconds = 1f, input = dummyInput(justPressedKeys = setOf(Input.Keys.R)))
 
@@ -56,7 +56,7 @@ class SimWrapperTest {
     @Test
     fun `SimWrapper update prefers SPACE behavior when SPACE and R are both active`() {
         Renderers.register(WrappedType::class, WrappedTypeRenderer)
-        val wrapper = SimWrapper(Vector2(0f, 0f), 10f, WrappedType("demo"))
+        val wrapper = SimWrapper(WrappedType("demo"), Vector2(0f, 0f), 10f)
 
         wrapper.update(
             deltaSeconds = 1f,

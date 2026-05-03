@@ -13,9 +13,9 @@ import life.sim.simulator.rendering.Renderers
  * around that same world-space point without coupling to each other's anchor math.
  */
 class SimWrapper(
+    val content: Any,
     val position: Vector2,
     var rotation: Float,
-    val content: Any,
 ) : SimObject, Renderable, Updateable {
     private val renderer: Renderer<Any> = requireNotNull(Renderers.forValue(content)) {
         "No renderer registered for type ${content::class.qualifiedName}."
