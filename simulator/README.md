@@ -35,11 +35,12 @@ This keeps the simulator shell thin and leaves scene-specific behavior in scene 
 
 `SimWrapper(position: Vector2, content: Any)` is the initial scene-object bridge between simulator infrastructure and biology-domain values.
 
-- it stores scene position plus wrapped domain content
+- it stores a center position plus wrapped domain content
 - it resolves the matching renderer once during construction
 - render frames reuse the resolved renderer instead of re-running lookup each frame
 
 This keeps biology/domain objects independent of simulator rendering lifecycle concerns while still allowing them to be managed as scene objects.
+Renderers interpret that position as the visual center of the object they draw, so rotation behavior stays consistent across nucleotide, sequence, and DNA renderers without sharing anchor internals.
 
 ## Demo scene contents
 
@@ -51,10 +52,10 @@ On launch, the simulator renders all of the following together in a single stati
 
 Rendering now uses type-specific renderers and includes both text labels and a minimal graphical treatment:
 
-- `NucleotideRenderer` for orientation-aware schematic nucleotide silhouettes with centered symbols
+- `NucleotideRenderer` for schematic nucleotide silhouettes with centered symbols and upright labels
 - `geometry` package for reusable simulator-side primitives (`Geometry`, `Arc`, `Polygon`, etc.)
-- `NucleotideSequenceRenderer` for sequence layout, backbones, and direction indicators
-- `DnaRenderer` for duplex layout and pair connectors built on the sequence renderer
+- `NucleotideSequenceRenderer` for sequence layout, backbones, and direction indicators that rotate as one rigid model around the backbone midpoint
+- `DnaRenderer` for duplex layout and pair connectors built on the sequence renderer so the full duplex rotates coherently
 
 Nucleotide visualization is intentionally schematic (not biologically realistic):
 
@@ -63,9 +64,10 @@ Nucleotide visualization is intentionally schematic (not biologically realistic)
   - `A` / `U`: angled family
   - `C` / `G`: rounded family
 - complementary bases use opposite polarity inside the same family (protrusion vs indentation)
-- nucleotide geometry is orientation-aware so higher-level renderers can place pairing geometry on the duplex-facing side while keeping sequence-facing edges simple
+- sequence and duplex layout rotate around computed visual pivots derived from their rendered spans, rather than rotating each tile in place
 - connector meaning is carried by the silhouette itself (no separate socket-hint overlays)
 - all silhouette geometry stays within a consistent bounding box based on the baseSize of the nucleotide.
+- empty nucleotide sequences are treated as non-renderable and are skipped by the higher-level sequence renderer.
 
 Text labels use a FreeType-generated font at its target size (no post-load bitmap upscaling),
 which keeps label glyphs sharper than scaling the default libGDX bitmap font.

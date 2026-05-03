@@ -8,6 +8,9 @@ import life.sim.simulator.rendering.Renderers
 
 /**
  * Bridges domain objects to simulator scene lifecycle by resolving a renderer once at construction.
+ *
+ * `position` is interpreted as the visual center for wrapped content so all renderers can rotate
+ * around that same world-space point without coupling to each other's anchor math.
  */
 class SimWrapper(
     val position: Vector2,

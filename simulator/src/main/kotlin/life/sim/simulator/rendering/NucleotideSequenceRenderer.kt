@@ -5,6 +5,8 @@ import com.badlogic.gdx.math.Vector2
 import life.sim.biology.primitives.Nucleotide
 import life.sim.biology.primitives.NucleotideSequence
 import life.sim.biology.primitives.SequenceDirection
+import life.sim.simulator.rendering.geometry.rotatePoint
+import life.sim.simulator.rendering.geometry.rotatePoints
 
 class NucleotideSequenceRenderer(
     val tileGap: Float = 10f,
@@ -23,30 +25,8 @@ class NucleotideSequenceRenderer(
     }
 
     override fun render(value: NucleotideSequence, position: Vector2, rotation: Float, context: RenderContext) {
-        val totalWidth = sequenceWidth(value)
-
-        val backBoneY = position.y
-        context.drawLine(
-            Vector2(position.x - 8f, backBoneY),
-            Vector2(position.x + totalWidth + 8f, backBoneY),
-            width = 3f,
-            color = BACKBONE_COLOR,
-        )
-
-        var x = position.x
-        value.forEach { nucleotide ->
-            nucleotidePosition.x = x
-            nucleotidePosition.y = position.y
-            nucleotideRenderer.render(
-                nucleotide,
-                nucleotidePosition,
-                rotation + 90,
-                context,
-            )
-            x += baseSize + tileGap
-        }
-
-        drawDirectionIndicator(value.direction, position.x, position.y, totalWidth, context)
+        val layout = layout(value, position)?.rotated(rotation) ?: return
+        renderLayout(value, layout, rotation, context)
     }
 
     fun sequenceWidth(value: NucleotideSequence): Float {
@@ -57,46 +37,149 @@ class NucleotideSequenceRenderer(
         return value.size * baseSize + (value.size - 1) * tileGap
     }
 
-    private fun drawDirectionIndicator(
-        direction: SequenceDirection,
-        x: Float,
-        y: Float,
-        width: Float,
-        context: RenderContext,
-    ) {
-        val centerY = y + baseSize * 0.5f
-        val arrowHeight = 8f
-        val arrowWidth = 12f
-
-        if (direction == SequenceDirection.FORWARD) {
-            val arrowX = x + width + 12f
-            context.drawFilledTriangle(
-                arrowX,
-                centerY,
-                arrowX - arrowWidth,
-                centerY + arrowHeight,
-                arrowX - arrowWidth,
-                centerY - arrowHeight,
-                DIRECTION_INDICATOR_COLOR,
-            )
-            return
+    internal fun layout(value: NucleotideSequence, position: Vector2): SequenceRenderLayout? {
+        if (value.isEmpty()) {
+            return null
         }
 
-        val arrowX = x - 12f
+        val totalWidth = sequenceWidth(value)
+        val leftEdgeX = position.x - totalWidth * 0.5f
+        val backboneStart = Vector2(leftEdgeX - BACKBONE_OVERHANG, position.y)
+        val backboneEnd = Vector2(leftEdgeX + totalWidth + BACKBONE_OVERHANG, position.y)
+        val pivot = position.cpy()
+
+        val nucleotideAnchors = buildList(value.size) {
+            var x = leftEdgeX + baseSize * 0.5f
+            val nucleotideCenterY = nucleotideCenterY(position.y, value.direction)
+            repeat(value.size) {
+                add(Vector2(x, nucleotideCenterY))
+                x += baseSize + tileGap
+            }
+        }
+
+        return SequenceRenderLayout(
+            pivot = pivot,
+            backboneStart = backboneStart,
+            backboneEnd = backboneEnd,
+            nucleotideAnchors = nucleotideAnchors,
+            directionIndicatorVertices = directionIndicatorVertices(value.direction, leftEdgeX, position.y, totalWidth),
+        )
+    }
+
+    internal fun renderLayout(
+        value: NucleotideSequence,
+        layout: SequenceRenderLayout,
+        rotation: Float,
+        context: RenderContext,
+    ) {
+        context.drawLine(
+            layout.backboneStart,
+            layout.backboneEnd,
+            width = BACKBONE_WIDTH,
+            color = BACKBONE_COLOR,
+        )
+
+        value.zip(layout.nucleotideAnchors).forEach { (nucleotide, anchor) ->
+            nucleotidePosition.set(anchor)
+            nucleotideRenderer.render(
+                nucleotide,
+                nucleotidePosition,
+                nucleotideRotation(value.direction, rotation),
+                context,
+            )
+        }
+
+        val directionIndicatorVertices = layout.directionIndicatorVertices
         context.drawFilledTriangle(
-            arrowX,
-            centerY,
-            arrowX + arrowWidth,
-            centerY + arrowHeight,
-            arrowX + arrowWidth,
-            centerY - arrowHeight,
+            directionIndicatorVertices[0].x,
+            directionIndicatorVertices[0].y,
+            directionIndicatorVertices[1].x,
+            directionIndicatorVertices[1].y,
+            directionIndicatorVertices[2].x,
+            directionIndicatorVertices[2].y,
             DIRECTION_INDICATOR_COLOR,
         )
     }
 
+    private fun directionIndicatorVertices(
+        direction: SequenceDirection,
+        x: Float,
+        backboneY: Float,
+        width: Float,
+    ): List<Vector2> {
+        val centerY = nucleotideCenterY(backboneY, direction)
+        val arrowHeight = DIRECTION_INDICATOR_HEIGHT
+        val arrowWidth = DIRECTION_INDICATOR_WIDTH
+
+        if (direction == SequenceDirection.FORWARD) {
+            val arrowX = x + width + 12f
+            return listOf(
+                Vector2(arrowX, centerY),
+                Vector2(arrowX - arrowWidth, centerY + arrowHeight),
+                Vector2(arrowX - arrowWidth, centerY - arrowHeight),
+            )
+        }
+
+        val arrowX = x - 12f
+        return listOf(
+            Vector2(arrowX, centerY),
+            Vector2(arrowX + arrowWidth, centerY + arrowHeight),
+            Vector2(arrowX + arrowWidth, centerY - arrowHeight),
+        )
+    }
+
+    private fun nucleotideCenterY(backboneY: Float, direction: SequenceDirection): Float =
+        if (direction == SequenceDirection.FORWARD) {
+            backboneY - baseSize * 0.5f
+        } else {
+            backboneY + baseSize * 0.5f
+        }
+
+    internal fun nucleotideRotation(direction: SequenceDirection, modelRotation: Float): Float {
+        val strandFacingOffset = if (direction == SequenceDirection.FORWARD) {
+            FORWARD_STRAND_FACING_OFFSET
+        } else {
+            BACKWARD_STRAND_FACING_OFFSET
+        }
+        return modelRotation + strandFacingOffset
+    }
+
     companion object {
+        internal const val BACKBONE_OVERHANG = 8f
+        private const val BACKBONE_WIDTH = 3f
+        private const val DIRECTION_INDICATOR_WIDTH = 12f
+        private const val DIRECTION_INDICATOR_HEIGHT = 8f
+        private const val FORWARD_STRAND_FACING_OFFSET = 270f
+        private const val BACKWARD_STRAND_FACING_OFFSET = 90f
         private val BACKBONE_COLOR = Color(0.2f, 0.6f, 0.95f, 1f)
         private val DIRECTION_INDICATOR_COLOR = Color(0.9f, 0.92f, 1f, 1f)
     }
 }
+
+internal data class SequenceRenderLayout(
+    val pivot: Vector2,
+    val backboneStart: Vector2,
+    val backboneEnd: Vector2,
+    val nucleotideAnchors: List<Vector2>,
+    val directionIndicatorVertices: List<Vector2>,
+)
+
+internal fun SequenceRenderLayout.rotated(rotation: Float): SequenceRenderLayout =
+    if (rotation % 360f == 0f) {
+        this.copy(
+            pivot = pivot.cpy(),
+            backboneStart = backboneStart.cpy(),
+            backboneEnd = backboneEnd.cpy(),
+            nucleotideAnchors = nucleotideAnchors.map(Vector2::cpy),
+            directionIndicatorVertices = directionIndicatorVertices.map(Vector2::cpy),
+        )
+    } else {
+        this.copy(
+            pivot = pivot.cpy(),
+            backboneStart = rotatePoint(backboneStart, pivot, rotation),
+            backboneEnd = rotatePoint(backboneEnd, pivot, rotation),
+            nucleotideAnchors = rotatePoints(nucleotideAnchors, pivot, rotation),
+            directionIndicatorVertices = rotatePoints(directionIndicatorVertices, pivot, rotation),
+        )
+    }
 
