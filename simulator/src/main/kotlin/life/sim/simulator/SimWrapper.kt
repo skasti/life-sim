@@ -15,7 +15,7 @@ import life.sim.simulator.rendering.Renderers
 class SimWrapper(
     val content: Any,
     val position: Vector2,
-    var rotation: Float,
+    var rotation: Float = 0f,
 ) : SimObject, Renderable, Updateable {
     private val renderer: Renderer<Any> = requireNotNull(Renderers.forValue(content)) {
         "No renderer registered for type ${content::class.qualifiedName}."
