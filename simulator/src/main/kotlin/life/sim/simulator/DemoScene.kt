@@ -28,9 +28,9 @@ data class DemoScene(
         }
 
         objectManager.add(
-            SimWrapper(Vector2(MOLECULE_X, NUCLEOTIDE_Y), nucleotide),
-            SimWrapper(Vector2(MOLECULE_X, SEQUENCE_Y), sequence),
-            SimWrapper(Vector2(MOLECULE_X, DNA_Y), dna),
+            SimWrapper(Vector2(MOLECULE_X, NUCLEOTIDE_Y), 0f,nucleotide),
+            SimWrapper(Vector2(MOLECULE_X, SEQUENCE_Y), 0f, sequence),
+            SimWrapper(Vector2(MOLECULE_X, DNA_Y), 0f, dna),
         )
 
         objectManager.processQueues()

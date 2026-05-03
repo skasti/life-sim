@@ -19,14 +19,10 @@ class NucleotideRenderer(
         // Nothing to do here since this renderer has no dependencies on other renderers.
     }
 
-    override fun render(value: Nucleotide, position: Vector2, context: RenderContext) {
-        render(value, position, context, NucleotideOrientation())
-    }
-
-    fun render(value: Nucleotide, position: Vector2, context: RenderContext, orientation: NucleotideOrientation) {
+    override fun render(value: Nucleotide, position: Vector2, rotation: Float, context: RenderContext) {
         val key = requireNotNull(spriteKey(value))
         context.sprites.getOrCreate(key) { renderToSpriteCached(value, context) }
-        context.drawSprite(key, position, orientation.pairingSide.rotationDegrees)
+        context.drawSprite(key, position, rotation)
         context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
     }
 
@@ -387,14 +383,6 @@ class NucleotideRenderer(
                 .close()
         }
     }
-
-    private val PairingSide.rotationDegrees: Float
-        get() = when (this) {
-            PairingSide.RIGHT -> 0f
-            PairingSide.TOP -> 90f
-            PairingSide.LEFT -> 180f
-            PairingSide.BOTTOM -> 270f
-        }
 
     companion object {
 

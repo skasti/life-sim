@@ -16,7 +16,7 @@ import kotlin.math.cbrt
 import kotlin.math.max
 
 interface Renderer<T : Any> {
-    fun render(value: T, position: Vector2, context: RenderContext)
+    fun render(value: T, position: Vector2, rotation: Float, context: RenderContext)
     fun init()
 
     fun spriteKey(value: T): SpriteKey? = null

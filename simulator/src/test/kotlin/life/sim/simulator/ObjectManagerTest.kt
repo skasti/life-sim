@@ -1,5 +1,6 @@
 package life.sim.simulator
 
+import com.badlogic.gdx.Input
 import life.sim.simulator.rendering.RenderContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -122,7 +123,7 @@ class ObjectManagerTest {
     private object InertObject : SimObject
 
     private class UpdateOnlyObject(private val label: String) : SimObject, Updateable {
-        override fun update(deltaSeconds: Float) = Unit
+        override fun update(deltaSeconds: Float, input : Input) = Unit
         override fun toString(): String = label
     }
 
@@ -132,7 +133,7 @@ class ObjectManagerTest {
     }
 
     private class UpdateAndRenderObject(private val label: String) : SimObject, Updateable, Renderable {
-        override fun update(deltaSeconds: Float) = Unit
+        override fun update(deltaSeconds: Float, input : Input) = Unit
         override fun render(context: RenderContext) = Unit
         override fun toString(): String = label
     }

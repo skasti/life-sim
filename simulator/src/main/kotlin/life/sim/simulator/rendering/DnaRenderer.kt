@@ -10,7 +10,7 @@ class DnaRenderer(
     val tileGap: Float = 10f,
     val strandGap: Float = baseSize * 0.75f,
 ) : Renderer<Dna> {
-    private lateinit var sequenceRenderer: NucleotideSequenceRenderer
+    private lateinit var sequenceRenderer: Renderer<NucleotideSequence>
     private val topStrandPosition = Vector2()
     private val bottomStrandPosition = Vector2()
 
@@ -19,11 +19,11 @@ class DnaRenderer(
     }
 
     override fun init() {
-        sequenceRenderer = Renderers.forType<NucleotideSequence>() as? NucleotideSequenceRenderer
-            ?: error("DnaRenderer requires a registered NucleotideSequenceRenderer for NucleotideSequences.")
+        sequenceRenderer = Renderers.forType<NucleotideSequence>()
+            ?: error("DnaRenderer requires a registered renderer for NucleotideSequences.")
     }
 
-    override fun render(value: Dna, position: Vector2, context: RenderContext) {
+    override fun render(value: Dna, position: Vector2, rotation: Float, context: RenderContext) {
         val topY = position.y
         val bottomY = topY - baseSize - strandGap
 
@@ -48,14 +48,14 @@ class DnaRenderer(
         sequenceRenderer.render(
             value.forward,
             topStrandPosition,
+            rotation + 180f,
             context,
-            SequenceRenderStyle(pairingSide = PairingSide.BOTTOM),
         )
         sequenceRenderer.render(
             value.reverse,
             bottomStrandPosition,
+            rotation,
             context,
-            SequenceRenderStyle(pairingSide = PairingSide.TOP),
         )
     }
 
