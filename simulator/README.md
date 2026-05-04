@@ -33,9 +33,9 @@ This keeps the simulator shell thin and leaves scene-specific behavior in scene 
 
 ### `SimWrapper` bridge object
 
-`SimWrapper(position: Vector2, content: Any)` is the initial scene-object bridge between simulator infrastructure and biology-domain values.
+`SimWrapper(content: Any, position: Vector2, rotation: Float = 0f)` is the initial scene-object bridge between simulator infrastructure and biology-domain values.
 
-- it stores a center position plus wrapped domain content
+- it stores wrapped domain content plus center position and rotation
 - it resolves the matching renderer once during construction
 - render frames reuse the resolved renderer instead of re-running lookup each frame
 
