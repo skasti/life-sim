@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
+import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import life.sim.simulator.rendering.geometry.*
@@ -16,8 +17,13 @@ import kotlin.math.cbrt
 import kotlin.math.max
 
 interface Renderer<T : Any> {
-    fun render(value: T, position: Vector2, rotation: Float, context: RenderContext)
+    fun render(value: T, transform: Matrix3, context: RenderContext)
     fun init()
+
+    fun render(value: T, position: Vector2, rotation: Float, context: RenderContext) {
+        val transform = Matrix3().idt().translate(position.x, position.y).rotate(rotation)
+        render(value, transform, context)
+    }
 
     fun spriteKey(value: T): SpriteKey? = null
 
@@ -175,11 +181,10 @@ data class RenderContext(
 
     fun drawSprite(
         key: SpriteKey,
-        position: Vector2,
-        rotationDegrees: Float = 0f,
+        transform: Matrix3,
     ) {
         ensureBatchMode()
-        sprites.draw(key, batch, position, rotationDegrees)
+        sprites.draw(key, batch, transform)
     }
 
     fun finish() {

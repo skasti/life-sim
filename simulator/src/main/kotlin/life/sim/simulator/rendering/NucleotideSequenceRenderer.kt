@@ -1,6 +1,7 @@
 package life.sim.simulator.rendering
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.primitives.Nucleotide
 import life.sim.biology.primitives.NucleotideSequence
@@ -24,9 +25,9 @@ class NucleotideSequenceRenderer(
             ?: error("NucleotideSequenceRenderer requires a registered renderer for Nucleotide.")
     }
 
-    override fun render(value: NucleotideSequence, position: Vector2, rotation: Float, context: RenderContext) {
-        val layout = layout(value, position)?.rotated(rotation) ?: return
-        renderLayout(value, layout, rotation, context)
+    override fun render(value: NucleotideSequence, transform: Matrix3, context: RenderContext) {
+        val layout = layout(value, Vector2(0f, 0f)) ?: return
+        renderLayout(value, layout, transform, context)
     }
 
     fun sequenceWidth(value: NucleotideSequence): Float {
@@ -69,7 +70,7 @@ class NucleotideSequenceRenderer(
     internal fun renderLayout(
         value: NucleotideSequence,
         layout: SequenceRenderLayout,
-        rotation: Float,
+        transform: Matrix3,
         context: RenderContext,
     ) {
         context.drawLine(
@@ -80,16 +81,11 @@ class NucleotideSequenceRenderer(
         )
 
         value.zip(layout.nucleotideAnchors).forEach { (nucleotide, anchor) ->
-            nucleotidePosition.set(anchor)
-            nucleotideRenderer.render(
-                nucleotide,
-                nucleotidePosition,
-                nucleotideRotation(value.direction, rotation),
-                context,
-            )
+            nucleotidePosition.set(anchor).mul(transform)
+            nucleotideRenderer.render(nucleotide, nucleotidePosition, nucleotideRotation(value.direction, transform.getRotation()), context)
         }
 
-        val directionIndicatorVertices = layout.directionIndicatorVertices
+        val directionIndicatorVertices = layout.directionIndicatorVertices.map { it.cpy().mul(transform) }
         context.drawFilledTriangle(
             directionIndicatorVertices[0].x,
             directionIndicatorVertices[0].y,

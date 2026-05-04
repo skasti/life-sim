@@ -2,6 +2,7 @@ package life.sim.simulator.rendering
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.primitives.Nucleotide
 import life.sim.simulator.rendering.geometry.*
@@ -19,12 +20,12 @@ class NucleotideRenderer(
         // Nothing to do here since this renderer has no dependencies on other renderers.
     }
 
-    override fun render(value: Nucleotide, position: Vector2, rotation: Float, context: RenderContext) {
+    override fun render(value: Nucleotide, transform: Matrix3, context: RenderContext) {
         val key = requireNotNull(spriteKey(value))
         context.sprites.getOrCreate(key) { renderToSpriteCached(value, context) }
-        val anchor = lowerLeftFromCenter(position)
-        context.drawSprite(key, anchor, rotation)
-        context.drawCenteredText(value.symbol.toString(), position.x, position.y)
+        context.drawSprite(key, transform)
+        val labelPosition = Vector2(0f, 0f).mul(transform)
+        context.drawCenteredText(value.symbol.toString(), labelPosition.x, labelPosition.y)
     }
 
     internal fun lowerLeftFromCenter(center: Vector2): Vector2 =

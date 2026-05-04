@@ -1,6 +1,7 @@
 package life.sim.simulator
 
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.Vector2
 import life.sim.simulator.rendering.RenderContext
 import life.sim.simulator.rendering.Renderer
@@ -20,8 +21,13 @@ class SimWrapper(
     val position: Vector2,
     var rotation: Float = 0f,
 ) : SimObject, Renderable, Updateable {
+    private val transform = Matrix3()
     private val renderer: Renderer<Any> = requireNotNull(Renderers.forValue(content)) {
         "No renderer registered for type ${content::class.qualifiedName}."
+    }
+
+    init {
+        updateTransform()
     }
 
     override fun update(deltaSeconds: Float, input: Input) {
@@ -30,9 +36,14 @@ class SimWrapper(
         } else if (input.isKeyJustPressed(Input.Keys.R)) {
             rotation = 0f
         }
+        updateTransform()
+    }
+
+    private fun updateTransform() {
+        transform.idt().translate(position.x, position.y).rotate(rotation)
     }
 
     override fun render(context: RenderContext) {
-        renderer.render(content, position, rotation, context)
+        renderer.render(content, transform, context)
     }
 }

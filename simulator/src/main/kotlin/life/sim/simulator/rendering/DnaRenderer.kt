@@ -1,6 +1,7 @@
 package life.sim.simulator.rendering
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.molecules.Dna
 import life.sim.biology.primitives.NucleotideSequence
@@ -22,13 +23,15 @@ class DnaRenderer(
             ?: error("DnaRenderer requires a registered renderer for NucleotideSequences.")
     }
 
-    override fun render(value: Dna, position: Vector2, rotation: Float, context: RenderContext) {
-        val layout = layout(value, position, rotation) ?: return
+    override fun render(value: Dna, transform: Matrix3, context: RenderContext) {
+        val layout = layout(value, Vector2(0f, 0f)) ?: return
 
         layout.connectorSegments.forEach { connector ->
+            val a = connector.a.cpy().mul(transform)
+            val b = connector.b.cpy().mul(transform)
             context.drawLine(
-                a = connector.a,
-                b = connector.b,
+                a = a,
+                b = b,
                 width = baseSize * 0.08f,
                 color = PAIR_CONNECTOR_COLOR,
             )
@@ -36,14 +39,14 @@ class DnaRenderer(
 
         sequenceRenderer.render(
             value.forward,
-            layout.topStrandPosition,
-            rotation,
+            layout.topStrandPosition.cpy().mul(transform),
+            transform.getRotation(),
             context,
         )
         sequenceRenderer.render(
             value.reverse,
-            layout.bottomStrandPosition,
-            rotation,
+            layout.bottomStrandPosition.cpy().mul(transform),
+            transform.getRotation(),
             context,
         )
     }

@@ -7,7 +7,8 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.FrameBuffer
-import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.math.Affine2
+import com.badlogic.gdx.math.Matrix3
 
 data class CachedSprite(
     val region: TextureRegion,
@@ -26,27 +27,10 @@ class Sprites {
     fun getOrCreate(key: SpriteKey, generator: () -> CachedSprite): CachedSprite =
         sprites.getOrPut(key, generator)
 
-    fun draw(
-        key: SpriteKey,
-        batch: SpriteBatch,
-        position: Vector2,
-        rotationDegrees: Float = 0f,
-    ) {
+    fun draw(key: SpriteKey, batch: SpriteBatch, transform: Matrix3) {
         val sprite = requireNotNull(sprites[key]) { "Sprite not found for key: $key" }
-        val x = position.x - sprite.tileOriginX
-        val y = position.y - sprite.tileOriginY
-        batch.draw(
-            sprite.region,
-            x,
-            y,
-            sprite.rotationOriginX,
-            sprite.rotationOriginY,
-            sprite.width,
-            sprite.height,
-            1f,
-            1f,
-            rotationDegrees,
-        )
+        val affine = Affine2().set(transform).translate(-sprite.tileOriginX, -sprite.tileOriginY)
+        batch.draw(sprite.region, sprite.width, sprite.height, affine)
     }
 
     fun putPixmap(key: SpriteKey, pixmap: Pixmap): CachedSprite {
