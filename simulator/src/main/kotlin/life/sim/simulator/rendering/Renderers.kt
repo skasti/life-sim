@@ -20,10 +20,10 @@ object Renderers {
     fun forValue(value: Any): Renderer<Any>? =
         renderers[value::class] as? Renderer<Any>
 
-    fun render(value: Any, position: Vector2, context: RenderContext) {
+    fun render(value: Any, position: Vector2, rotation: Float, context: RenderContext) {
         requireNotNull(forValue(value)) {
             "No renderer registered for type ${value::class.qualifiedName}."
-        }.render(value, position, context)
+        }.render(value, position, rotation, context)
     }
 
     fun init() {

@@ -208,6 +208,14 @@ class NucleotideRendererTest {
         assertEquals(baseSize * 0.5f + pairingBandSize, rotationOrigin)
         assertEquals(baseSize + 2f * pairingBandSize, spriteSize)
     }
+
+    @Test
+    fun `lowerLeftFromCenter maps center coordinates to the nucleotide tile anchor`() {
+        val renderer = NucleotideRenderer(baseSize = 40f)
+
+        assertEquals(Vector2(80f, 180f), renderer.lowerLeftFromCenter(Vector2(100f, 200f)))
+    }
+
     private fun isWithinNucleotideGeometryTestWindow(geometry: Geometry, position: Vector2): Boolean {
         val minX = position.x - renderer.baseSize * 0.75f
         val maxX = position.x + renderer.baseSize * 1.75f

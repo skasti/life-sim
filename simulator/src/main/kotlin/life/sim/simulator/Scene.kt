@@ -1,5 +1,6 @@
 package life.sim.simulator
 
+import com.badlogic.gdx.Input
 import life.sim.simulator.rendering.RenderContext
 
 /**
@@ -14,8 +15,8 @@ interface Scene {
      */
     fun init() = Unit
 
-    fun update(deltaSeconds: Float) {
-        objectManager.update(deltaSeconds)
+    fun update(deltaSeconds: Float, input: Input) {
+        objectManager.update(deltaSeconds, input)
     }
 
     fun render(

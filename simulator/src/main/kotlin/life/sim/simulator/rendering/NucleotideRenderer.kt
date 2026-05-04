@@ -19,16 +19,16 @@ class NucleotideRenderer(
         // Nothing to do here since this renderer has no dependencies on other renderers.
     }
 
-    override fun render(value: Nucleotide, position: Vector2, context: RenderContext) {
-        render(value, position, context, NucleotideOrientation())
-    }
-
-    fun render(value: Nucleotide, position: Vector2, context: RenderContext, orientation: NucleotideOrientation) {
+    override fun render(value: Nucleotide, position: Vector2, rotation: Float, context: RenderContext) {
         val key = requireNotNull(spriteKey(value))
         context.sprites.getOrCreate(key) { renderToSpriteCached(value, context) }
-        context.drawSprite(key, position, orientation.pairingSide.rotationDegrees)
-        context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
+        val anchor = lowerLeftFromCenter(position)
+        context.drawSprite(key, anchor, rotation)
+        context.drawCenteredText(value.symbol.toString(), position.x, position.y)
     }
+
+    internal fun lowerLeftFromCenter(center: Vector2): Vector2 =
+        Vector2(center.x - baseSize * 0.5f, center.y - baseSize * 0.5f)
 
     override fun spriteKey(value: Nucleotide): SpriteKey = SpriteKey("Nucleotide_${value.symbol}")
 
@@ -56,7 +56,7 @@ class NucleotideRenderer(
                 context.shapeRenderer.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
                 context.batch.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
                 try {
-                    renderUncached(value, Vector2(tileOrigin, tileOrigin), context, NucleotideOrientation(PairingSide.RIGHT), drawLabel = false)
+                    renderUncached(value, Vector2(tileOrigin, tileOrigin), context, NucleotideOrientation(PairingSide.RIGHT))
                 } finally {
                     context.finish()
                 }
@@ -72,12 +72,8 @@ class NucleotideRenderer(
         position: Vector2,
         context: RenderContext,
         orientation: NucleotideOrientation,
-        drawLabel: Boolean = true,
     ) {
         geometryFor(value, position, orientation, nucleotideColor(value)).render(context)
-        if (drawLabel) {
-            context.drawCenteredText(value.symbol.toString(), position.x + baseSize * 0.5f, position.y + baseSize * 0.5f)
-        }
     }
 
     internal fun connectorProfile(nucleotide: Nucleotide): ConnectorProfile = when (nucleotide) {
@@ -387,14 +383,6 @@ class NucleotideRenderer(
                 .close()
         }
     }
-
-    private val PairingSide.rotationDegrees: Float
-        get() = when (this) {
-            PairingSide.RIGHT -> 0f
-            PairingSide.TOP -> 90f
-            PairingSide.LEFT -> 180f
-            PairingSide.BOTTOM -> 270f
-        }
 
     companion object {
 

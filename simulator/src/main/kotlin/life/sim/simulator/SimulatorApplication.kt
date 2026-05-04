@@ -63,7 +63,7 @@ class SimulatorApplication : ApplicationAdapter() {
 
 
     override fun render() {
-        currentScene.update(Gdx.graphics.deltaTime)
+        currentScene.update(Gdx.graphics.deltaTime, Gdx.input)
 
         ScreenUtils.clear(0.05f, 0.05f, 0.08f, 1f)
         renderContext.viewportWidth = Gdx.graphics.width.toFloat()
