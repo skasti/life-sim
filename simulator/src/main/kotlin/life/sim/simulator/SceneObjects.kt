@@ -8,7 +8,7 @@ interface SimObject
 
 /** Optional behavior for scene objects that update over simulation ticks. */
 interface Updateable {
-    fun update(deltaSeconds: Float, input : Input)
+    fun update(deltaSeconds: Float, input: Input)
 }
 
 /** Optional behavior for scene objects that render through the simulator render context. */

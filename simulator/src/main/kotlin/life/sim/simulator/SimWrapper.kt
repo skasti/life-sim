@@ -24,7 +24,7 @@ class SimWrapper(
         "No renderer registered for type ${content::class.qualifiedName}."
     }
 
-    override fun update(deltaSeconds: Float, input : Input) {
+    override fun update(deltaSeconds: Float, input: Input) {
         if (input.isKeyPressed(Input.Keys.SPACE)) {
             rotation += 90f * deltaSeconds
         } else if (input.isKeyJustPressed(Input.Keys.R)) {

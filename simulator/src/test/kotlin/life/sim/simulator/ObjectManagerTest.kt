@@ -133,7 +133,7 @@ class ObjectManagerTest {
     }
 
     private class UpdateAndRenderObject(private val label: String) : SimObject, Updateable, Renderable {
-        override fun update(deltaSeconds: Float, input : Input) = Unit
+        override fun update(deltaSeconds: Float, input: Input) = Unit
         override fun render(context: RenderContext) = Unit
         override fun toString(): String = label
     }

@@ -15,7 +15,7 @@ interface Scene {
      */
     fun init() = Unit
 
-    fun update(deltaSeconds: Float, input : Input) {
+    fun update(deltaSeconds: Float, input: Input) {
         objectManager.update(deltaSeconds, input)
     }
 
