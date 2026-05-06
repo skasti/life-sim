@@ -193,19 +193,16 @@ class NucleotideRendererTest {
     }
 
     @Test
-    fun `renderToSpriteCached uses tile origin padding and center rotation origin`() {
+    fun `renderToSpriteCached uses centered sprite origin`() {
         val renderer = NucleotideRenderer(baseSize = 40f)
         val baseSize = renderer.baseSize
         val pairingBandSize = baseSize * 0.5f
         val spriteSize = baseSize + 2f * pairingBandSize
 
-        val tileOrigin = pairingBandSize
-        val rotationOrigin = pairingBandSize + baseSize * 0.5f
+        val origin = pairingBandSize + baseSize * 0.5f
 
-        assertEquals(pairingBandSize, tileOrigin)
-        assertEquals(pairingBandSize, tileOrigin)
-        assertEquals(baseSize * 0.5f + pairingBandSize, rotationOrigin)
-        assertEquals(baseSize * 0.5f + pairingBandSize, rotationOrigin)
+        assertEquals(baseSize * 0.5f + pairingBandSize, origin)
+        assertEquals(baseSize * 0.5f + pairingBandSize, origin)
         assertEquals(baseSize + 2f * pairingBandSize, spriteSize)
     }
 

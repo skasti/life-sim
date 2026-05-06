@@ -40,17 +40,14 @@ class NucleotideRenderer(
     private fun renderToSpriteCached(value: Nucleotide, context: RenderContext): CachedSprite {
         val key = spriteKey(value)
         val spriteSize = kotlin.math.ceil(baseSize + 2f * pairingBandSize).toInt()
-        val tileOrigin = pairingBandSize
-        val rotationOrigin = pairingBandSize + baseSize * 0.5f
+        val origin = pairingBandSize + baseSize * 0.5f
         context.finish()
         return context.sprites.renderToSprite(
             key,
             spriteSize,
             spriteSize,
-            tileOriginX = tileOrigin,
-            tileOriginY = tileOrigin,
-            rotationOriginX = rotationOrigin,
-            rotationOriginY = rotationOrigin,
+            originX = origin,
+            originY = origin,
         ) {
             val previousProjection = context.shapeRenderer.projectionMatrix.cpy()
             val previousBatchProjection = context.batch.projectionMatrix.cpy()
@@ -58,7 +55,8 @@ class NucleotideRenderer(
                 context.shapeRenderer.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
                 context.batch.projectionMatrix.setToOrtho2D(0f, 0f, spriteSize.toFloat(), spriteSize.toFloat())
                 try {
-                    renderUncached(value, Vector2(tileOrigin, tileOrigin), context, NucleotideOrientation(PairingSide.RIGHT))
+                    val lowerLeft = origin - baseSize * 0.5f
+                    renderUncached(value, Vector2(lowerLeft, lowerLeft), context, NucleotideOrientation(PairingSide.RIGHT))
                 } finally {
                     context.finish()
                 }
