@@ -13,6 +13,8 @@ class DnaRenderer(
     val strandGap: Float = baseSize * 0.75f,
 ) : Renderer<Dna> {
     private lateinit var sequenceRenderer: Renderer<NucleotideSequence>
+    private val topStrandTransform = Matrix3()
+    private val bottomStrandTransform = Matrix3()
 
     init {
         Renderers.register(Dna::class, this)
@@ -37,18 +39,11 @@ class DnaRenderer(
             )
         }
 
-        sequenceRenderer.render(
-            value.forward,
-            layout.topStrandPosition.cpy().mul(transform),
-            transform.getRotation(),
-            context,
-        )
-        sequenceRenderer.render(
-            value.reverse,
-            layout.bottomStrandPosition.cpy().mul(transform),
-            transform.getRotation(),
-            context,
-        )
+        topStrandTransform.idt().translate(layout.topStrandPosition.x, layout.topStrandPosition.y).mul(transform)
+        sequenceRenderer.render(value.forward, topStrandTransform, context)
+
+        bottomStrandTransform.idt().translate(layout.bottomStrandPosition.x, layout.bottomStrandPosition.y).mul(transform)
+        sequenceRenderer.render(value.reverse, bottomStrandTransform, context)
     }
 
     internal fun layout(value: Dna, position: Vector2, rotation: Float = 0f): DnaRenderLayout? {
