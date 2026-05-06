@@ -11,6 +11,7 @@ class NucleotideRenderer(
     val baseSize: Float = RenderingVisualSpec.NUCLEOTIDE_BASE_SIZE,
 ) : Renderer<Nucleotide> {
     private val pairingBandSize = baseSize * 0.5f
+    private val labelPosition = Vector2()
 
     init {
         Renderers.register(Nucleotide::class, this)
@@ -24,7 +25,7 @@ class NucleotideRenderer(
         val key = requireNotNull(spriteKey(value))
         context.sprites.getOrCreate(key) { renderToSpriteCached(value, context) }
         context.drawSprite(key, transform)
-        val labelPosition = Vector2(0f, 0f).mul(transform)
+        labelPosition.set(0f, 0f).mul(transform)
         context.drawCenteredText(value.symbol.toString(), labelPosition.x, labelPosition.y)
     }
 
