@@ -1,6 +1,7 @@
 package life.sim.simulator
 
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.Vector2
 import life.sim.simulator.rendering.RenderContext
 import life.sim.simulator.rendering.Renderer
@@ -69,6 +70,20 @@ class SimWrapperTest {
         assertEquals(100f, wrapper.rotation)
     }
 
+
+    @Test
+    fun `Matrix3 local to world transform keeps translation then rotation order`() {
+        val transform = Matrix3().idt().translate(10f, 20f).rotate(90f)
+
+        val origin = Vector2(0f, 0f).mul(transform)
+        val right = Vector2(1f, 0f).mul(transform)
+
+        assertEquals(10f, origin.x, 0.0001f)
+        assertEquals(20f, origin.y, 0.0001f)
+        assertEquals(10f, right.x, 0.0001f)
+        assertEquals(21f, right.y, 0.0001f)
+    }
+
     private fun dummyInput(
         pressedKeys: Set<Int> = emptySet(),
         justPressedKeys: Set<Int> = emptySet(),
@@ -100,7 +115,7 @@ class SimWrapperTest {
     private data object NoRendererType
 
     private object WrappedTypeRenderer : Renderer<WrappedType> {
-        override fun render(value: WrappedType, position: Vector2, rotation: Float, context: RenderContext) = Unit
+        override fun render(value: WrappedType, transform: Matrix3, context: RenderContext) = Unit
         override fun init() = Unit
     }
 }

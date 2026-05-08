@@ -49,17 +49,28 @@ class NucleotideSequenceRendererTest {
 
     @Test
     fun `nucleotideRotation applies opposite strand-facing offsets for forward and backward sequences`() {
-        assertEquals(300f, renderer.nucleotideRotation(SequenceDirection.FORWARD, 30f))
-        assertEquals(120f, renderer.nucleotideRotation(SequenceDirection.BACKWARD, 30f))
+        assertEquals(270f, renderer.nucleotideRotation(SequenceDirection.FORWARD))
+        assertEquals(90f, renderer.nucleotideRotation(SequenceDirection.BACKWARD))
     }
 
     @Test
-    fun `layout places nucleotide row on opposite sides of the backbone for forward and backward directions`() {
-        val forwardLayout = requireNotNull(renderer.layout(NucleotideSequence.parse(">AU>"), Vector2(100f, 50f)))
-        val backwardLayout = requireNotNull(renderer.layout(NucleotideSequence.parse("<AU<"), Vector2(100f, 50f)))
+    fun `layout keeps nucleotide anchors centered and places the direction indicator on the strand-facing side`() {
+        val position = Vector2(100f, 50f)
+        val forwardLayout = requireNotNull(renderer.layout(NucleotideSequence.parse(">AU>"), position))
+        val backwardLayout = requireNotNull(renderer.layout(NucleotideSequence.parse("<AU<"), position))
 
-        assertEquals(40f, forwardLayout.nucleotideAnchors.first().y)
-        assertEquals(60f, backwardLayout.nucleotideAnchors.first().y)
+        assertEquals(position.y, forwardLayout.nucleotideAnchors.first().y)
+        assertEquals(position.y, backwardLayout.nucleotideAnchors.first().y)
+
+        val forwardIndicatorTip = forwardLayout.directionIndicatorVertices.first()
+        val backwardIndicatorTip = backwardLayout.directionIndicatorVertices.first()
+
+        assertEquals(137f, forwardIndicatorTip.x)
+        assertEquals(40f, forwardIndicatorTip.y)
+        assertEquals(63f, backwardIndicatorTip.x)
+        assertEquals(60f, backwardIndicatorTip.y)
+        assertEquals(true, forwardIndicatorTip.x > forwardLayout.backboneEnd.x)
+        assertEquals(true, backwardIndicatorTip.x < backwardLayout.backboneStart.x)
     }
 
     private fun assertVectorEquals(expected: Vector2, actual: Vector2, tolerance: Float = 0.0001f) {

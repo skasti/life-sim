@@ -1,6 +1,7 @@
 package life.sim.simulator.rendering
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.primitives.Nucleotide
 import life.sim.biology.primitives.NucleotideSequence
@@ -13,7 +14,7 @@ class NucleotideSequenceRenderer(
     val baseSize: Float = RenderingVisualSpec.NUCLEOTIDE_BASE_SIZE,
 ) : Renderer<NucleotideSequence> {
     private lateinit var nucleotideRenderer: Renderer<Nucleotide>
-    private val nucleotidePosition = Vector2()
+    private val nucleotideTransform = Matrix3()
 
     init {
         Renderers.register(NucleotideSequence::class, this)
@@ -24,9 +25,11 @@ class NucleotideSequenceRenderer(
             ?: error("NucleotideSequenceRenderer requires a registered renderer for Nucleotide.")
     }
 
-    override fun render(value: NucleotideSequence, position: Vector2, rotation: Float, context: RenderContext) {
-        val layout = layout(value, position)?.rotated(rotation) ?: return
-        renderLayout(value, layout, rotation, context)
+    override fun render(value: NucleotideSequence, transform: Matrix3, context: RenderContext) {
+        val layout = layout(value, Vector2(0f, 0f)) ?: return
+        renderLayout(value, layout, transform, context)
+        if (context.debugMode)
+            context.drawCircle(transform.getTranslation(Vector2()), baseSize * 0.1f, Color.GREEN)
     }
 
     fun sequenceWidth(value: NucleotideSequence): Float {
@@ -50,9 +53,8 @@ class NucleotideSequenceRenderer(
 
         val nucleotideAnchors = buildList(value.size) {
             var x = leftEdgeX + baseSize * 0.5f
-            val nucleotideCenterY = nucleotideCenterY(position.y, value.direction)
             repeat(value.size) {
-                add(Vector2(x, nucleotideCenterY))
+                add(Vector2(x, position.y))
                 x += baseSize + tileGap
             }
         }
@@ -69,27 +71,22 @@ class NucleotideSequenceRenderer(
     internal fun renderLayout(
         value: NucleotideSequence,
         layout: SequenceRenderLayout,
-        rotation: Float,
+        transform: Matrix3,
         context: RenderContext,
     ) {
+        value.zip(layout.nucleotideAnchors).forEach { (nucleotide, anchor) ->
+            nucleotideTransform.set(transform).translate(anchor).rotate(nucleotideRotation(value.direction))
+            nucleotideRenderer.render(nucleotide, nucleotideTransform, context)
+        }
+
         context.drawLine(
-            layout.backboneStart,
-            layout.backboneEnd,
+            layout.backboneStart.mul(transform),
+            layout.backboneEnd.mul(transform),
             width = BACKBONE_WIDTH,
             color = BACKBONE_COLOR,
         )
 
-        value.zip(layout.nucleotideAnchors).forEach { (nucleotide, anchor) ->
-            nucleotidePosition.set(anchor)
-            nucleotideRenderer.render(
-                nucleotide,
-                nucleotidePosition,
-                nucleotideRotation(value.direction, rotation),
-                context,
-            )
-        }
-
-        val directionIndicatorVertices = layout.directionIndicatorVertices
+        val directionIndicatorVertices = layout.directionIndicatorVertices.map { it.cpy().mul(transform) }
         context.drawFilledTriangle(
             directionIndicatorVertices[0].x,
             directionIndicatorVertices[0].y,
@@ -135,13 +132,12 @@ class NucleotideSequenceRenderer(
             backboneY + baseSize * 0.5f
         }
 
-    internal fun nucleotideRotation(direction: SequenceDirection, modelRotation: Float): Float {
-        val strandFacingOffset = if (direction == SequenceDirection.FORWARD) {
+    internal fun nucleotideRotation(direction: SequenceDirection): Float {
+        return if (direction == SequenceDirection.FORWARD) {
             FORWARD_STRAND_FACING_OFFSET
         } else {
             BACKWARD_STRAND_FACING_OFFSET
         }
-        return modelRotation + strandFacingOffset
     }
 
     companion object {

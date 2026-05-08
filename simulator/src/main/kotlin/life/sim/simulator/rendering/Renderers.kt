@@ -1,5 +1,6 @@
 package life.sim.simulator.rendering
 
+import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.Vector2
 import kotlin.reflect.KClass
 
@@ -20,10 +21,10 @@ object Renderers {
     fun forValue(value: Any): Renderer<Any>? =
         renderers[value::class] as? Renderer<Any>
 
-    fun render(value: Any, position: Vector2, rotation: Float, context: RenderContext) {
+    fun render(value: Any, transform: Matrix3, context: RenderContext) {
         requireNotNull(forValue(value)) {
             "No renderer registered for type ${value::class.qualifiedName}."
-        }.render(value, position, rotation, context)
+        }.render(value, transform, context)
     }
 
     fun init() {

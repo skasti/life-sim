@@ -1,10 +1,10 @@
 package life.sim.simulator.rendering
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.molecules.Dna
 import life.sim.biology.primitives.NucleotideSequence
-import life.sim.simulator.rendering.geometry.rotatePoint
 
 class DnaRenderer(
     val baseSize: Float = RenderingVisualSpec.NUCLEOTIDE_BASE_SIZE,
@@ -12,6 +12,8 @@ class DnaRenderer(
     val strandGap: Float = baseSize * 0.75f,
 ) : Renderer<Dna> {
     private lateinit var sequenceRenderer: Renderer<NucleotideSequence>
+    private val topStrandTransform = Matrix3()
+    private val bottomStrandTransform = Matrix3()
 
     init {
         Renderers.register(Dna::class, this)
@@ -22,33 +24,29 @@ class DnaRenderer(
             ?: error("DnaRenderer requires a registered renderer for NucleotideSequences.")
     }
 
-    override fun render(value: Dna, position: Vector2, rotation: Float, context: RenderContext) {
-        val layout = layout(value, position, rotation) ?: return
+    override fun render(value: Dna, transform: Matrix3, context: RenderContext) {
+        val layout = layout(value, Vector2(0f, 0f)) ?: return
 
         layout.connectorSegments.forEach { connector ->
             context.drawLine(
-                a = connector.a,
-                b = connector.b,
+                a = connector.a.mul(transform),
+                b = connector.b.mul(transform),
                 width = baseSize * 0.08f,
                 color = PAIR_CONNECTOR_COLOR,
             )
         }
 
-        sequenceRenderer.render(
-            value.forward,
-            layout.topStrandPosition,
-            rotation,
-            context,
-        )
-        sequenceRenderer.render(
-            value.reverse,
-            layout.bottomStrandPosition,
-            rotation,
-            context,
-        )
+        topStrandTransform.set(transform).translate(layout.topStrandPosition)
+        sequenceRenderer.render(value.forward, topStrandTransform, context)
+
+        bottomStrandTransform.set(transform).translate(layout.bottomStrandPosition)
+        sequenceRenderer.render(value.reverse, bottomStrandTransform, context)
+
+        if (context.debugMode)
+            context.drawCircle(transform.getTranslation(Vector2()), baseSize * 0.1f, Color.BLUE)
     }
 
-    internal fun layout(value: Dna, position: Vector2, rotation: Float = 0f): DnaRenderLayout? {
+    internal fun layout(value: Dna, position: Vector2): DnaRenderLayout? {
         if (value.isEmpty()) {
             return null
         }
@@ -57,9 +55,6 @@ class DnaRenderer(
         val strandBackboneOffset = (2f * baseSize + strandGap) * 0.5f
         val topStrandBasePosition = Vector2(position.x, position.y + strandBackboneOffset)
         val bottomStrandBasePosition = Vector2(position.x, position.y - strandBackboneOffset)
-
-        val rotatedTopStrandPosition = rotatePoint(topStrandBasePosition, pivot, rotation)
-        val rotatedBottomStrandPosition = rotatePoint(bottomStrandBasePosition, pivot, rotation)
 
         val strandWidth = sequenceWidth(value.forward)
         val leftEdgeX = position.x - strandWidth * 0.5f
@@ -71,8 +66,8 @@ class DnaRenderer(
                 val connectorBottom = Vector2(connectorX, bottomStrandBasePosition.y + baseSize)
                 add(
                     ConnectorSegment(
-                        a = rotatePoint(connectorTop, pivot, rotation),
-                        b = rotatePoint(connectorBottom, pivot, rotation),
+                        a = connectorTop,
+                        b = connectorBottom,
                     ),
                 )
                 connectorX += baseSize + tileGap
@@ -81,8 +76,8 @@ class DnaRenderer(
 
         return DnaRenderLayout(
             pivot = pivot,
-            topStrandPosition = rotatedTopStrandPosition,
-            bottomStrandPosition = rotatedBottomStrandPosition,
+            topStrandPosition = topStrandBasePosition,
+            bottomStrandPosition = bottomStrandBasePosition,
             connectorSegments = connectorSegments,
         )
     }

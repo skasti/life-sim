@@ -7,46 +7,28 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.FrameBuffer
-import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.math.Affine2
+import com.badlogic.gdx.math.Matrix3
 
 data class CachedSprite(
     val region: TextureRegion,
     val width: Float,
     val height: Float,
-    val tileOriginX: Float,
-    val tileOriginY: Float,
-    val rotationOriginX: Float,
-    val rotationOriginY: Float,
+    val originX: Float,
+    val originY: Float,
 )
 
 class Sprites {
     private val sprites = mutableMapOf<SpriteKey, CachedSprite>()
     private val ownedTextures = mutableSetOf<Texture>()
+    private val affine = Affine2()
 
     fun getOrCreate(key: SpriteKey, generator: () -> CachedSprite): CachedSprite =
         sprites.getOrPut(key, generator)
 
-    fun draw(
-        key: SpriteKey,
-        batch: SpriteBatch,
-        position: Vector2,
-        rotationDegrees: Float = 0f,
-    ) {
+    fun draw(key: SpriteKey, batch: SpriteBatch, transform: Matrix3) {
         val sprite = requireNotNull(sprites[key]) { "Sprite not found for key: $key" }
-        val x = position.x - sprite.tileOriginX
-        val y = position.y - sprite.tileOriginY
-        batch.draw(
-            sprite.region,
-            x,
-            y,
-            sprite.rotationOriginX,
-            sprite.rotationOriginY,
-            sprite.width,
-            sprite.height,
-            1f,
-            1f,
-            rotationDegrees,
-        )
+        batch.draw(sprite.region, sprite.width, sprite.height, affine.set(transform).translate(-sprite.originX, -sprite.originY))
     }
 
     fun putPixmap(key: SpriteKey, pixmap: Pixmap): CachedSprite {
@@ -63,10 +45,8 @@ class Sprites {
                 region,
                 region.regionWidth.toFloat(),
                 region.regionHeight.toFloat(),
-                tileOriginX = 0f,
-                tileOriginY = 0f,
-                rotationOriginX = 0f,
-                rotationOriginY = 0f,
+                originX = 0f,
+                originY = 0f,
                 ownsTexture = true,
             )
         } catch (error: Throwable) {
@@ -80,13 +60,11 @@ class Sprites {
         region: TextureRegion,
         width: Float,
         height: Float,
-        tileOriginX: Float,
-        tileOriginY: Float,
-        rotationOriginX: Float,
-        rotationOriginY: Float,
+        originX: Float,
+        originY: Float,
         ownsTexture: Boolean = false,
     ): CachedSprite {
-        val sprite = CachedSprite(region, width, height, tileOriginX, tileOriginY, rotationOriginX, rotationOriginY)
+        val sprite = CachedSprite(region, width, height, originX, originY)
         val previous = sprites.put(key, sprite)
         if (previous != null) {
             maybeDisposeOwned(previous.region.texture)
@@ -101,10 +79,8 @@ class Sprites {
         key: SpriteKey,
         width: Int,
         height: Int,
-        tileOriginX: Float,
-        tileOriginY: Float,
-        rotationOriginX: Float,
-        rotationOriginY: Float,
+        originX: Float,
+        originY: Float,
         render: () -> Unit,
     ): CachedSprite {
         val safeWidth = width.coerceAtLeast(1)
@@ -137,10 +113,8 @@ class Sprites {
             region,
             safeWidth.toFloat(),
             safeHeight.toFloat(),
-            tileOriginX,
-            tileOriginY,
-            rotationOriginX,
-            rotationOriginY,
+            originX,
+            originY,
             ownsTexture = true,
         )
     }
