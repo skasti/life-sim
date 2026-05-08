@@ -5,7 +5,6 @@ import com.badlogic.gdx.math.Matrix3
 import com.badlogic.gdx.math.Vector2
 import life.sim.biology.molecules.Dna
 import life.sim.biology.primitives.NucleotideSequence
-import life.sim.simulator.rendering.geometry.rotatePoint
 
 class DnaRenderer(
     val baseSize: Float = RenderingVisualSpec.NUCLEOTIDE_BASE_SIZE,
@@ -47,7 +46,7 @@ class DnaRenderer(
         context.drawCircle(transform.getTranslation(Vector2()), baseSize * 0.1f, Color.BLUE)
     }
 
-    internal fun layout(value: Dna, position: Vector2, rotation: Float = 0f): DnaRenderLayout? {
+    internal fun layout(value: Dna, position: Vector2): DnaRenderLayout? {
         if (value.isEmpty()) {
             return null
         }
@@ -56,9 +55,6 @@ class DnaRenderer(
         val strandBackboneOffset = (2f * baseSize + strandGap) * 0.5f
         val topStrandBasePosition = Vector2(position.x, position.y + strandBackboneOffset)
         val bottomStrandBasePosition = Vector2(position.x, position.y - strandBackboneOffset)
-
-        val rotatedTopStrandPosition = rotatePoint(topStrandBasePosition, pivot, rotation)
-        val rotatedBottomStrandPosition = rotatePoint(bottomStrandBasePosition, pivot, rotation)
 
         val strandWidth = sequenceWidth(value.forward)
         val leftEdgeX = position.x - strandWidth * 0.5f
@@ -70,8 +66,8 @@ class DnaRenderer(
                 val connectorBottom = Vector2(connectorX, bottomStrandBasePosition.y + baseSize)
                 add(
                     ConnectorSegment(
-                        a = rotatePoint(connectorTop, pivot, rotation),
-                        b = rotatePoint(connectorBottom, pivot, rotation),
+                        a = connectorTop,
+                        b = connectorBottom,
                     ),
                 )
                 connectorX += baseSize + tileGap
@@ -80,8 +76,8 @@ class DnaRenderer(
 
         return DnaRenderLayout(
             pivot = pivot,
-            topStrandPosition = rotatedTopStrandPosition,
-            bottomStrandPosition = rotatedBottomStrandPosition,
+            topStrandPosition = topStrandBasePosition,
+            bottomStrandPosition = bottomStrandBasePosition,
             connectorSegments = connectorSegments,
         )
     }
