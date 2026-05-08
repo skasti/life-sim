@@ -10,11 +10,11 @@ import life.sim.simulator.rendering.Renderers
 /**
  * Bridges domain objects to simulator scene lifecycle by resolving a renderer once at construction.
  *
- * `position` is the wrapped object's visual center in world coordinates.
+ * `position` is the wrapped object's renderer-defined local origin in world coordinates.
  *
- * `rotation` is in degrees and is passed directly to the resolved renderer.
- * The simulator follows libGDX angle conventions: `0f` is unrotated and positive values rotate
- * counterclockwise around `position`.
+ * `rotation` is in degrees and contributes to the composed local-to-world `Matrix3` passed to the
+ * resolved renderer. The simulator follows libGDX angle conventions: `0f` is unrotated and
+ * positive values rotate counterclockwise around `position`.
  */
 class SimWrapper(
     val content: Any,
