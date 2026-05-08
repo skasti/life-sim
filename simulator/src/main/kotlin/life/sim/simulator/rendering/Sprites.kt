@@ -21,14 +21,14 @@ data class CachedSprite(
 class Sprites {
     private val sprites = mutableMapOf<SpriteKey, CachedSprite>()
     private val ownedTextures = mutableSetOf<Texture>()
+    private val affine = Affine2()
 
     fun getOrCreate(key: SpriteKey, generator: () -> CachedSprite): CachedSprite =
         sprites.getOrPut(key, generator)
 
     fun draw(key: SpriteKey, batch: SpriteBatch, transform: Matrix3) {
         val sprite = requireNotNull(sprites[key]) { "Sprite not found for key: $key" }
-        val affine = Affine2().set(transform).translate(-sprite.originX, -sprite.originY)
-        batch.draw(sprite.region, sprite.width, sprite.height, affine)
+        batch.draw(sprite.region, sprite.width, sprite.height, affine.set(transform).translate(-sprite.originX, -sprite.originY))
     }
 
     fun putPixmap(key: SpriteKey, pixmap: Pixmap): CachedSprite {
