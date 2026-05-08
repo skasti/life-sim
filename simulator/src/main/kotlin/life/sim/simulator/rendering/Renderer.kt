@@ -21,7 +21,7 @@ interface Renderer<T : Any> {
     fun init()
 
     fun render(value: T, position: Vector2, rotation: Float, context: RenderContext) {
-        val transform = Matrix3().idt().translate(position.x, position.y).rotate(rotation)
+        val transform = Matrix3().idt().translate(position).rotate(rotation)
         render(value, transform, context)
     }
 

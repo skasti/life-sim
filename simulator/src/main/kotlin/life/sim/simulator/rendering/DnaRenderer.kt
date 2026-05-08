@@ -28,20 +28,18 @@ class DnaRenderer(
         val layout = layout(value, Vector2(0f, 0f)) ?: return
 
         layout.connectorSegments.forEach { connector ->
-            val a = connector.a.cpy().mul(transform)
-            val b = connector.b.cpy().mul(transform)
             context.drawLine(
-                a = a,
-                b = b,
+                a = connector.a.mul(transform),
+                b = connector.b.mul(transform),
                 width = baseSize * 0.08f,
                 color = PAIR_CONNECTOR_COLOR,
             )
         }
 
-        topStrandTransform.idt().translate(layout.topStrandPosition.x, layout.topStrandPosition.y).mul(transform)
+        topStrandTransform.set(transform).translate(layout.topStrandPosition)
         sequenceRenderer.render(value.forward, topStrandTransform, context)
 
-        bottomStrandTransform.idt().translate(layout.bottomStrandPosition.x, layout.bottomStrandPosition.y).mul(transform)
+        bottomStrandTransform.set(transform).translate(layout.bottomStrandPosition)
         sequenceRenderer.render(value.reverse, bottomStrandTransform, context)
         context.drawCircle(transform.getTranslation(Vector2()), baseSize * 0.1f, Color.BLUE)
     }
