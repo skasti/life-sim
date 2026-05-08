@@ -52,9 +52,8 @@ class NucleotideSequenceRenderer(
 
         val nucleotideAnchors = buildList(value.size) {
             var x = leftEdgeX + baseSize * 0.5f
-            val nucleotideCenterY = nucleotideCenterY(position.y, value.direction)
             repeat(value.size) {
-                add(Vector2(x, nucleotideCenterY))
+                add(Vector2(x, position.y))
                 x += baseSize + tileGap
             }
         }
@@ -74,17 +73,17 @@ class NucleotideSequenceRenderer(
         transform: Matrix3,
         context: RenderContext,
     ) {
-        context.drawLine(
-            layout.backboneStart,
-            layout.backboneEnd,
-            width = BACKBONE_WIDTH,
-            color = BACKBONE_COLOR,
-        )
-
         value.zip(layout.nucleotideAnchors).forEach { (nucleotide, anchor) ->
             nucleotidePosition.set(anchor).mul(transform)
             nucleotideRenderer.render(nucleotide, nucleotidePosition, nucleotideRotation(value.direction, transform.getRotation()), context)
         }
+
+        context.drawLine(
+            layout.backboneStart.mul(transform),
+            layout.backboneEnd.mul(transform),
+            width = BACKBONE_WIDTH,
+            color = BACKBONE_COLOR,
+        )
 
         val directionIndicatorVertices = layout.directionIndicatorVertices.map { it.cpy().mul(transform) }
         context.drawFilledTriangle(
