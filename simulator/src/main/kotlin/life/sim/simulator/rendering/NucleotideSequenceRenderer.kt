@@ -14,7 +14,7 @@ class NucleotideSequenceRenderer(
     val baseSize: Float = RenderingVisualSpec.NUCLEOTIDE_BASE_SIZE,
 ) : Renderer<NucleotideSequence> {
     private lateinit var nucleotideRenderer: Renderer<Nucleotide>
-    private val nucleotidePosition = Vector2()
+    private val nucleotideTransform = Matrix3()
 
     init {
         Renderers.register(NucleotideSequence::class, this)
@@ -75,8 +75,8 @@ class NucleotideSequenceRenderer(
         context: RenderContext,
     ) {
         value.zip(layout.nucleotideAnchors).forEach { (nucleotide, anchor) ->
-            nucleotidePosition.set(anchor).mul(transform)
-            nucleotideRenderer.render(nucleotide, nucleotidePosition, nucleotideRotation(value.direction, transform.getRotation()), context)
+            nucleotideTransform.set(transform).translate(anchor).rotate(nucleotideRotation(value.direction))
+            nucleotideRenderer.render(nucleotide, nucleotideTransform, context)
         }
 
         context.drawLine(
@@ -132,13 +132,12 @@ class NucleotideSequenceRenderer(
             backboneY + baseSize * 0.5f
         }
 
-    internal fun nucleotideRotation(direction: SequenceDirection, modelRotation: Float): Float {
-        val strandFacingOffset = if (direction == SequenceDirection.FORWARD) {
+    internal fun nucleotideRotation(direction: SequenceDirection): Float {
+        return if (direction == SequenceDirection.FORWARD) {
             FORWARD_STRAND_FACING_OFFSET
         } else {
             BACKWARD_STRAND_FACING_OFFSET
         }
-        return modelRotation + strandFacingOffset
     }
 
     companion object {

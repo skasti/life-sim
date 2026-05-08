@@ -49,8 +49,8 @@ class NucleotideSequenceRendererTest {
 
     @Test
     fun `nucleotideRotation applies opposite strand-facing offsets for forward and backward sequences`() {
-        assertEquals(300f, renderer.nucleotideRotation(SequenceDirection.FORWARD, 30f))
-        assertEquals(120f, renderer.nucleotideRotation(SequenceDirection.BACKWARD, 30f))
+        assertEquals(270f, renderer.nucleotideRotation(SequenceDirection.FORWARD))
+        assertEquals(90f, renderer.nucleotideRotation(SequenceDirection.BACKWARD))
     }
 
     @Test
