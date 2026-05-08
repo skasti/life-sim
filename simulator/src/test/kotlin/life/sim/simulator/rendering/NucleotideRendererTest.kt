@@ -44,13 +44,10 @@ class NucleotideRendererTest {
     fun `geometryFor keeps every nucleotide shape inside the geometry test window`() {
         val origin = Vector2(10f, 20f)
         val nucleotides = listOf(Nucleotide.A, Nucleotide.U, Nucleotide.C, Nucleotide.G)
-        val pairingSides = listOf(PairingSide.LEFT, PairingSide.RIGHT, PairingSide.TOP, PairingSide.BOTTOM)
 
         nucleotides.forEach { nucleotide ->
-            pairingSides.forEach { pairingSide ->
-                val geometry = renderer.geometryFor(nucleotide, origin, NucleotideOrientation(pairingSide))
-                assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin), "Expected $nucleotide on $pairingSide to stay inside the geometry test window")
-            }
+            val geometry = renderer.geometryFor(nucleotide, origin)
+            assertTrue(isWithinNucleotideGeometryTestWindow(geometry, origin), "Expected $nucleotide to stay inside the geometry test window")
         }
     }
 
@@ -93,42 +90,26 @@ class NucleotideRendererTest {
 
 
     @Test
-    fun `geometryFor renders rounded protrusions as polygon geometry that extends beyond the base tile`() {
+    fun `geometryFor renders rounded protrusions as polygon geometry that extends beyond the right edge of the base tile`() {
         val origin = Vector2(10f, 20f)
+        val geometry = renderer.geometryFor(Nucleotide.C, origin)
 
-        listOf(PairingSide.LEFT, PairingSide.RIGHT, PairingSide.TOP, PairingSide.BOTTOM).forEach { pairingSide ->
-            val geometry = renderer.geometryFor(Nucleotide.C, origin, NucleotideOrientation(pairingSide))
+        assertTrue(geometry.elements.none { it is Arc }, "Expected rounded protrusion for C to avoid arc primitives")
 
-            assertTrue(geometry.elements.none { it is Arc }, "Expected rounded protrusion for C to avoid arc primitives")
+        val vertices = geometry.elements.filterIsInstance<Polygon>().flatMap { it.vertices }
 
-            val vertices = geometry.elements.filterIsInstance<Polygon>().flatMap { it.vertices }
-
-            when (pairingSide) {
-                PairingSide.LEFT -> assertTrue(
-                    vertices.any { it.x < origin.x },
-                    "Expected left rounded protrusion to extend beyond the left edge",
-                )
-
-                PairingSide.RIGHT -> assertTrue(
-                    vertices.any { it.x > origin.x + renderer.baseSize },
-                    "Expected right rounded protrusion to extend beyond the right edge",
-                )
-
-                PairingSide.TOP -> assertTrue(
-                    vertices.any { it.y > origin.y + renderer.baseSize },
-                    "Expected top rounded protrusion to extend beyond the top edge",
-                )
-
-                PairingSide.BOTTOM -> assertTrue(
-                    vertices.any { it.y < origin.y },
-                    "Expected bottom rounded protrusion to extend beyond the bottom edge",
-                )
-            }
-        }
+        assertTrue(
+            vertices.any { it.x > origin.x + renderer.baseSize },
+            "Expected the rounded protrusion to extend beyond the right edge",
+        )
+        assertTrue(
+            vertices.none { it.x < origin.x },
+            "Expected the rounded protrusion to keep the left edge aligned with the base tile",
+        )
     }
 
     @Test
-    fun `geometryFor renders rounded indentations as a single polygon with an outward concave socket`() {
+    fun `geometryFor renders rounded indentations as a single polygon with an outward concave socket on the right edge`() {
         val origin = Vector2(10f, 20f)
         val baseCorners = listOf(
             Vector2(origin.x, origin.y),
@@ -136,50 +117,18 @@ class NucleotideRendererTest {
             Vector2(origin.x, origin.y + renderer.baseSize),
             Vector2(origin.x + renderer.baseSize, origin.y + renderer.baseSize),
         )
+        val geometry = renderer.geometryFor(Nucleotide.G, origin)
+        val polygon = geometry.elements.filterIsInstance<Polygon>().single()
 
-        listOf(PairingSide.LEFT, PairingSide.RIGHT, PairingSide.TOP, PairingSide.BOTTOM).forEach { pairingSide ->
-            val geometry = renderer.geometryFor(Nucleotide.G, origin, NucleotideOrientation(pairingSide))
-            val polygon = geometry.elements.filterIsInstance<Polygon>().single()
-
-            assertTrue(geometry.elements.none { it is Arc || it is Line })
-            assertTrue(baseCorners.all(polygon.vertices::contains), "Expected the rounded indentation polygon to keep the rectangular body corners")
-            assertTrue(polygon.vertices.first() == polygon.vertices.last(), "Expected the rounded indentation polygon to be closed")
-            assertTrue(polygonArea(polygon.vertices) > renderer.baseSize * renderer.baseSize, "Expected the rounded indentation polygon to cover more area than the base square")
-
-            when (pairingSide) {
-                PairingSide.LEFT -> {
-                    assertTrue(polygon.vertices.any { it.x < origin.x }, "Expected the left rounded socket to extend beyond the left edge")
-                    assertTrue(
-                        polygon.vertices.any { approximatelyEqual(it.x, origin.x) && approximatelyEqual(it.y, origin.y + renderer.baseSize * 0.5f) },
-                        "Expected the left rounded socket to curve back inward to the left body edge",
-                    )
-                }
-
-                PairingSide.RIGHT -> {
-                    assertTrue(polygon.vertices.any { it.x > origin.x + renderer.baseSize }, "Expected the right rounded socket to extend beyond the right edge")
-                    assertTrue(
-                        polygon.vertices.any { approximatelyEqual(it.x, origin.x + renderer.baseSize) && approximatelyEqual(it.y, origin.y + renderer.baseSize * 0.5f) },
-                        "Expected the right rounded socket to curve back inward to the right body edge",
-                    )
-                }
-
-                PairingSide.TOP -> {
-                    assertTrue(polygon.vertices.any { it.y > origin.y + renderer.baseSize }, "Expected the top rounded socket to extend beyond the top edge")
-                    assertTrue(
-                        polygon.vertices.any { approximatelyEqual(it.x, origin.x + renderer.baseSize * 0.5f) && approximatelyEqual(it.y, origin.y + renderer.baseSize) },
-                        "Expected the top rounded socket to curve back inward to the top body edge",
-                    )
-                }
-
-                PairingSide.BOTTOM -> {
-                    assertTrue(polygon.vertices.any { it.y < origin.y }, "Expected the bottom rounded socket to extend beyond the bottom edge")
-                    assertTrue(
-                        polygon.vertices.any { approximatelyEqual(it.x, origin.x + renderer.baseSize * 0.5f) && approximatelyEqual(it.y, origin.y) },
-                        "Expected the bottom rounded socket to curve back inward to the bottom body edge",
-                    )
-                }
-            }
-        }
+        assertTrue(geometry.elements.none { it is Arc || it is Line })
+        assertTrue(baseCorners.all(polygon.vertices::contains), "Expected the rounded indentation polygon to keep the rectangular body corners")
+        assertTrue(polygon.vertices.first() == polygon.vertices.last(), "Expected the rounded indentation polygon to be closed")
+        assertTrue(polygonArea(polygon.vertices) > renderer.baseSize * renderer.baseSize, "Expected the rounded indentation polygon to cover more area than the base square")
+        assertTrue(polygon.vertices.any { it.x > origin.x + renderer.baseSize }, "Expected the rounded socket to extend beyond the right edge")
+        assertTrue(
+            polygon.vertices.any { approximatelyEqual(it.x, origin.x + renderer.baseSize) && approximatelyEqual(it.y, origin.y + renderer.baseSize * 0.5f) },
+            "Expected the rounded socket to curve back inward to the right body edge",
+        )
     }
 
 
@@ -193,17 +142,20 @@ class NucleotideRendererTest {
     }
 
     @Test
-    fun `renderToSpriteCached uses centered sprite origin`() {
+    fun `renderToSpriteCached uses a half-height origin on the left edge of the sprite`() {
         val renderer = NucleotideRenderer(baseSize = 40f)
         val baseSize = renderer.baseSize
         val pairingBandSize = baseSize * 0.5f
-        val spriteSize = baseSize + 2f * pairingBandSize
+        val spriteWidth = kotlin.math.ceil(baseSize * 1.5f)
+        val spriteHeight = kotlin.math.ceil(baseSize)
+        val originX = 0f
+        val originY = baseSize * 0.5f
 
-        val origin = pairingBandSize + baseSize * 0.5f
-
-        assertEquals(baseSize * 0.5f + pairingBandSize, origin)
-        assertEquals(baseSize * 0.5f + pairingBandSize, origin)
-        assertEquals(baseSize + 2f * pairingBandSize, spriteSize)
+        assertEquals(baseSize * 1.5f, spriteWidth)
+        assertEquals(baseSize, spriteHeight)
+        assertEquals(0f, originX)
+        assertEquals(baseSize * 0.5f, originY)
+        assertEquals(baseSize * 0.5f, pairingBandSize)
     }
 
     @Test
