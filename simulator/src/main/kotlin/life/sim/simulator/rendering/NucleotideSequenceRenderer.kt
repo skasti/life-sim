@@ -28,6 +28,7 @@ class NucleotideSequenceRenderer(
     override fun render(value: NucleotideSequence, transform: Matrix3, context: RenderContext) {
         val layout = layout(value, Vector2(0f, 0f)) ?: return
         renderLayout(value, layout, transform, context)
+        context.drawCircle(transform.getTranslation(Vector2()), baseSize * 0.1f, Color.GREEN)
     }
 
     fun sequenceWidth(value: NucleotideSequence): Float {
