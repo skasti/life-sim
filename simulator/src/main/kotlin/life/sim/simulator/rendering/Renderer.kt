@@ -38,6 +38,7 @@ data class RenderContext(
     var viewportHeight: Float,
     val immediateModeRenderer: ImmediateModeRenderer20,
     val sprites: Sprites,
+    val debugMode: Boolean,
 ) {
     private enum class DrawMode {
         NONE,

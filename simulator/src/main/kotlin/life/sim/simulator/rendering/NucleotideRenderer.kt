@@ -28,7 +28,8 @@ class NucleotideRenderer(
         context.drawSprite(key, transform)
         labelPosition.set(baseSize * 0.5f, 0f).mul(transform)
         context.drawCenteredText(value.symbol.toString(), labelPosition.x, labelPosition.y)
-        context.drawCircle(transform.getTranslation(Vector2()), baseSize * 0.1f, Color.WHITE)
+        if (context.debugMode)
+            context.drawCircle(transform.getTranslation(Vector2()), baseSize * 0.1f, Color.WHITE)
     }
 
     internal fun lowerLeftFromCenter(center: Vector2): Vector2 =

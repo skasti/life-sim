@@ -55,6 +55,7 @@ class SimulatorApplication : ApplicationAdapter() {
             viewportHeight = Gdx.graphics.height.toFloat(),
             immediateModeRenderer = immediateModeRenderer,
             sprites = Sprites(),
+            debugMode = false,
         )
         currentScene = DemoScene.sample()
         currentScene.init()

@@ -41,7 +41,9 @@ class DnaRenderer(
 
         bottomStrandTransform.set(transform).translate(layout.bottomStrandPosition)
         sequenceRenderer.render(value.reverse, bottomStrandTransform, context)
-        context.drawCircle(transform.getTranslation(Vector2()), baseSize * 0.1f, Color.BLUE)
+
+        if (context.debugMode)
+            context.drawCircle(transform.getTranslation(Vector2()), baseSize * 0.1f, Color.BLUE)
     }
 
     internal fun layout(value: Dna, position: Vector2): DnaRenderLayout? {
