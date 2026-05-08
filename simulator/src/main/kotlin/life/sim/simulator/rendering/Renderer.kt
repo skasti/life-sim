@@ -224,4 +224,10 @@ data class RenderContext(
         batch.begin()
         mode = DrawMode.BATCH
     }
+
+    fun drawCircle(translation: Vector2, radius: Float, color: Color) {
+        ensureShapeMode()
+        shapeRenderer.color = color
+        shapeRenderer.circle(translation.x, translation.y, radius)
+    }
 }
