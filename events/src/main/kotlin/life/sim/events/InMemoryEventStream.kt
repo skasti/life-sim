@@ -54,11 +54,13 @@ class InMemoryEventStream : EventStream, AutoCloseable {
         routingTagPrefix: String?,
         listener: EventListener,
     ): Subscription {
-        check(!closed.get()) { "InMemoryEventStream is closed" }
-        val subscriberId = nextSubscriberId.getAndIncrement()
-        subscribers[subscriberId] = Subscriber(topic = topic, routingTagPrefix = routingTagPrefix, listener = listener)
-        return Subscription {
-            subscribers.remove(subscriberId)
+        synchronized(lifecycleLock) {
+            check(!closed.get()) { "InMemoryEventStream is closed" }
+            val subscriberId = nextSubscriberId.getAndIncrement()
+            subscribers[subscriberId] = Subscriber(topic = topic, routingTagPrefix = routingTagPrefix, listener = listener)
+            return Subscription {
+                subscribers.remove(subscriberId)
+            }
         }
     }
 
