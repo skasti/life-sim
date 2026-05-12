@@ -17,7 +17,7 @@ is designed to be reused by both modules and by future transports/recorders.
 
 ## In-memory stream
 
-`InMemoryEventStream` is an asynchronous in-memory implementation that enqueues published events and uses a single background worker thread to dispatch to subscribers sequentially. It supports:
+`InMemoryEventStream` is an asynchronous in-memory implementation that enqueues published events and uses a single background worker thread to dispatch to subscribers sequentially in subscription order. It supports:
 
 - non-blocking publish via queueing,
 - sequential, predictable dispatch order,

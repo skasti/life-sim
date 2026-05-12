@@ -1,12 +1,11 @@
 package life.sim.events
 
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
 
 class InMemoryEventStream : EventStream, AutoCloseable {
-    private data class Subscriber(
+    private class SubscriberRegistration(
         val topic: String?,
         val routingTagPrefix: String?,
         val listener: EventListener,
@@ -23,8 +22,7 @@ class InMemoryEventStream : EventStream, AutoCloseable {
         data object Stop : QueueItem
     }
 
-    private val subscribers = ConcurrentHashMap<Long, Subscriber>()
-    private val nextSubscriberId = AtomicLong(0)
+    private val subscribers = CopyOnWriteArrayList<SubscriberRegistration>()
     private val eventQueue = LinkedBlockingQueue<QueueItem>()
     private val closed = AtomicBoolean(false)
     private val lifecycleLock = Any()
@@ -56,10 +54,10 @@ class InMemoryEventStream : EventStream, AutoCloseable {
     ): Subscription {
         synchronized(lifecycleLock) {
             check(!closed.get()) { "InMemoryEventStream is closed" }
-            val subscriberId = nextSubscriberId.getAndIncrement()
-            subscribers[subscriberId] = Subscriber(topic = topic, routingTagPrefix = routingTagPrefix, listener = listener)
+            val registration = SubscriberRegistration(topic = topic, routingTagPrefix = routingTagPrefix, listener = listener)
+            subscribers += registration
             return Subscription {
-                subscribers.remove(subscriberId)
+                subscribers.remove(registration)
             }
         }
     }
@@ -71,18 +69,20 @@ class InMemoryEventStream : EventStream, AutoCloseable {
             }
             eventQueue.put(QueueItem.Stop)
         }
+        worker.join()
     }
 
     private fun dispatch(event: Event) {
-        subscribers.values
-            .asSequence()
-            .filter { it.matches(event) }
-            .forEach {
-                try {
-                    it.listener.onEvent(event)
-                } catch (_: Exception) {
-                    // One listener failing must not stop dispatch for other listeners or future events.
-                }
+        for (subscriber in subscribers) {
+            if (!subscriber.matches(event)) {
+                continue
             }
+
+            try {
+                subscriber.listener.onEvent(event)
+            } catch (_: Exception) {
+                // One listener failing must not stop dispatch for other listeners or future events.
+            }
+        }
     }
 }

@@ -78,7 +78,7 @@ class InMemoryEventStreamTest {
         val wrongTag = testEvent(id = "evt-3", topic = "biology/bonds/", routingTags = setOf("bindings/started/"))
         val delivery = CountDownLatch(1)
 
-        stream.subscribe(topic = "biology/bonds/", routingTagPrefix = "bonds/", listener = EventListener {
+        stream.subscribe(topic = "biology/bonds/", routingTagPrefix = "bonds/", listener = {
             received.add(it)
             delivery.countDown()
         })
@@ -129,6 +129,61 @@ class InMemoryEventStreamTest {
         assertTrue(delivery.await(1, TimeUnit.SECONDS))
         assertEquals(listOf(event), first.toList())
         assertEquals(listOf(event), second.toList())
+        }
+    }
+
+    @Test
+    fun `publish dispatches matching subscribers in subscription order`() {
+        InMemoryEventStream().use { stream ->
+            val received = CopyOnWriteArrayList<String>()
+            val delivery = CountDownLatch(3)
+
+            stream.subscribe(listener = EventListener {
+                received += "first"
+                delivery.countDown()
+            })
+            stream.subscribe(listener = EventListener {
+                received += "second"
+                delivery.countDown()
+            })
+            stream.subscribe(listener = EventListener {
+                received += "third"
+                delivery.countDown()
+            })
+
+            stream.publish(testEvent())
+
+            assertTrue(delivery.await(1, TimeUnit.SECONDS))
+            assertEquals(listOf("first", "second", "third"), received.toList())
+        }
+    }
+
+    @Test
+    fun `subscribe does not block while listeners process events`() {
+        InMemoryEventStream().use { stream ->
+            val listenerStarted = CountDownLatch(1)
+            val releaseListener = CountDownLatch(1)
+            val subscribeCompleted = CountDownLatch(1)
+
+            stream.subscribe(listener = EventListener {
+                listenerStarted.countDown()
+                assertTrue(releaseListener.await(1, TimeUnit.SECONDS))
+            })
+
+            stream.publish(testEvent())
+            assertTrue(listenerStarted.await(1, TimeUnit.SECONDS))
+
+            val subscribeThread = Thread {
+                stream.subscribe(listener = EventListener { })
+                subscribeCompleted.countDown()
+            }
+            subscribeThread.start()
+
+            assertTrue(subscribeCompleted.await(200, TimeUnit.MILLISECONDS))
+
+            releaseListener.countDown()
+            subscribeThread.join(1_000)
+            assertTrue(!subscribeThread.isAlive)
         }
     }
 
