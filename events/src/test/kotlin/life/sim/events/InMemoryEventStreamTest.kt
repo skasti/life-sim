@@ -136,7 +136,7 @@ class InMemoryEventStreamTest {
     fun `listener exception does not stop future dispatch`() {
         InMemoryEventStream().use { stream ->
             val received = CopyOnWriteArrayList<String>()
-            val delivery = CountDownLatch(1)
+            val delivery = CountDownLatch(2)
 
             stream.subscribe(listener = EventListener { throw IllegalStateException("boom") })
             stream.subscribe(listener = EventListener {
@@ -148,7 +148,6 @@ class InMemoryEventStreamTest {
             stream.publish(testEvent(id = "evt-2"))
 
             assertTrue(delivery.await(1, TimeUnit.SECONDS))
-            Thread.sleep(50)
             assertEquals(listOf("evt-1", "evt-2"), received.toList())
         }
     }
