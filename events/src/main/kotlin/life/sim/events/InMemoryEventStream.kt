@@ -2,11 +2,10 @@ package life.sim.events
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
-class InMemoryEventStream(
-    workerCount: Int = 1,
-) : EventStream {
+class InMemoryEventStream : EventStream, AutoCloseable {
     private data class Subscriber(
         val topic: String?,
         val routingTagPrefix: String?,
@@ -22,27 +21,36 @@ class InMemoryEventStream(
     private val subscribers = ConcurrentHashMap<Long, Subscriber>()
     private val nextSubscriberId = AtomicLong(0)
     private val eventQueue = LinkedBlockingQueue<Event>()
+    private val closed = AtomicBoolean(false)
 
-    init {
-        require(workerCount > 0) { "workerCount must be greater than 0" }
-        repeat(workerCount) {
-            Thread {
-                while (true) {
-                    val event = eventQueue.take()
-                    subscribers.values
-                        .asSequence()
-                        .filter { it.matches(event) }
-                        .forEach { it.listener.onEvent(event) }
+    private val worker = Thread {
+        while (true) {
+            try {
+                val event = eventQueue.take()
+                subscribers.values
+                    .asSequence()
+                    .filter { it.matches(event) }
+                    .forEach {
+                        try {
+                            it.listener.onEvent(event)
+                        } catch (_: Exception) {
+                            // One listener failing must not stop dispatch for other listeners or future events.
+                        }
+                    }
+            } catch (_: InterruptedException) {
+                if (closed.get()) {
+                    return@Thread
                 }
-            }.apply {
-                isDaemon = true
-                name = "in-memory-event-stream-worker-$it"
-                start()
             }
         }
+    }.apply {
+        isDaemon = true
+        name = "in-memory-event-stream-worker"
+        start()
     }
 
     override fun publish(event: Event) {
+        check(!closed.get()) { "InMemoryEventStream is closed" }
         eventQueue.put(event)
     }
 
@@ -51,10 +59,18 @@ class InMemoryEventStream(
         routingTagPrefix: String?,
         listener: EventListener,
     ): Subscription {
+        check(!closed.get()) { "InMemoryEventStream is closed" }
         val subscriberId = nextSubscriberId.getAndIncrement()
         subscribers[subscriberId] = Subscriber(topic = topic, routingTagPrefix = routingTagPrefix, listener = listener)
         return Subscription {
             subscribers.remove(subscriberId)
         }
+    }
+
+    override fun close() {
+        if (!closed.compareAndSet(false, true)) {
+            return
+        }
+        worker.interrupt()
     }
 }

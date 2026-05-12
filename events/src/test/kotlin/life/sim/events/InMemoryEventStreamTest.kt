@@ -5,12 +5,13 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class InMemoryEventStreamTest {
     @Test
     fun `publish delivers events to subscribers listening to all events`() {
-        val stream = InMemoryEventStream()
+        InMemoryEventStream().use { stream ->
         val received = CopyOnWriteArrayList<Event>()
         val event = testEvent(topic = "biology/bonds/", routingTags = setOf("bonds/succeeded/"))
         val delivery = CountDownLatch(1)
@@ -23,11 +24,12 @@ class InMemoryEventStreamTest {
 
         assertTrue(delivery.await(1, TimeUnit.SECONDS))
         assertEquals(listOf(event), received.toList())
+        }
     }
 
     @Test
     fun `publish only delivers events to matching topic subscribers`() {
-        val stream = InMemoryEventStream()
+        InMemoryEventStream().use { stream ->
         val received = CopyOnWriteArrayList<Event>()
         val matching = testEvent(topic = "biology/bonds/")
         val other = testEvent(id = "evt-2", topic = "simulator/input/")
@@ -43,11 +45,12 @@ class InMemoryEventStreamTest {
         assertTrue(delivery.await(1, TimeUnit.SECONDS))
         Thread.sleep(50)
         assertEquals(listOf(matching), received.toList())
+        }
     }
 
     @Test
     fun `publish only delivers events to subscribers with matching routing tag prefix`() {
-        val stream = InMemoryEventStream()
+        InMemoryEventStream().use { stream ->
         val received = CopyOnWriteArrayList<Event>()
         val matching = testEvent(routingTags = setOf("biology/", "bonds/succeeded/", "entities/molecule-123/"))
         val other = testEvent(id = "evt-2", routingTags = setOf("bindings/started/"))
@@ -63,11 +66,12 @@ class InMemoryEventStreamTest {
         assertTrue(delivery.await(1, TimeUnit.SECONDS))
         Thread.sleep(50)
         assertEquals(listOf(matching), received.toList())
+        }
     }
 
     @Test
     fun `publish only delivers events when topic and routing tag prefix both match`() {
-        val stream = InMemoryEventStream()
+        InMemoryEventStream().use { stream ->
         val received = CopyOnWriteArrayList<Event>()
         val matching = testEvent(topic = "biology/bonds/", routingTags = setOf("bonds/succeeded/"))
         val wrongTopic = testEvent(id = "evt-2", topic = "simulator/input/", routingTags = setOf("bonds/succeeded/"))
@@ -85,11 +89,12 @@ class InMemoryEventStreamTest {
         assertTrue(delivery.await(1, TimeUnit.SECONDS))
         Thread.sleep(50)
         assertEquals(listOf(matching), received.toList())
+        }
     }
 
     @Test
     fun `unsubscribed listeners no longer receive events`() {
-        val stream = InMemoryEventStream()
+        InMemoryEventStream().use { stream ->
         val received = CopyOnWriteArrayList<Event>()
         val event = testEvent()
 
@@ -99,11 +104,12 @@ class InMemoryEventStreamTest {
 
         Thread.sleep(50)
         assertEquals(emptyList(), received.toList())
+        }
     }
 
     @Test
     fun `publish reaches multiple matching subscribers`() {
-        val stream = InMemoryEventStream()
+        InMemoryEventStream().use { stream ->
         val first = CopyOnWriteArrayList<Event>()
         val second = CopyOnWriteArrayList<Event>()
         val event = testEvent(topic = "biology/bonds/", routingTags = setOf("bonds/succeeded/"))
@@ -123,6 +129,38 @@ class InMemoryEventStreamTest {
         assertTrue(delivery.await(1, TimeUnit.SECONDS))
         assertEquals(listOf(event), first.toList())
         assertEquals(listOf(event), second.toList())
+        }
+    }
+
+    @Test
+    fun `listener exception does not stop future dispatch`() {
+        InMemoryEventStream().use { stream ->
+            val received = CopyOnWriteArrayList<String>()
+            val delivery = CountDownLatch(1)
+
+            stream.subscribe(listener = EventListener { throw IllegalStateException("boom") })
+            stream.subscribe(listener = EventListener {
+                received.add(it.id)
+                delivery.countDown()
+            })
+
+            stream.publish(testEvent(id = "evt-1"))
+            stream.publish(testEvent(id = "evt-2"))
+
+            assertTrue(delivery.await(1, TimeUnit.SECONDS))
+            Thread.sleep(50)
+            assertEquals(listOf("evt-1", "evt-2"), received.toList())
+        }
+    }
+
+    @Test
+    fun `publishing after close fails`() {
+        val stream = InMemoryEventStream()
+        stream.close()
+
+        assertFailsWith<IllegalStateException> {
+            stream.publish(testEvent())
+        }
     }
 
     private data class TestEvent(
