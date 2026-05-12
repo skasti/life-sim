@@ -66,6 +66,7 @@ to evolve quickly.
 ```
 life-sim/
 ├─ biology/      # Sequence primitives, molecules, interactions, proteins
+├─ events/       # Generic event model and in-memory event stream
 ├─ simulator/    # World/runtime module (early-stage scaffold)
 └─ docs/         # Design notes and evolving documentation
 ```
