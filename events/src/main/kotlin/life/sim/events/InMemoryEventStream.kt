@@ -1,6 +1,12 @@
 package life.sim.events
 
-class InMemoryEventStream : EventStream {
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.atomic.AtomicLong
+
+class InMemoryEventStream(
+    workerCount: Int = 1,
+) : EventStream {
     private data class Subscriber(
         val topic: String?,
         val routingTagPrefix: String?,
@@ -13,14 +19,31 @@ class InMemoryEventStream : EventStream {
         }
     }
 
-    private val subscribers = linkedMapOf<Long, Subscriber>()
-    private var nextSubscriberId = 0L
+    private val subscribers = ConcurrentHashMap<Long, Subscriber>()
+    private val nextSubscriberId = AtomicLong(0)
+    private val eventQueue = LinkedBlockingQueue<Event>()
+
+    init {
+        require(workerCount > 0) { "workerCount must be greater than 0" }
+        repeat(workerCount) {
+            Thread {
+                while (true) {
+                    val event = eventQueue.take()
+                    subscribers.values
+                        .asSequence()
+                        .filter { it.matches(event) }
+                        .forEach { it.listener.onEvent(event) }
+                }
+            }.apply {
+                isDaemon = true
+                name = "in-memory-event-stream-worker-$it"
+                start()
+            }
+        }
+    }
 
     override fun publish(event: Event) {
-        subscribers.values
-            .toList()
-            .filter { it.matches(event) }
-            .forEach { it.listener.onEvent(event) }
+        eventQueue.put(event)
     }
 
     override fun subscribe(
@@ -28,7 +51,7 @@ class InMemoryEventStream : EventStream {
         routingTagPrefix: String?,
         listener: EventListener,
     ): Subscription {
-        val subscriberId = nextSubscriberId++
+        val subscriberId = nextSubscriberId.getAndIncrement()
         subscribers[subscriberId] = Subscriber(topic = topic, routingTagPrefix = routingTagPrefix, listener = listener)
         return Subscription {
             subscribers.remove(subscriberId)

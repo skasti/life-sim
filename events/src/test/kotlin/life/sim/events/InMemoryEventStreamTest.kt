@@ -1,92 +1,128 @@
 package life.sim.events
 
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class InMemoryEventStreamTest {
     @Test
     fun `publish delivers events to subscribers listening to all events`() {
         val stream = InMemoryEventStream()
-        val received = mutableListOf<Event>()
+        val received = CopyOnWriteArrayList<Event>()
         val event = testEvent(topic = "biology/bonds/", routingTags = setOf("bonds/succeeded/"))
+        val delivery = CountDownLatch(1)
 
-        stream.subscribe(listener = EventListener { received.add(it) })
+        stream.subscribe(listener = EventListener {
+            received.add(it)
+            delivery.countDown()
+        })
         stream.publish(event)
 
-        assertEquals(listOf(event), received)
+        assertTrue(delivery.await(1, TimeUnit.SECONDS))
+        assertEquals(listOf(event), received.toList())
     }
 
     @Test
     fun `publish only delivers events to matching topic subscribers`() {
         val stream = InMemoryEventStream()
-        val received = mutableListOf<Event>()
+        val received = CopyOnWriteArrayList<Event>()
         val matching = testEvent(topic = "biology/bonds/")
         val other = testEvent(id = "evt-2", topic = "simulator/input/")
+        val delivery = CountDownLatch(1)
 
-        stream.subscribe(topic = "biology/bonds/", listener = EventListener { received.add(it) })
+        stream.subscribe(topic = "biology/bonds/", listener = EventListener {
+            received.add(it)
+            delivery.countDown()
+        })
         stream.publish(matching)
         stream.publish(other)
 
-        assertEquals(listOf(matching), received)
+        assertTrue(delivery.await(1, TimeUnit.SECONDS))
+        Thread.sleep(50)
+        assertEquals(listOf(matching), received.toList())
     }
 
     @Test
     fun `publish only delivers events to subscribers with matching routing tag prefix`() {
         val stream = InMemoryEventStream()
-        val received = mutableListOf<Event>()
+        val received = CopyOnWriteArrayList<Event>()
         val matching = testEvent(routingTags = setOf("biology/", "bonds/succeeded/", "entities/molecule-123/"))
         val other = testEvent(id = "evt-2", routingTags = setOf("bindings/started/"))
+        val delivery = CountDownLatch(1)
 
-        stream.subscribe(routingTagPrefix = "bonds/", listener = EventListener { received.add(it) })
+        stream.subscribe(routingTagPrefix = "bonds/", listener = EventListener {
+            received.add(it)
+            delivery.countDown()
+        })
         stream.publish(matching)
         stream.publish(other)
 
-        assertEquals(listOf(matching), received)
+        assertTrue(delivery.await(1, TimeUnit.SECONDS))
+        Thread.sleep(50)
+        assertEquals(listOf(matching), received.toList())
     }
 
     @Test
     fun `publish only delivers events when topic and routing tag prefix both match`() {
         val stream = InMemoryEventStream()
-        val received = mutableListOf<Event>()
+        val received = CopyOnWriteArrayList<Event>()
         val matching = testEvent(topic = "biology/bonds/", routingTags = setOf("bonds/succeeded/"))
         val wrongTopic = testEvent(id = "evt-2", topic = "simulator/input/", routingTags = setOf("bonds/succeeded/"))
         val wrongTag = testEvent(id = "evt-3", topic = "biology/bonds/", routingTags = setOf("bindings/started/"))
+        val delivery = CountDownLatch(1)
 
-        stream.subscribe(topic = "biology/bonds/", routingTagPrefix = "bonds/", listener = EventListener { received.add(it) })
+        stream.subscribe(topic = "biology/bonds/", routingTagPrefix = "bonds/", listener = EventListener {
+            received.add(it)
+            delivery.countDown()
+        })
         stream.publish(matching)
         stream.publish(wrongTopic)
         stream.publish(wrongTag)
 
-        assertEquals(listOf(matching), received)
+        assertTrue(delivery.await(1, TimeUnit.SECONDS))
+        Thread.sleep(50)
+        assertEquals(listOf(matching), received.toList())
     }
 
     @Test
     fun `unsubscribed listeners no longer receive events`() {
         val stream = InMemoryEventStream()
-        val received = mutableListOf<Event>()
+        val received = CopyOnWriteArrayList<Event>()
         val event = testEvent()
 
         val subscription = stream.subscribe(listener = EventListener { received.add(it) })
         subscription.unsubscribe()
         stream.publish(event)
 
-        assertEquals(emptyList(), received)
+        Thread.sleep(50)
+        assertEquals(emptyList(), received.toList())
     }
 
     @Test
     fun `publish reaches multiple matching subscribers`() {
         val stream = InMemoryEventStream()
-        val first = mutableListOf<Event>()
-        val second = mutableListOf<Event>()
+        val first = CopyOnWriteArrayList<Event>()
+        val second = CopyOnWriteArrayList<Event>()
         val event = testEvent(topic = "biology/bonds/", routingTags = setOf("bonds/succeeded/"))
+        val delivery = CountDownLatch(2)
 
-        stream.subscribe(topic = "biology/bonds/", listener = EventListener { first.add(it) })
-        stream.subscribe(routingTagPrefix = "bonds/", listener = EventListener { second.add(it) })
+        stream.subscribe(topic = "biology/bonds/", listener = EventListener {
+            first.add(it)
+            delivery.countDown()
+        })
+        stream.subscribe(routingTagPrefix = "bonds/", listener = EventListener {
+            second.add(it)
+            delivery.countDown()
+        })
 
         stream.publish(event)
 
-        assertEquals(listOf(event), first)
-        assertEquals(listOf(event), second)
+        assertTrue(delivery.await(1, TimeUnit.SECONDS))
+        assertEquals(listOf(event), first.toList())
+        assertEquals(listOf(event), second.toList())
     }
 
     private data class TestEvent(

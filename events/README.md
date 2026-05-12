@@ -17,7 +17,7 @@ is designed to be reused by both modules and by future transports/recorders.
 
 ## In-memory stream
 
-`InMemoryEventStream` is a synchronous in-memory implementation that supports:
+`InMemoryEventStream` is an asynchronous in-memory implementation that enqueues published events and uses background worker threads to dispatch to subscribers. It supports:
 
 - subscribing to all events,
 - filtering by exact topic,
