@@ -18,29 +18,22 @@ class InMemoryEventStream : EventStream, AutoCloseable {
         }
     }
 
+    private sealed interface QueueItem {
+        data class EventItem(val event: Event) : QueueItem
+        data object Stop : QueueItem
+    }
+
     private val subscribers = ConcurrentHashMap<Long, Subscriber>()
     private val nextSubscriberId = AtomicLong(0)
-    private val eventQueue = LinkedBlockingQueue<Event>()
+    private val eventQueue = LinkedBlockingQueue<QueueItem>()
     private val closed = AtomicBoolean(false)
+    private val lifecycleLock = Any()
 
     private val worker = Thread {
         while (true) {
-            try {
-                val event = eventQueue.take()
-                subscribers.values
-                    .asSequence()
-                    .filter { it.matches(event) }
-                    .forEach {
-                        try {
-                            it.listener.onEvent(event)
-                        } catch (_: Exception) {
-                            // One listener failing must not stop dispatch for other listeners or future events.
-                        }
-                    }
-            } catch (_: InterruptedException) {
-                if (closed.get()) {
-                    return@Thread
-                }
+            when (val item = eventQueue.take()) {
+                is QueueItem.EventItem -> dispatch(item.event)
+                QueueItem.Stop -> return@Thread
             }
         }
     }.apply {
@@ -50,8 +43,10 @@ class InMemoryEventStream : EventStream, AutoCloseable {
     }
 
     override fun publish(event: Event) {
-        check(!closed.get()) { "InMemoryEventStream is closed" }
-        eventQueue.put(event)
+        synchronized(lifecycleLock) {
+            check(!closed.get()) { "InMemoryEventStream is closed" }
+            eventQueue.put(QueueItem.EventItem(event))
+        }
     }
 
     override fun subscribe(
@@ -68,9 +63,24 @@ class InMemoryEventStream : EventStream, AutoCloseable {
     }
 
     override fun close() {
-        if (!closed.compareAndSet(false, true)) {
-            return
+        synchronized(lifecycleLock) {
+            if (!closed.compareAndSet(false, true)) {
+                return
+            }
+            eventQueue.put(QueueItem.Stop)
         }
-        worker.interrupt()
+    }
+
+    private fun dispatch(event: Event) {
+        subscribers.values
+            .asSequence()
+            .filter { it.matches(event) }
+            .forEach {
+                try {
+                    it.listener.onEvent(event)
+                } catch (_: Exception) {
+                    // One listener failing must not stop dispatch for other listeners or future events.
+                }
+            }
     }
 }
