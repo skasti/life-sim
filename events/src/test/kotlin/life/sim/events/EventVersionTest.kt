@@ -23,4 +23,17 @@ class EventVersionTest {
             EventVersion.parse("1.0")
         }
     }
+
+    @Test
+    fun `constructor rejects negative version components`() {
+        assertFailsWith<IllegalArgumentException> {
+            EventVersion(-1, 0, 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            EventVersion(0, -1, 0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            EventVersion(0, 0, -1)
+        }
+    }
 }
