@@ -16,7 +16,7 @@ Planned components:
 
 ## Binding availability events
 
-The biology module now emits domain event types for binding availability:
+The biology module now defines domain event types for binding availability:
 
 - `BindingEndpointAvailable` for concrete endpoint availability
 - `BindingSurfaceAvailable` for searchable surface availability
