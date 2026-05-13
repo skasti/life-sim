@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":events"))
+
     testImplementation(kotlin("test"))
 }
 

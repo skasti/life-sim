@@ -12,3 +12,14 @@ Planned components:
 - Resource pools, decay, and recycling helpers
 - Unit tests for interaction and reaction behavior
 
+
+
+## Binding availability events
+
+The biology module now defines domain event types for binding availability:
+
+- `BindingEndpointAvailable` for concrete endpoint availability
+- `BindingSurfaceAvailable` for searchable surface availability
+- `BindingCapabilities` for compatibility metadata (bond types, sequence pattern, affinity)
+
+These events implement the generic `events` module `Event` contract while keeping biology logic simulator-agnostic.
