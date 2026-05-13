@@ -28,3 +28,8 @@ is designed to be reused by both modules and by future transports/recorders.
 - filtering by routing tag prefix,
 - combined topic + routing tag filtering,
 - unsubscribing.
+
+
+## Event version helper
+
+Use `EventVersion(major, minor, revision)` and `EventVersion.parse("x.y.z")` to consistently format and validate event version strings while concrete events still expose `Event.version` as `String`.
