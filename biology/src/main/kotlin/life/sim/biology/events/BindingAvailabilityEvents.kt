@@ -9,7 +9,13 @@ data class BindingCapabilities(
     val supportedBondTypes: Set<String> = emptySet(),
     val sequencePattern: NucleotideSequence? = null,
     val affinity: Double? = null,
-)
+) {
+    init {
+        require(affinity == null || (affinity.isFinite() && affinity in 0.0..1.0)) {
+            "BindingCapabilities.affinity must be finite and within 0.0..1.0 when provided"
+        }
+    }
+}
 
 data class BindingEndpointAvailable(
     override val id: String,
