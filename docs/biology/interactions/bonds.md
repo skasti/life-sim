@@ -129,7 +129,7 @@ classDiagram
         +overlaps(other)
     }
 
-    class MoleculeId {
+    class EntityId {
         +Long value
     }
 
@@ -141,7 +141,7 @@ classDiagram
     }
 
     class BindingSurface {
-        +MoleculeId moleculeId
+        +EntityId moleculeId
         +BindingStrand strand
         +NucleotideSequence sequence
         +Int length
@@ -152,7 +152,7 @@ classDiagram
     class BindingSite {
         +BindingSurface surface
         +SequenceRange range
-        +MoleculeId moleculeId
+        +EntityId moleculeId
         +BindingStrand strand
         +NucleotideSequence sequence
         +sameSurfaceAs(other)
@@ -161,7 +161,7 @@ classDiagram
 
     class BondEndpoint {
         <<interface>>
-        +MoleculeId moleculeId
+        +EntityId moleculeId
         +BindingSite? site
     }
 
@@ -170,7 +170,7 @@ classDiagram
     }
 
     class WholeMoleculeEndpoint {
-        +MoleculeId moleculeId
+        +EntityId moleculeId
     }
 
     class Bond {
@@ -195,7 +195,7 @@ classDiagram
 
     BondEndpoint <|.. SiteEndpoint
     BondEndpoint <|.. WholeMoleculeEndpoint
-    BindingSurface --> MoleculeId
+    BindingSurface --> EntityId
     BindingSurface --> BindingStrand
     BindingSite --> BindingSurface
     BindingSite --> SequenceRange
@@ -248,8 +248,8 @@ Conflict resolution still happens inside `ProteinBinding` by mutating `BondRegis
 ## Example: creating different bond kinds
 
 ```kotlin
-val dnaSurface = dna.forwardBindingSurface(MoleculeId(11))
-val rnaSurface = mrna.bindingSurface(MoleculeId(12))
+val dnaSurface = dna.forwardBindingSurface(EntityId(11))
+val rnaSurface = mrna.bindingSurface(EntityId(12))
 
 val siteToSite = Bond(
     left = SiteEndpoint(dnaSurface.site(3, 8)),
@@ -260,14 +260,14 @@ val siteToSite = Bond(
 
 val siteToWhole = Bond(
     left = SiteEndpoint(dnaSurface.site(8, 12)),
-    right = WholeMoleculeEndpoint(MoleculeId(99)),
+    right = WholeMoleculeEndpoint(EntityId(99)),
     strength = 0.7,
     decayPerTick = 0.08,
 )
 
 val wholeToWhole = Bond(
-    left = WholeMoleculeEndpoint(MoleculeId(99)),
-    right = WholeMoleculeEndpoint(MoleculeId(100)),
+    left = WholeMoleculeEndpoint(EntityId(99)),
+    right = WholeMoleculeEndpoint(EntityId(100)),
     strength = 0.6,
     decayPerTick = 0.03,
 )

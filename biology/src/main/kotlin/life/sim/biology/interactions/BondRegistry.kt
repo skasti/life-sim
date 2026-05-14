@@ -30,7 +30,7 @@ class BondRegistry(
 
     fun toList(): List<Bond> = bonds.toList()
 
-    fun bondsFor(moleculeId: MoleculeId): List<Bond> = bonds.filter { it.involves(moleculeId) }
+    fun bondsFor(moleculeId: EntityId): List<Bond> = bonds.filter { it.involves(moleculeId) }
 
     fun bondsInvolving(site: BindingSite): List<Bond> =
         bonds.filter { bond -> bond.bindingSites().any { it == site } }

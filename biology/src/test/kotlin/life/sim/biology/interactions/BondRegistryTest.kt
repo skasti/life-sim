@@ -11,8 +11,8 @@ import kotlin.test.assertTrue
 class BondRegistryTest {
     @Test
     fun `registry supports site to site, site to whole, and whole to whole bonds`() {
-        val firstSurface = MRna.of("AUGCUA").bindingSurface(MoleculeId(11))
-        val secondSurface = MRna.of("CGAAUU").bindingSurface(MoleculeId(12))
+        val firstSurface = MRna.of("AUGCUA").bindingSurface(EntityId(11))
+        val secondSurface = MRna.of("CGAAUU").bindingSurface(EntityId(12))
 
         val siteToSite = Bond(
             left = SiteEndpoint(firstSurface.site(1, 4)),
@@ -22,36 +22,36 @@ class BondRegistryTest {
         )
         val siteToWhole = Bond(
             left = SiteEndpoint(firstSurface.site(4, 6)),
-            right = WholeMoleculeEndpoint(MoleculeId(13)),
+            right = WholeMoleculeEndpoint(EntityId(13)),
             strength = 0.9,
             decayPerTick = 0.2,
         )
         val wholeToWhole = Bond(
-            left = WholeMoleculeEndpoint(MoleculeId(13)),
-            right = WholeMoleculeEndpoint(MoleculeId(14)),
+            left = WholeMoleculeEndpoint(EntityId(13)),
+            right = WholeMoleculeEndpoint(EntityId(14)),
             strength = 0.7,
             decayPerTick = 0.05,
         )
 
         val registry = BondRegistry(listOf(siteToSite, siteToWhole, wholeToWhole))
 
-        assertEquals(listOf(siteToSite, siteToWhole), registry.bondsFor(MoleculeId(11)))
-        assertEquals(listOf(siteToWhole, wholeToWhole), registry.bondsFor(MoleculeId(13)))
-        assertEquals(listOf(wholeToWhole), registry.bondsFor(MoleculeId(14)))
+        assertEquals(listOf(siteToSite, siteToWhole), registry.bondsFor(EntityId(11)))
+        assertEquals(listOf(siteToWhole, wholeToWhole), registry.bondsFor(EntityId(13)))
+        assertEquals(listOf(wholeToWhole), registry.bondsFor(EntityId(14)))
     }
 
     @Test
     fun `registry overlap queries only consider site-aware endpoints`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(17))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(17))
         val siteToWhole = Bond(
             left = SiteEndpoint(surface.site(1, 4)),
-            right = WholeMoleculeEndpoint(MoleculeId(21)),
+            right = WholeMoleculeEndpoint(EntityId(21)),
             strength = 0.9,
             decayPerTick = 0.2,
         )
         val wholeToWhole = Bond(
-            left = WholeMoleculeEndpoint(MoleculeId(21)),
-            right = WholeMoleculeEndpoint(MoleculeId(22)),
+            left = WholeMoleculeEndpoint(EntityId(21)),
+            right = WholeMoleculeEndpoint(EntityId(22)),
             strength = 0.9,
             decayPerTick = 0.2,
         )
@@ -59,36 +59,36 @@ class BondRegistryTest {
 
         assertEquals(listOf(siteToWhole), registry.overlapping(surface.site(2, 3)))
         assertTrue(registry.overlapping(surface.site(5, 5)).isEmpty())
-        assertTrue(registry.overlapping(MRna.of("CC").bindingSurface(MoleculeId(22)).site(0, 2)).isEmpty())
+        assertTrue(registry.overlapping(MRna.of("CC").bindingSurface(EntityId(22)).site(0, 2)).isEmpty())
     }
 
     @Test
     fun `registry can query bonds by exact site and by surface`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(15))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(15))
         val exactSite = surface.site(1, 4)
         val otherSite = surface.site(4, 6)
         val rightOnlySite = surface.site(0, 2)
         val first = Bond(
             left = SiteEndpoint(exactSite),
-            right = WholeMoleculeEndpoint(MoleculeId(99)),
+            right = WholeMoleculeEndpoint(EntityId(99)),
             strength = 0.8,
             decayPerTick = 0.1,
         )
         val second = Bond(
             left = SiteEndpoint(otherSite),
-            right = WholeMoleculeEndpoint(MoleculeId(100)),
+            right = WholeMoleculeEndpoint(EntityId(100)),
             strength = 0.8,
             decayPerTick = 0.1,
         )
         val siteOnRight = Bond(
-            left = WholeMoleculeEndpoint(MoleculeId(102)),
+            left = WholeMoleculeEndpoint(EntityId(102)),
             right = SiteEndpoint(rightOnlySite),
             strength = 0.8,
             decayPerTick = 0.1,
         )
         val wholeOnly = Bond(
-            left = WholeMoleculeEndpoint(MoleculeId(15)),
-            right = WholeMoleculeEndpoint(MoleculeId(101)),
+            left = WholeMoleculeEndpoint(EntityId(15)),
+            right = WholeMoleculeEndpoint(EntityId(101)),
             strength = 0.8,
             decayPerTick = 0.1,
         )
@@ -102,16 +102,16 @@ class BondRegistryTest {
 
     @Test
     fun `registry ignores inactive bonds supplied at construction`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(15))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(15))
         val active = Bond(
             left = SiteEndpoint(surface.site(1, 4)),
-            right = WholeMoleculeEndpoint(MoleculeId(31)),
+            right = WholeMoleculeEndpoint(EntityId(31)),
             strength = 0.8,
             decayPerTick = 0.1,
         )
         val inactive = Bond(
             left = SiteEndpoint(surface.site(4, 6)),
-            right = WholeMoleculeEndpoint(MoleculeId(32)),
+            right = WholeMoleculeEndpoint(EntityId(32)),
             strength = 0.0,
             decayPerTick = 0.2,
         )
@@ -119,17 +119,17 @@ class BondRegistryTest {
         val registry = BondRegistry(listOf(active, inactive))
 
         assertEquals(listOf(active), registry.toList())
-        assertEquals(listOf(active), registry.bondsFor(MoleculeId(15)))
+        assertEquals(listOf(active), registry.bondsFor(EntityId(15)))
         assertTrue(registry.overlapping(surface.site(4, 6)).isEmpty())
         assertEquals(listOf(active), registry.bondsOnSurface(surface.site(0, 1)))
     }
 
     @Test
     fun `registry add ignores inactive bonds`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(16))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(16))
         val inactive = Bond(
             left = SiteEndpoint(surface.site(1, 4)),
-            right = WholeMoleculeEndpoint(MoleculeId(90)),
+            right = WholeMoleculeEndpoint(EntityId(90)),
             strength = 0.0,
             decayPerTick = 0.1,
         )
@@ -139,17 +139,17 @@ class BondRegistryTest {
 
         assertEquals(inactive, returned)
         assertTrue(registry.isEmpty())
-        assertTrue(registry.bondsFor(MoleculeId(16)).isEmpty())
+        assertTrue(registry.bondsFor(EntityId(16)).isEmpty())
         assertTrue(registry.bondsOnSurface(surface.site(0, 1)).isEmpty())
         assertTrue(registry.overlapping(surface.site(1, 4)).isEmpty())
     }
 
     @Test
     fun `registry stores only one active entry for mirrored bonds`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(18))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(18))
         val bond = Bond(
             left = SiteEndpoint(surface.site(1, 4)),
-            right = WholeMoleculeEndpoint(MoleculeId(23)),
+            right = WholeMoleculeEndpoint(EntityId(23)),
             strength = 0.9,
             decayPerTick = 0.1,
         )
@@ -170,16 +170,16 @@ class BondRegistryTest {
 
     @Test
     fun `registry iterator is a snapshot and is unaffected by later mutations`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(24))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(24))
         val first = Bond(
             left = SiteEndpoint(surface.site(0, 2)),
-            right = WholeMoleculeEndpoint(MoleculeId(25)),
+            right = WholeMoleculeEndpoint(EntityId(25)),
             strength = 0.8,
             decayPerTick = 0.1,
         )
         val second = Bond(
             left = SiteEndpoint(surface.site(2, 4)),
-            right = WholeMoleculeEndpoint(MoleculeId(26)),
+            right = WholeMoleculeEndpoint(EntityId(26)),
             strength = 0.7,
             decayPerTick = 0.1,
         )
@@ -194,16 +194,16 @@ class BondRegistryTest {
 
     @Test
     fun `registry decay removes inactive bonds and keeps surviving strength`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(12))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(12))
         val transient = Bond(
             left = SiteEndpoint(surface.site(0, 2)),
-            right = WholeMoleculeEndpoint(MoleculeId(41)),
+            right = WholeMoleculeEndpoint(EntityId(41)),
             strength = 0.1,
             decayPerTick = 0.1,
         )
         val stable = Bond(
             left = SiteEndpoint(surface.site(2, 5)),
-            right = WholeMoleculeEndpoint(MoleculeId(42)),
+            right = WholeMoleculeEndpoint(EntityId(42)),
             strength = 0.9,
             decayPerTick = 0.2,
         )
@@ -219,8 +219,8 @@ class BondRegistryTest {
     @Test
     fun `bond decay rejects negative tick counts`() {
         val bond = Bond(
-            left = SiteEndpoint(MRna.of("AUG").bindingSurface(MoleculeId(13)).site(0, 2)),
-            right = WholeMoleculeEndpoint(MoleculeId(50)),
+            left = SiteEndpoint(MRna.of("AUG").bindingSurface(EntityId(13)).site(0, 2)),
+            right = WholeMoleculeEndpoint(EntityId(50)),
             strength = 1.0,
             decayPerTick = 0.1,
         )
@@ -235,8 +235,8 @@ class BondRegistryTest {
     @Test
     fun `bond reports whether it is still active`() {
         val bond = Bond(
-            left = SiteEndpoint(MRna.of("AUG").bindingSurface(MoleculeId(14)).site(0, 2)),
-            right = WholeMoleculeEndpoint(MoleculeId(51)),
+            left = SiteEndpoint(MRna.of("AUG").bindingSurface(EntityId(14)).site(0, 2)),
+            right = WholeMoleculeEndpoint(EntityId(51)),
             strength = 0.0,
             decayPerTick = 0.1,
         )

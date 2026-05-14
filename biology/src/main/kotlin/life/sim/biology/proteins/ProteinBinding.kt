@@ -4,7 +4,7 @@ import life.sim.biology.interactions.BindingMatcher
 import life.sim.biology.interactions.BindingSurface
 import life.sim.biology.interactions.Bond
 import life.sim.biology.interactions.BondRegistry
-import life.sim.biology.interactions.MoleculeId
+import life.sim.biology.interactions.EntityId
 import life.sim.biology.interactions.SiteEndpoint
 import life.sim.biology.interactions.WholeMoleculeEndpoint
 
@@ -16,7 +16,7 @@ object ProteinBinding {
     private const val CONFLICT_EPSILON = 1.0e-9
 
     fun tryBind(
-        proteinId: MoleculeId,
+        proteinId: EntityId,
         binder: SequenceBinder,
         target: BindingSurface,
         registry: BondRegistry,

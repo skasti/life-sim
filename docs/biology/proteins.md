@@ -13,7 +13,7 @@ Protein-package types:
 - `ProteinInterpreter` — maps `Polypeptide` motifs to interpreted `ProteinDomain` hits
 - `ProteinDomain` — one interpreted motif hit with source span and capabilities
 - `MolecularCapability` — sealed runtime capability model (`SequenceBinder`, `Cutter`, `Ligase`, `Blocker`)
-- `ActiveProtein` — first-class runtime protein value with stable `MoleculeId`, source chain, interpreted domains, and flattened capabilities
+- `ActiveProtein` — first-class runtime protein value with stable `EntityId`, source chain, interpreted domains, and flattened capabilities
 - `ProteinBinding` — helper that turns `SequenceBinder` capabilities into concrete `Bond` associations
 
 ---
@@ -69,7 +69,7 @@ Each capability also exposes a string `kind` value for lightweight runtime class
 
 `ActiveProtein` is the runtime protein aggregate:
 
-- `moleculeId: MoleculeId`
+- `moleculeId: EntityId`
 - `source: Polypeptide`
 - `domains: List<ProteinDomain>`
 - `capabilities: List<MolecularCapability>`

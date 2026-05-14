@@ -9,8 +9,8 @@ import kotlin.test.assertNotEquals
 class BondTest {
     @Test
     fun `swapped site to site endpoints compare equal and share hash code`() {
-        val firstSurface = MRna.of("AUGCUA").bindingSurface(MoleculeId(1))
-        val secondSurface = MRna.of("CGAAUU").bindingSurface(MoleculeId(2))
+        val firstSurface = MRna.of("AUGCUA").bindingSurface(EntityId(1))
+        val secondSurface = MRna.of("CGAAUU").bindingSurface(EntityId(2))
 
         val first = Bond(
             left = SiteEndpoint(firstSurface.site(1, 4)),
@@ -31,10 +31,10 @@ class BondTest {
 
     @Test
     fun `swapped site to whole endpoints compare equal and share hash code`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(3))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(3))
         val siteToWhole = Bond(
             left = SiteEndpoint(surface.site(2, 5)),
-            right = WholeMoleculeEndpoint(MoleculeId(4)),
+            right = WholeMoleculeEndpoint(EntityId(4)),
             strength = 0.7,
             decayPerTick = 0.05,
         )
@@ -52,8 +52,8 @@ class BondTest {
     @Test
     fun `swapped whole to whole endpoints compare equal and share hash code`() {
         val first = Bond(
-            left = WholeMoleculeEndpoint(MoleculeId(9)),
-            right = WholeMoleculeEndpoint(MoleculeId(10)),
+            left = WholeMoleculeEndpoint(EntityId(9)),
+            right = WholeMoleculeEndpoint(EntityId(10)),
             strength = 0.6,
             decayPerTick = 0.03,
         )
@@ -71,8 +71,8 @@ class BondTest {
     @Test
     fun `different strength still makes mirrored bonds unequal`() {
         val first = Bond(
-            left = WholeMoleculeEndpoint(MoleculeId(11)),
-            right = WholeMoleculeEndpoint(MoleculeId(12)),
+            left = WholeMoleculeEndpoint(EntityId(11)),
+            right = WholeMoleculeEndpoint(EntityId(12)),
             strength = 0.6,
             decayPerTick = 0.03,
         )
@@ -89,8 +89,8 @@ class BondTest {
     @Test
     fun `different decay still makes mirrored bonds unequal`() {
         val first = Bond(
-            left = WholeMoleculeEndpoint(MoleculeId(13)),
-            right = WholeMoleculeEndpoint(MoleculeId(14)),
+            left = WholeMoleculeEndpoint(EntityId(13)),
+            right = WholeMoleculeEndpoint(EntityId(14)),
             strength = 0.6,
             decayPerTick = 0.03,
         )
@@ -107,14 +107,14 @@ class BondTest {
     @Test
     fun `signed zero values are compared consistently with hash code`() {
         val positiveZeroStrength = Bond(
-            left = WholeMoleculeEndpoint(MoleculeId(15)),
-            right = WholeMoleculeEndpoint(MoleculeId(16)),
+            left = WholeMoleculeEndpoint(EntityId(15)),
+            right = WholeMoleculeEndpoint(EntityId(16)),
             strength = 0.0,
             decayPerTick = 0.1,
         )
         val negativeZeroStrength = Bond(
-            left = WholeMoleculeEndpoint(MoleculeId(16)),
-            right = WholeMoleculeEndpoint(MoleculeId(15)),
+            left = WholeMoleculeEndpoint(EntityId(16)),
+            right = WholeMoleculeEndpoint(EntityId(15)),
             strength = -0.0,
             decayPerTick = 0.1,
         )

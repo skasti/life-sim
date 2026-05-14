@@ -25,12 +25,12 @@ class BindingMatcherTest {
 
     @Test
     fun `complementary match site returns a binding site on the target surface`() {
-        val surface = MRna.of("CCUACUAC").bindingSurface(MoleculeId(7))
+        val surface = MRna.of("CCUACUAC").bindingSurface(EntityId(7))
 
         val site = BindingMatcher.complementaryMatchSite(NucleotideSequence.of("AUG"), surface)
 
         assertNotNull(site)
-        assertEquals(MoleculeId(7), site.moleculeId)
+        assertEquals(EntityId(7), site.moleculeId)
         assertEquals(2, site.range.start)
         assertEquals(5, site.range.endExclusive)
         assertEquals(NucleotideSequence.of("UAC"), site.sequence)
@@ -38,7 +38,7 @@ class BindingMatcherTest {
 
     @Test
     fun `complementary match site returns null when no match exists`() {
-        val surface = MRna.of("CGUAAA").bindingSurface(MoleculeId(8))
+        val surface = MRna.of("CGUAAA").bindingSurface(EntityId(8))
 
         assertNull(BindingMatcher.complementaryMatchSite(NucleotideSequence.of("ACG"), surface))
     }
@@ -46,7 +46,7 @@ class BindingMatcherTest {
     @Test
     fun `complementary match sites yields sites in deterministic left to right order`() {
         val pattern = NucleotideSequence.of("AUG")
-        val surface = MRna.of("GGUACUACAA").bindingSurface(MoleculeId(9))
+        val surface = MRna.of("GGUACUACAA").bindingSurface(EntityId(9))
 
         val sites = BindingMatcher.complementaryMatchSites(pattern, surface).toList()
 

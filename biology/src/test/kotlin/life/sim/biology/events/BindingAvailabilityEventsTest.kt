@@ -15,7 +15,7 @@ class BindingAvailabilityEventsTest {
             source = "biology-test",
             parentCorrelationId = "parent-1",
             rootCorrelationId = "root-1",
-            endpoint = WholeMoleculeEndpoint(MoleculeId(123)),
+            endpoint = WholeMoleculeEndpoint(EntityId(123)),
             capabilities = BindingCapabilities(
                 supportedBondTypes = setOf("hydrogen"),
                 sequencePattern = NucleotideSequence.parse("AUGC"),
@@ -31,7 +31,7 @@ class BindingAvailabilityEventsTest {
             setOf("biology/", "bindings/", "bindings/available/", "entities/123/"),
             event.routingTags,
         )
-        assertEquals(MoleculeId(123), event.endpoint.moleculeId)
+        assertEquals(EntityId(123), event.endpoint.moleculeId)
         assertEquals(setOf("hydrogen"), event.capabilities.supportedBondTypes)
     }
 
@@ -43,7 +43,7 @@ class BindingAvailabilityEventsTest {
             parentCorrelationId = null,
             rootCorrelationId = "root-2",
             surface = BindingSurface(
-                moleculeId = MoleculeId(999),
+                moleculeId = EntityId(999),
                 strand = BindingStrand.SINGLE,
                 sequence = NucleotideSequence.parse("GGCA"),
             ),
@@ -58,7 +58,7 @@ class BindingAvailabilityEventsTest {
             setOf("biology/", "bindings/", "bindings/available/", "entities/999/"),
             event.routingTags,
         )
-        assertEquals(MoleculeId(999), event.surface.moleculeId)
+        assertEquals(EntityId(999), event.surface.moleculeId)
         assertEquals(0.4, event.capabilities.affinity)
     }
 }
