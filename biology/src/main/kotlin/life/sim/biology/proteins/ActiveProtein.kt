@@ -1,6 +1,6 @@
 package life.sim.biology.proteins
 
-import life.sim.biology.interactions.MoleculeId
+import life.sim.biology.interactions.EntityId
 import life.sim.biology.molecules.Polypeptide
 import java.util.Collections
 import kotlin.ConsistentCopyVisibility
@@ -10,7 +10,7 @@ import kotlin.ConsistentCopyVisibility
  */
 @ConsistentCopyVisibility
 data class ActiveProtein private constructor(
-    val moleculeId: MoleculeId,
+    val moleculeId: EntityId,
     val source: Polypeptide,
     val domains: List<ProteinDomain>,
 ) {
@@ -22,7 +22,7 @@ data class ActiveProtein private constructor(
          * Creates an [ActiveProtein] from already interpreted [domains] and flattens capability access.
          */
         fun fromDomains(
-            moleculeId: MoleculeId,
+            moleculeId: EntityId,
             source: Polypeptide,
             domains: List<ProteinDomain>,
         ): ActiveProtein {
@@ -45,7 +45,7 @@ data class ActiveProtein private constructor(
          * Interprets [source] and returns a first-class runtime protein molecule.
          */
         fun interpret(
-            moleculeId: MoleculeId,
+            moleculeId: EntityId,
             source: Polypeptide,
         ): ActiveProtein = fromDomains(
             moleculeId = moleculeId,

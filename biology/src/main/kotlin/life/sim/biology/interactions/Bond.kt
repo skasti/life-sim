@@ -4,7 +4,7 @@ package life.sim.biology.interactions
  * One endpoint of a runtime molecule association.
  */
 sealed interface BondEndpoint {
-    val moleculeId: MoleculeId
+    val moleculeId: EntityId
     val site: BindingSite?
 }
 
@@ -12,7 +12,7 @@ sealed interface BondEndpoint {
  * Endpoint that references only a whole molecule instance.
  */
 data class WholeMoleculeEndpoint(
-    override val moleculeId: MoleculeId,
+    override val moleculeId: EntityId,
 ) : BondEndpoint {
     override val site: BindingSite? = null
 }
@@ -23,7 +23,7 @@ data class WholeMoleculeEndpoint(
 data class SiteEndpoint(
     override val site: BindingSite,
 ) : BondEndpoint {
-    override val moleculeId: MoleculeId
+    override val moleculeId: EntityId
         get() = site.moleculeId
 }
 
@@ -47,7 +47,7 @@ data class Bond(
 
     fun isActive(): Boolean = strength > 0.0
 
-    fun involves(moleculeId: MoleculeId): Boolean =
+    fun involves(moleculeId: EntityId): Boolean =
         left.moleculeId == moleculeId || right.moleculeId == moleculeId
 
     fun bindingSites(): List<BindingSite> =

@@ -16,7 +16,7 @@ data class BindingSite(
         }
     }
 
-    val moleculeId: MoleculeId
+    val moleculeId: EntityId
         get() = surface.moleculeId
 
     val strand: BindingStrand

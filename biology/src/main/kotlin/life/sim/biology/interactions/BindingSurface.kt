@@ -7,7 +7,7 @@ import life.sim.biology.primitives.SequenceRange
  * An addressable strand of a molecule that can host bonds.
  */
 data class BindingSurface(
-    val moleculeId: MoleculeId,
+    val moleculeId: EntityId,
     val strand: BindingStrand,
     val sequence: NucleotideSequence,
 ) {

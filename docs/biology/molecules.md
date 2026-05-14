@@ -122,7 +122,7 @@ carry concrete sequence targets that can be used during runtime matching.
 
 When a protein needs to exist as an explicit runtime molecule, `ActiveProtein` can be created with:
 
-- `moleculeId: MoleculeId` (stable runtime identity)
+- `moleculeId: EntityId` (stable runtime identity)
 - `source: Polypeptide` (the source amino-acid chain)
 - `domains: List<ProteinDomain>` (preserved interpreted domains)
 - `capabilities: List<MolecularCapability>` (flattened capabilities derived from `domains`)
@@ -141,7 +141,7 @@ Runtime occupancy and binding state are modeled separately by the interactions l
 The `ProteinBinding.tryBind(...)` helper bridges interpretation to runtime associations by using a
 `SequenceBinder` pattern plus `BindingMatcher` to create and register concrete `Bond` values.
 `ActiveProtein` complements this by preserving interpreted domains/capabilities alongside the
-protein's stable runtime `MoleculeId`.
+protein's stable runtime `EntityId`.
 
 That separation allows molecule values to remain immutable while runtime systems track transient binding dynamics.
 

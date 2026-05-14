@@ -1,6 +1,6 @@
 package life.sim.biology.proteins
 
-import life.sim.biology.interactions.MoleculeId
+import life.sim.biology.interactions.EntityId
 import life.sim.biology.molecules.Polypeptide
 import life.sim.biology.primitives.NucleotideSequence
 
@@ -37,12 +37,12 @@ class ActiveProteinTest {
         )
 
         val activeProtein = ActiveProtein.fromDomains(
-            moleculeId = MoleculeId(42),
+            moleculeId = EntityId(42),
             source = source,
             domains = domains,
         )
 
-        assertEquals(MoleculeId(42), activeProtein.moleculeId)
+        assertEquals(EntityId(42), activeProtein.moleculeId)
         assertEquals(source, activeProtein.source)
         assertEquals(domains, activeProtein.domains)
         assertEquals(domains.flatMap(ProteinDomain::capabilities), activeProtein.capabilities)
@@ -53,11 +53,11 @@ class ActiveProteinTest {
         val source = Polypeptide.of("AAKRGKTTHEMHPPW")
 
         val activeProtein = ActiveProtein.interpret(
-            moleculeId = MoleculeId(9),
+            moleculeId = EntityId(9),
             source = source,
         )
 
-        assertEquals(MoleculeId(9), activeProtein.moleculeId)
+        assertEquals(EntityId(9), activeProtein.moleculeId)
         assertEquals(source, activeProtein.source)
         assertEquals(ProteinInterpreter.interpret(source), activeProtein.domains)
         assertEquals(activeProtein.domains.flatMap(ProteinDomain::capabilities), activeProtein.capabilities)
@@ -83,7 +83,7 @@ class ActiveProteinTest {
         )
 
         val activeProtein = ActiveProtein.fromDomains(
-            moleculeId = MoleculeId(77),
+            moleculeId = EntityId(77),
             source = source,
             domains = mutableDomains,
         )
@@ -127,7 +127,7 @@ class ActiveProteinTest {
         )
 
         val activeProtein = ActiveProtein.fromDomains(
-            moleculeId = MoleculeId(88),
+            moleculeId = EntityId(88),
             source = source,
             domains = mutableDomains,
         )
@@ -146,7 +146,7 @@ class ActiveProteinTest {
     fun `fromDomains exposes unmodifiable domain and capability lists`() {
         val source = Polypeptide.of("AAKRGKTTHEMH")
         val activeProtein = ActiveProtein.fromDomains(
-            moleculeId = MoleculeId(99),
+            moleculeId = EntityId(99),
             source = source,
             domains = listOf(
                 ProteinDomain(

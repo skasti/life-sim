@@ -15,10 +15,10 @@ import kotlin.test.assertTrue
 class BindingSiteTest {
     @Test
     fun `mrna binding surface creates single strand sites`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(1))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(1))
         val site = surface.site(1, 4)
 
-        assertEquals(MoleculeId(1), site.moleculeId)
+        assertEquals(EntityId(1), site.moleculeId)
         assertEquals(BindingStrand.SINGLE, site.strand)
         assertEquals(NucleotideSequence.of("UGC"), site.sequence)
     }
@@ -27,13 +27,13 @@ class BindingSiteTest {
     fun `dna exposes forward and reverse binding surfaces`() {
         val dna = Dna.of("AUGC", "UACG")
 
-        assertEquals(NucleotideSequence.parse(">AUGC>"), dna.forwardBindingSurface(MoleculeId(2)).sequence)
-        assertEquals(NucleotideSequence.parse("<UACG<"), dna.reverseBindingSurface(MoleculeId(2)).sequence)
+        assertEquals(NucleotideSequence.parse(">AUGC>"), dna.forwardBindingSurface(EntityId(2)).sequence)
+        assertEquals(NucleotideSequence.parse("<UACG<"), dna.reverseBindingSurface(EntityId(2)).sequence)
     }
 
     @Test
     fun `trna binding surface uses a single strand`() {
-        val surface = TRna.of("CGAU").bindingSurface(MoleculeId(3))
+        val surface = TRna.of("CGAU").bindingSurface(EntityId(3))
 
         assertEquals(BindingStrand.SINGLE, surface.strand)
         assertEquals(NucleotideSequence.of("CGAU"), surface.sequence)
@@ -42,10 +42,10 @@ class BindingSiteTest {
     @Test
     fun `sites overlap only on the same molecule and strand`() {
         val mrna = MRna.of("AUGCUA")
-        val first = mrna.bindingSurface(MoleculeId(4)).site(1, 4)
-        val overlapping = mrna.bindingSurface(MoleculeId(4)).site(3, 6)
-        val sameRangeDifferentMolecule = mrna.bindingSurface(MoleculeId(5)).site(3, 6)
-        val reverseDnaSite = Dna.of("AUGCUA", "UACGAU").reverseBindingSurface(MoleculeId(4)).site(3, 6)
+        val first = mrna.bindingSurface(EntityId(4)).site(1, 4)
+        val overlapping = mrna.bindingSurface(EntityId(4)).site(3, 6)
+        val sameRangeDifferentMolecule = mrna.bindingSurface(EntityId(5)).site(3, 6)
+        val reverseDnaSite = Dna.of("AUGCUA", "UACGAU").reverseBindingSurface(EntityId(4)).site(3, 6)
 
         assertTrue(first.overlaps(overlapping))
         assertFalse(first.overlaps(sameRangeDifferentMolecule))
@@ -54,7 +54,7 @@ class BindingSiteTest {
 
     @Test
     fun `empty sites never overlap`() {
-        val surface = MRna.of("AUGCUA").bindingSurface(MoleculeId(7))
+        val surface = MRna.of("AUGCUA").bindingSurface(EntityId(7))
         val empty = surface.site(5, 5)
         val occupied = surface.site(4, 6)
 
@@ -65,7 +65,7 @@ class BindingSiteTest {
 
     @Test
     fun `site rejects ranges beyond the surface length`() {
-        val surface = MRna.of("AUGC").bindingSurface(MoleculeId(6))
+        val surface = MRna.of("AUGC").bindingSurface(EntityId(6))
 
         val exception = assertFailsWith<IllegalArgumentException> {
             BindingSite(surface, SequenceRange(1, 5))
